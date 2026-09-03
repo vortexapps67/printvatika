@@ -251,8 +251,9 @@ function updateThemeToggleUI(theme) {
 window.initScrollReveal = function () {
   if (typeof IntersectionObserver === 'undefined') return;
 
-  const targets = document.querySelectorAll('.reveal-init, .process-step, .product-card, .review-card, .location-grid, .faq-item, .hero-grid');
-  
+  const targets = document.querySelectorAll('.reveal-init, .reveal-on-scroll, .process-step, .review-card, .faq-item');
+  const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+
   const observer = new IntersectionObserver((entries, obs) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -261,17 +262,23 @@ window.initScrollReveal = function () {
       }
     });
   }, {
-    threshold: 0.12,
-    rootMargin: '0px 0px -40px 0px'
+    threshold: 0.05,
+    rootMargin: '0px 0px 50px 0px'
   });
 
   targets.forEach((el, index) => {
-    if (!el.classList.contains('reveal-init')) {
-      el.classList.add('reveal-init');
-      if (index % 3 === 1) el.classList.add('delay-1');
-      if (index % 3 === 2) el.classList.add('delay-2');
+    const rect = el.getBoundingClientRect();
+    // If element is already in or near viewport on load, reveal immediately!
+    if (rect.top < windowHeight * 1.1) {
+      el.classList.add('is-revealed');
+    } else {
+      if (!el.classList.contains('reveal-init')) {
+        el.classList.add('reveal-init');
+        if (index % 3 === 1) el.classList.add('delay-1');
+        if (index % 3 === 2) el.classList.add('delay-2');
+      }
+      observer.observe(el);
     }
-    observer.observe(el);
   });
 };
 

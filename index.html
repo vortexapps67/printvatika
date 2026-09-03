@@ -240,8 +240,25 @@
   <script src="js/cart.js"></script>
   <script src="js/utils.js"></script>
   <script>
-    // Loader
-    (function(){const b=document.getElementById('loader-bar'),l=document.getElementById('loader');if(!b||!l)return;let p=0;const t=setInterval(()=>{p+=Math.random()*18+5;if(p>=90){p=90;clearInterval(t);}b.style.width=p+'%';},120);window.addEventListener('load',()=>{clearInterval(t);b.style.width='100%';setTimeout(()=>l.classList.add('hidden'),380);});})();
+    // Fast & Safe Loader Dismissal
+    (function(){
+      const b = document.getElementById('loader-bar'), l = document.getElementById('loader');
+      if (!l) return;
+      function hideLoader() {
+        if (b) b.style.width = '100%';
+        setTimeout(() => {
+          l.classList.add('hidden');
+          setTimeout(() => l.style.display = 'none', 400);
+        }, 150);
+      }
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        hideLoader();
+      } else {
+        window.addEventListener('DOMContentLoaded', hideLoader);
+        window.addEventListener('load', hideLoader);
+      }
+      setTimeout(hideLoader, 600); // Fail-safe: never stay stuck
+    })();
 
     window.addEventListener('DOMContentLoaded', async () => {
       renderHeader('home');
