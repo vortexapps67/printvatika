@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>(function(){const s=localStorage.getItem('pv_theme')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',s);})();</script>
+  <link rel="icon" type="image/png" href="imgs/logo-nobg.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmed — Print Vatika</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .thankyou-page {
+      background: var(--bg-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .thankyou-container {
+      max-width: 780px;
+      margin: 3.5rem auto 5rem;
+      padding: 0 1.5rem;
+      width: 100%;
+    }
+    .thankyou-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 3rem 2.5rem;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+    .thankyou-badge-wrap {
+      width: 72px;
+      height: 72px;
+      background: var(--emerald-bg);
+      border: 2px solid var(--emerald);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      font-size: 2.25rem;
+      color: var(--emerald);
+      box-shadow: 0 0 24px rgba(16, 185, 129, 0.25);
+    }
+    .order-id-box {
+      background: var(--bg-card-subtle);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1.25rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1.25rem 0 2rem;
+    }
+    .order-details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin: 2rem 0;
+      text-align: left;
+    }
+    .detail-item-lbl {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--ink-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.25rem;
+    }
+    .detail-item-val {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+    .order-item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+    }
+    .order-item-row:last-child {
+      border-bottom: none;
+    }
+    @media (max-width: 600px) {
+      .thankyou-card { padding: 2rem 1.25rem; }
+      .order-details-grid { grid-template-columns: 1fr; gap: 1rem; }
+    }
+  </style>
+</head>
+<body class="thankyou-page">
+
+  <header class="site-header" id="site-header"></header>
+
+  <main class="thankyou-container">
+    <div class="thankyou-card" id="thankyou-card-content">
+      <div class="thankyou-badge-wrap">✓</div>
+      <div class="label" style="margin-bottom: 0.5rem;">Order Successfully Placed</div>
+      <h1 class="heading-xl" style="margin-bottom: 0.5rem;">Thank You For Your Order!</h1>
+      <p class="body-sm" style="max-width: 520px; margin: 0 auto; color: var(--ink-soft);">
+        Your print job has been transmitted directly to our digital & offset press in Lado Sarai. We’ll notify you as soon as production begins.
+      </p>
+
+      <div class="order-id-box">
+        <span style="font-size: 0.85rem; color: var(--ink-mute); font-weight: 700;">Order ID:</span>
+        <strong id="display-order-id" style="font-size: 1.1rem; color: var(--cyan); letter-spacing: 0.05em; font-family: var(--font-display);">Loading…</strong>
+        <button onclick="copyOrderId()" class="btn btn-ghost btn-sm" style="padding: 0.25rem 0.6rem; font-size: 0.72rem; border-radius: 4px;">Copy</button>
+      </div>
+
+      <div class="order-details-grid" id="order-meta-grid">
+        <div>
+          <div class="detail-item-lbl">Customer Name</div>
+          <div class="detail-item-val" id="meta-customer-name">—</div>
+        </div>
+        <div>
+          <div class="detail-item-lbl">Phone Number</div>
+          <div class="detail-item-val" id="meta-customer-phone">—</div>
+        </div>
+        <div>
+          <div class="detail-item-lbl">Fulfillment Method</div>
+          <div class="detail-item-val" id="meta-fulfillment">—</div>
+        </div>
+        <div>
+          <div class="detail-item-lbl">Payment Status</div>
+          <div class="detail-item-val" id="meta-payment-status" style="color: var(--emerald);">✓ Confirmed</div>
+        </div>
+      </div>
+
+      <div style="background: var(--bg-card-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; margin-bottom: 2rem; text-align: left;">
+        <div style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink); margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+          Order Summary
+        </div>
+        <div id="order-items-list">
+          <div class="body-xs" style="color: var(--ink-mute);">Loading items…</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1.5px solid var(--border); margin-top: 0.75rem; padding-top: 0.85rem;">
+          <strong style="font-size: 0.95rem; color: var(--ink);">Total Amount</strong>
+          <strong id="meta-order-total" style="font-size: 1.25rem; color: var(--cyan); font-family: var(--font-display);">₹0</strong>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 1.25rem;">
+        <a id="track-order-btn" href="track.html" class="btn btn-primary" style="padding: 0.85rem;">
+          📍 Track Live Status →
+        </a>
+        <button onclick="downloadInvoicePDF()" class="btn btn-outline" style="padding: 0.85rem;">
+          📄 Download Invoice
+        </button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+        <a id="wa-notify-btn" href="#" target="_blank" class="btn btn-outline" style="border-color: #25D366; color: #25D366; width: 100%;">
+          💬 Message Press on WhatsApp
+        </a>
+        <a href="catalog.html" class="btn btn-ghost" style="font-size: 0.82rem;">
+          ← Continue Shopping / New Order
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer" id="site-footer"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="env.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    let currentOrder = null;
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      renderHeader('');
+      renderFooter();
+
+      const params = new URLSearchParams(window.location.search);
+      const orderId = params.get('id') || params.get('order_id');
+      const phone = params.get('phone') || '';
+
+      let order = null;
+      try {
+        const saved = sessionStorage.getItem('last_order');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (!orderId || parsed.id === orderId) {
+            order = parsed;
+          }
+        }
+      } catch (e) {}
+
+      if (!order && orderId) {
+        try {
+          const { data, error } = await db.from('orders').select('*').eq('id', orderId).single();
+          if (data && !error) {
+            order = data;
+          }
+        } catch (e) {
+          console.warn('Order fetch error:', e);
+        }
+      }
+
+      currentOrder = order;
+      const dispId = orderId || (order ? order.id : 'PV-PENDING');
+      document.getElementById('display-order-id').textContent = dispId;
+
+      if (order) {
+        document.getElementById('meta-customer-name').textContent = order.name || 'Valued Customer';
+        document.getElementById('meta-customer-phone').textContent = order.phone || phone || '—';
+        document.getElementById('meta-fulfillment').textContent = (order.fulfillment || 'Pickup').toUpperCase();
+        document.getElementById('meta-payment-status').textContent = order.payment_status === 'paid' ? '✓ Paid Online' : '⏱ Cash / QR on Delivery';
+        document.getElementById('meta-order-total').textContent = '₹' + fmt(order.total || 0);
+
+        const itemsList = document.getElementById('order-items-list');
+        if (order.items && order.items.length) {
+          itemsList.innerHTML = order.items.map(item => `
+            <div class="order-item-row">
+              <div>
+                <strong style="color:var(--ink);">${item.name}</strong>
+                <span style="font-size:0.75rem;color:var(--ink-mute);display:block;">Qty: ${item.qty} ${item.options ? '&bull; ' + Object.values(item.options).join(', ') : ''}</span>
+              </div>
+              <strong style="color:var(--ink);">₹${fmt(item.total || (item.unitPrice * item.qty))}</strong>
+            </div>
+          `).join('');
+        } else {
+          itemsList.innerHTML = '<div class="body-xs" style="color:var(--ink-mute);">Custom print production job</div>';
+        }
+
+        const itemsText = (order.items || []).map(i => '- ' + i.name + ' (x' + i.qty + ')').join('%0A');
+        const msg = '*🟢 ORDER CONFIRMED - Print Vatika*%0A%0A*Order ID:* ' + order.id + '%0A*Customer:* ' + order.name + '%0A*Phone:* ' + order.phone + '%0A*Total:* ₹' + order.total + '%0A*Fulfillment:* ' + order.fulfillment.toUpperCase() + '%0A%0A*Items:*%0A' + itemsText + '%0A%0APlease proceed with printing!';
+        document.getElementById('wa-notify-btn').href = 'https://wa.me/919811427517?text=' + encodeURIComponent(msg);
+      }
+
+      const trackBtn = document.getElementById('track-order-btn');
+      trackBtn.href = 'track.html?id=' + encodeURIComponent(dispId) + '&phone=' + encodeURIComponent(phone || (order ? order.phone : ''));
+    });
+
+    window.copyOrderId = function() {
+      const id = document.getElementById('display-order-id').textContent;
+      navigator.clipboard.writeText(id).then(() => {
+        showToast('Order ID copied to clipboard!');
+      });
+    };
+
+    window.downloadInvoicePDF = function() {
+      if (!currentOrder) {
+        showToast('Printing invoice...', 'info');
+        window.print();
+        return;
+      }
+      
+      const printWindow = window.open('', '_blank');
+      const itemsRows = (currentOrder.items || []).map((i, idx) => `
+        <tr>
+          <td style="padding:10px;border-bottom:1px solid #E2E8F0;">${idx + 1}</td>
+          <td style="padding:10px;border-bottom:1px solid #E2E8F0;">
+            <strong>${i.name}</strong><br>
+            <small style="color:#64748B;">${i.options ? Object.entries(i.options).map(([k,v]) => k + ': ' + v).join(' | ') : ''}</small>
+          </td>
+          <td style="padding:10px;border-bottom:1px solid #E2E8F0;text-align:center;">${i.qty}</td>
+          <td style="padding:10px;border-bottom:1px solid #E2E8F0;text-align:right;">₹${i.unitPrice || (i.total/i.qty)}</td>
+          <td style="padding:10px;border-bottom:1px solid #E2E8F0;text-align:right;"><strong>₹${i.total}</strong></td>
+        </tr>
+      `).join('');
+
+      const gstAmount = Math.round(currentOrder.total * 0.18 / 1.18);
+      const taxableAmount = currentOrder.total - gstAmount;
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Tax Invoice - ${currentOrder.id}</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #0F172A; padding: 40px; margin: 0; }
+            .invoice-box { max-width: 800px; margin: auto; border: 1px solid #E2E8F0; padding: 30px; border-radius: 8px; }
+            .header-table { width: 100%; margin-bottom: 25px; border-bottom: 2px solid #0F172A; padding-bottom: 15px; }
+            .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            .items-table th { background: #F8FAFC; text-align: left; padding: 10px; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid #CBD5E1; }
+          </style>
+        </head>
+        <body>
+          <div class="invoice-box">
+            <table class="header-table">
+              <tr>
+                <td>
+                  <h1 style="margin:0;font-size:24px;color:#0F172A;">PRINT VATIKA</h1>
+                  <p style="margin:4px 0;font-size:12px;color:#64748B;">Commercial Offset & Digital Press</p>
+                  <p style="margin:2px 0;font-size:12px;color:#64748B;">F-298, Himmat Singh Marg, Near Saket Metro, Lado Sarai, New Delhi 110030</p>
+                  <p style="margin:2px 0;font-size:12px;color:#64748B;">Ph: +91 98114 27517 | GSTIN: 07AABCP1234F1Z5</p>
+                </td>
+                <td style="text-align:right;vertical-align:top;">
+                  <h2 style="margin:0;font-size:18px;color:#00B2EC;">TAX INVOICE</h2>
+                  <p style="margin:4px 0;font-size:13px;"><strong>Invoice #:</strong> ${currentOrder.id}</p>
+                  <p style="margin:2px 0;font-size:12px;color:#64748B;"><strong>Date:</strong> ${new Date(currentOrder.created_at || Date.now()).toLocaleDateString('en-IN')}</p>
+                </td>
+              </tr>
+            </table>
+
+            <table style="width:100%;margin-bottom:20px;font-size:13px;">
+              <tr>
+                <td style="width:50%;">
+                  <strong>Billed To:</strong><br>
+                  ${currentOrder.name}<br>
+                  Ph: ${currentOrder.phone}<br>
+                  ${currentOrder.address ? currentOrder.address + '<br>' : ''}
+                  Fulfillment: ${currentOrder.fulfillment.toUpperCase()}
+                </td>
+                <td style="width:50%;text-align:right;">
+                  <strong>Payment Status:</strong> ${currentOrder.payment_status.toUpperCase()}<br>
+                  <strong>Payment Method:</strong> ${currentOrder.payment_method || 'Online / Cash'}<br>
+                  <strong>Press Status:</strong> Received & Verified
+                </td>
+              </tr>
+            </table>
+
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th style="width:5%;">#</th>
+                  <th style="width:55%;">Description</th>
+                  <th style="width:10%;text-align:center;">Qty</th>
+                  <th style="width:15%;text-align:right;">Rate</th>
+                  <th style="width:15%;text-align:right;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsRows}
+              </tbody>
+            </table>
+
+            <table style="width:100%;margin-top:10px;font-size:13px;">
+              <tr>
+                <td style="width:60%;"></td>
+                <td style="width:40%;">
+                  <table style="width:100%;">
+                    <tr>
+                      <td style="padding:4px 0;">Taxable Amount:</td>
+                      <td style="text-align:right;padding:4px 0;">₹${taxableAmount}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:4px 0;">GST (18% inclusive):</td>
+                      <td style="text-align:right;padding:4px 0;">₹${gstAmount}</td>
+                    </tr>
+                    <tr style="font-size:16px;font-weight:bold;border-top:2px solid #0F172A;">
+                      <td style="padding:8px 0;">Grand Total:</td>
+                      <td style="text-align:right;padding:8px 0;color:#00B2EC;">₹${currentOrder.total}</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <div style="margin-top:30px;border-top:1px dashed #CBD5E1;padding-top:15px;text-align:center;font-size:12px;color:#64748B;">
+              Thank you for trusting Print Vatika! For reorders or live status, visit printvatika.vercel.app.
+            </div>
+          </div>
+          <script>
+            window.onload = function() { window.print(); }
+          </script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    };
+  </script>
+</body>
+</html>

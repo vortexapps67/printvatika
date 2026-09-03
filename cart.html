@@ -971,21 +971,35 @@
       console.error(e);
     }
     Cart.clear();
+    try {
+      if (currentCheckoutOrder) {
+        sessionStorage.setItem('last_order', JSON.stringify(currentCheckoutOrder));
+      }
+    } catch(e) {}
     showSuccess(orderId, phone, 'Order saved. Bring cash or scan UPI QR at our counter when collecting.');
   }
 
   function showSuccess(orderId, phone, msg) {
+    try {
+      if (currentCheckoutOrder) {
+        sessionStorage.setItem('last_order', JSON.stringify(currentCheckoutOrder));
+      }
+    } catch(e) {}
+
     document.getElementById('pay-modal-inner').innerHTML = `
       <div style="text-align:center;padding:1rem 0;">
-        <div style="width:56px;height:56px;background:#DCFCE7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.5rem;color:#16A34A;">✓</div>
+        <div style="width:56px;height:56px;background:var(--emerald-bg);border:2px solid var(--emerald);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.5rem;color:var(--emerald);">✓</div>
         <h2 class="heading-lg">Order Confirmed!</h2>
-        <p class="body-sm" style="margin-top:.75rem;max-width:320px;margin-left:auto;margin-right:auto;">${msg}</p>
-        <div style="background:var(--parchment);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-top:1.5rem;font-size:.85rem;margin-bottom:1.5rem;">
-          <strong>Order ID: ${orderId}</strong><br><span style="color:var(--ink-mute);font-size:0.75rem;">Save this code or click below to track real-time press status.</span>
+        <p class="body-sm" style="margin-top:.75rem;max-width:320px;margin-left:auto;margin-right:auto;color:var(--ink-soft);">${msg}</p>
+        <div style="background:var(--bg-card-subtle);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-top:1.5rem;font-size:.85rem;margin-bottom:1.5rem;">
+          <strong style="color:var(--ink);">Order ID: ${orderId}</strong><br><span style="color:var(--ink-mute);font-size:0.75rem;">Saved to your account & press timeline.</span>
         </div>
       </div>
       
       <div style="display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1rem;">
+        <a href="thankyou.html?id=${orderId}&phone=${encodeURIComponent(phone)}" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.85rem;font-size:0.88rem;">
+          View Full Confirmation & Receipt →
+        </a>
         <button onclick="printInvoice(currentCheckoutOrder)" class="btn btn-outline" style="width:100%;justify-content:center;padding:0.75rem;font-size:0.85rem;">
           📄 Download GST Tax Invoice (PDF)
         </button>
@@ -994,7 +1008,7 @@
         </button>
       </div>
 
-      <a href="track.html?id=${orderId}&phone=${encodeURIComponent(phone)}" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.85rem;">Track Order Status →</a>
+      <a href="track.html?id=${orderId}&phone=${encodeURIComponent(phone)}" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;padding:0.65rem;">📍 Track Live Status Timeline</a>
     `;
 
     // Automatically trigger the WhatsApp notification window

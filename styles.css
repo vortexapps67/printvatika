@@ -646,9 +646,9 @@ button, input, select, textarea { font-family: inherit; }
 
 /* ── PROCESS STRIP ──────────────────────────────────────── */
 .process-strip {
-  background: var(--ink);
+  background: var(--bg-card-dark, #0F172A);
   color: var(--white);
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid var(--border);
 }
 
 .process-inner {
@@ -830,6 +830,25 @@ button, input, select, textarea { font-family: inherit; }
 .review-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
+}
+
+.promise-card {
+  background: var(--bg-card-dark, #0F172A) !important;
+  color: #FFFFFF !important;
+  border: 1px solid var(--border) !important;
+}
+
+.promise-card .promise-text {
+  font-size: 0.92rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.65;
+  flex-grow: 1;
+}
+
+.promise-card .promise-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 1rem;
+  margin-top: auto;
 }
 
 .review-stars {
@@ -1690,10 +1709,10 @@ canvas#canvas-preview {
 
 /* ── FOOTER ─────────────────────────────────────────────── */
 .site-footer {
-  background: var(--ink);
-  color: rgba(255, 255, 255, 0.6);
+  background: var(--bg-card-dark, #0F172A);
+  color: rgba(255, 255, 255, 0.65);
   padding: 4.5rem 0 3.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--border);
 }
 
 .footer-inner {
