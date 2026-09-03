@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>(function(){const s=localStorage.getItem('pv_theme')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',s);})();</script>
   <link rel="icon" type="image/png" href="imgs/logo-nobg.png">
   <meta name="google-site-verification" content="_VcsB-p9ObAD2xWVJylitzjf-Zum0-8YcISZxGO5CX4" />
   <meta charset="UTF-8">
@@ -251,6 +252,7 @@
       if (grid) {
         const activeProducts = PRODUCTS.filter(p => p.active !== false);
         grid.innerHTML = activeProducts.slice(0, 4).map(productCardHTML).join('');
+        initScrollReveal();
       }
     });
   </script>

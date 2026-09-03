@@ -77,10 +77,67 @@ window.productCardHTML = function (p) {
   </div>`;
 };
 
+// ── THEME SWITCHER (Dark / Light) ──────────────────────────────
+window.initTheme = function () {
+  const saved = localStorage.getItem('pv_theme');
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = saved || (prefersDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+  updateThemeToggleUI(theme);
+};
+
+window.toggleTheme = function () {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('pv_theme', next);
+  updateThemeToggleUI(next);
+};
+
+function updateThemeToggleUI(theme) {
+  const btns = document.querySelectorAll('.theme-toggle-btn');
+  btns.forEach(btn => {
+    btn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
+    btn.setAttribute('aria-label', theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme');
+    btn.setAttribute('title', theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme');
+  });
+}
+
+// ── SCROLL REVEAL OBSERVER ────────────────────────────────────
+window.initScrollReveal = function () {
+  if (typeof IntersectionObserver === 'undefined') return;
+
+  const targets = document.querySelectorAll('.reveal-init, .process-step, .product-card, .review-card, .location-grid, .faq-item, .hero-grid');
+  
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-revealed');
+        obs.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.12,
+    rootMargin: '0px 0px -40px 0px'
+  });
+
+  targets.forEach((el, index) => {
+    if (!el.classList.contains('reveal-init')) {
+      el.classList.add('reveal-init');
+      if (index % 3 === 1) el.classList.add('delay-1');
+      if (index % 3 === 2) el.classList.add('delay-2');
+    }
+    observer.observe(el);
+  });
+};
+
 // ── SHARED HEADER / FOOTER ────────────────────────────────────
 window.renderHeader = function (activePage) {
   const el = document.getElementById('site-header');
   if (!el) return;
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  const themeIcon = currentTheme === 'dark' ? '☀️' : '🌙';
+
   el.innerHTML = `<div class="header-inner">
     <a href="index.html" class="brand" style="display:flex; align-items:center;">
       <img src="imgs/logo-nobg.png" alt="Print Vatika" style="height:38px; max-height:38px; width:auto; object-fit:contain;" onerror="this.onerror=null; this.outerHTML='<div class=&quot;brand-mark&quot;>PV</div>Print Vatika';">
@@ -93,7 +150,7 @@ window.renderHeader = function (activePage) {
     
     <!-- Quick Search -->
     <form action="catalog.html" method="GET" class="header-search-form" style="display:flex;align-items:center;position:relative;margin:0 0.5rem;">
-      <input type="text" name="q" placeholder="Search products..." aria-label="Search products" style="padding:0.35rem 0.75rem 0.35rem 1.8rem;border-radius:20px;border:1px solid var(--border);font-size:0.75rem;background:var(--paper);color:var(--ink);width:130px;transition:all 0.2s;" onfocus="this.style.width='180px';this.style.borderColor='var(--cyan)';" onblur="if(!this.value)this.style.width='130px';this.style.borderColor='var(--border)';">
+      <input type="text" name="q" placeholder="Search products..." aria-label="Search products" style="padding:0.35rem 0.75rem 0.35rem 1.8rem;border-radius:20px;border:1px solid var(--border);font-size:0.75rem;background:var(--bg-input);color:var(--ink);width:130px;transition:all 0.2s;" onfocus="this.style.width='180px';this.style.borderColor='var(--cyan)';" onblur="if(!this.value)this.style.width='130px';this.style.borderColor='var(--border)';">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="position:absolute;left:0.6rem;color:var(--ink-mute);pointer-events:none;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
     </form>
 
@@ -101,6 +158,9 @@ window.renderHeader = function (activePage) {
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.54A16 16 0 0 0 14 15.59l.95-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
       <a href="tel:09811427517">098114 27517</a>
     </div>
+
+    <!-- Theme Switcher Button -->
+    <button class="theme-toggle-btn desktop-auth-only" onclick="toggleTheme()" aria-label="Toggle Theme" title="Switch Theme">${themeIcon}</button>
     
     <!-- Dynamic Auth Zone -->
     <div id="header-auth-zone" class="desktop-auth-only" style="display:flex;align-items:center;gap:0.75rem;"></div>
@@ -119,17 +179,31 @@ window.renderHeader = function (activePage) {
   <!-- Mobile Navigation Dropdown Drawer -->
   <div id="mobile-nav-menu" class="mobile-nav-menu">
     <form action="catalog.html" method="GET" style="width:100%;margin-bottom:0.5rem;padding:0 0.5rem;">
-      <input type="text" name="q" placeholder="Search products..." style="width:100%;padding:0.45rem 0.75rem;border-radius:8px;border:1px solid var(--border);font-size:0.8rem;background:var(--paper);">
+      <input type="text" name="q" placeholder="Search products..." style="width:100%;padding:0.45rem 0.75rem;border-radius:8px;border:1px solid var(--border);font-size:0.8rem;background:var(--bg-input);color:var(--ink);">
     </form>
     <a href="index.html"   class="mobile-nav-link ${activePage==='home'    ? 'active':''}">Home</a>
     <a href="catalog.html" class="mobile-nav-link ${activePage==='catalog' ? 'active':''}">Catalog</a>
     <a href="track.html"   class="mobile-nav-link ${activePage==='track'   ? 'active':''}">Track Order</a>
-    <div id="mobile-auth-zone-drawer" style="margin-top:0.75rem; border-top:1px solid var(--border); padding-top:0.75rem; display:flex; flex-direction:column; gap:0.5rem; width:100%; align-items:center;"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;padding:0.5rem;border-top:1px solid var(--border);margin-top:0.5rem;">
+      <span style="font-size:0.85rem;font-weight:700;color:var(--ink);">Appearance</span>
+      <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme">${themeIcon}</button>
+    </div>
+    <div id="mobile-auth-zone-drawer" style="margin-top:0.5rem; border-top:1px solid var(--border); padding-top:0.75rem; display:flex; flex-direction:column; gap:0.5rem; width:100%; align-items:center;"></div>
   </div>`;
   
   Cart.updateBadge();
   updateHeaderAuth();
+  initScrollReveal();
 };
+
+// Initialize theme immediately on script execution
+if (typeof window !== 'undefined') {
+  initTheme();
+  document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    initScrollReveal();
+  });
+}
 
 window.toggleMobileMenu = function () {
   const menu = document.getElementById('mobile-nav-menu');
