@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../../context/CartContext';
@@ -19,7 +19,8 @@ import {
   Phone,
   Mail,
   User,
-  Info
+  Info,
+  Lock
 } from 'lucide-react';
 
 export default function CartPage() {
@@ -39,6 +40,41 @@ export default function CartPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   
+  // User Authentication State
+  const [currentUser, setCurrentUser] = useState<{ id: string; email: string; name?: string } | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const keys = Object.keys(localStorage);
+        const authKey = keys.find(k => k.startsWith('sb-') && k.endsWith('-auth-token')) || 'vatika_user';
+        if (authKey) {
+          const raw = localStorage.getItem(authKey);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            const user = parsed.user || parsed;
+            if (user && (user.id || user.email)) {
+              setCurrentUser({
+                id: user.id || 'user_' + Date.now(),
+                email: user.email || '',
+                name: user.user_metadata?.full_name || user.name || user.email?.split('@')[0] || ''
+              });
+              if (user.email && !checkoutDetails.customerEmail) {
+                updateCheckoutDetails({ customerEmail: user.email });
+              }
+              if (user.user_metadata?.full_name && !checkoutDetails.customerName) {
+                updateCheckoutDetails({ customerName: user.user_metadata.full_name });
+              }
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Could not read user auth state', err);
+    }
+  }, []);
+
   // Payment simulator modal state
   const [showSimulator, setShowSimulator] = useState(false);
   const [simulatedOrder, setSimulatedOrder] = useState<any>(null);
@@ -84,14 +120,26 @@ export default function CartPage() {
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
+
+    // Must be signed in to place an order
+    if (!currentUser) {
+      setShowAuthModal(true);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       // 1. Submit cart specifications and buyer data to API to create PENDING order
       const response = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentUser.id}`
+        },
         body: JSON.stringify({
+          userId: currentUser.id,
+          userToken: currentUser.id,
           customerName: checkoutDetails.customerName,
           customerEmail: checkoutDetails.customerEmail,
           customerPhone: checkoutDetails.customerPhone,
@@ -334,6 +382,32 @@ export default function CartPage() {
           <div className="lg:col-span-5 bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
             <h2 className="text-lg font-extrabold text-slate-800">Checkout Specifications</h2>
             
+            {/* Auth Gate Status Indicator */}
+            {currentUser ? (
+              <div className="bg-emerald-50 border border-emerald-200/80 rounded-2xl px-4 py-3 flex items-center justify-between text-xs text-emerald-900">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>Signed in as <strong>{currentUser.name || currentUser.email}</strong></span>
+                </div>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">Verified</span>
+              </div>
+            ) : (
+              <div className="bg-blue-50/80 border border-blue-200/80 rounded-2xl p-4 flex items-center justify-between gap-3 text-xs text-blue-900">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-base">🔒</span>
+                  <span className="leading-tight">
+                    <strong>Sign In Required:</strong> You must log in to place an order and track proofs.
+                  </span>
+                </div>
+                <a
+                  href="/login.html?returnTo=cart.html"
+                  className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors shadow-sm"
+                >
+                  Sign In →
+                </a>
+              </div>
+            )}
+
             <form onSubmit={handlePlaceOrder} className="space-y-4">
               {/* Name */}
               <div className="space-y-1">
@@ -597,6 +671,41 @@ export default function CartPage() {
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sign In Required Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-6 sm:p-8 space-y-5 shadow-2xl relative animate-in zoom-in-95 duration-200 text-center">
+            <div className="w-14 h-14 mx-auto rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-2xl">
+              🔒
+            </div>
+            <div className="space-y-1.5">
+              <h3 className="font-serif text-2xl font-black text-slate-900 tracking-tight">
+                Sign In Required to Order
+              </h3>
+              <p className="text-slate-500 text-xs sm:text-sm leading-relaxed max-w-sm mx-auto">
+                You must be signed in to your Print Vatika account to complete checkout. An account secures your high-res uploaded artwork and enables real-time WhatsApp and dashboard tracking.
+              </p>
+            </div>
+            <div className="space-y-3 pt-2">
+              <a
+                href="/login.html?returnTo=cart.html"
+                className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-primary-600/20 transition-all flex items-center justify-center gap-2 text-sm"
+              >
+                Sign In or Create Account
+                <ArrowRight size={16} />
+              </a>
+              <button
+                type="button"
+                onClick={() => setShowAuthModal(false)}
+                className="w-full py-2 text-xs text-slate-400 hover:text-slate-600 font-semibold"
+              >
+                Cancel & Return to Cart
+              </button>
             </div>
           </div>
         </div>

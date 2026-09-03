@@ -90,6 +90,13 @@ window.renderHeader = function (activePage) {
       <a href="catalog.html" class="nav-link ${activePage==='catalog' ? 'active':''}">Catalog</a>
       <a href="track.html"   class="nav-link ${activePage==='track'   ? 'active':''}">Track Order</a>
     </nav>
+    
+    <!-- Quick Search -->
+    <form action="catalog.html" method="GET" class="header-search-form" style="display:flex;align-items:center;position:relative;margin:0 0.5rem;">
+      <input type="text" name="q" placeholder="Search products..." aria-label="Search products" style="padding:0.35rem 0.75rem 0.35rem 1.8rem;border-radius:20px;border:1px solid var(--border);font-size:0.75rem;background:var(--paper);color:var(--ink);width:130px;transition:all 0.2s;" onfocus="this.style.width='180px';this.style.borderColor='var(--cyan)';" onblur="if(!this.value)this.style.width='130px';this.style.borderColor='var(--border)';">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="position:absolute;left:0.6rem;color:var(--ink-mute);pointer-events:none;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    </form>
+
     <div class="header-phone">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.54A16 16 0 0 0 14 15.59l.95-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
       <a href="tel:09811427517">098114 27517</a>
@@ -111,6 +118,9 @@ window.renderHeader = function (activePage) {
   
   <!-- Mobile Navigation Dropdown Drawer -->
   <div id="mobile-nav-menu" class="mobile-nav-menu">
+    <form action="catalog.html" method="GET" style="width:100%;margin-bottom:0.5rem;padding:0 0.5rem;">
+      <input type="text" name="q" placeholder="Search products..." style="width:100%;padding:0.45rem 0.75rem;border-radius:8px;border:1px solid var(--border);font-size:0.8rem;background:var(--paper);">
+    </form>
     <a href="index.html"   class="mobile-nav-link ${activePage==='home'    ? 'active':''}">Home</a>
     <a href="catalog.html" class="mobile-nav-link ${activePage==='catalog' ? 'active':''}">Catalog</a>
     <a href="track.html"   class="mobile-nav-link ${activePage==='track'   ? 'active':''}">Track Order</a>
@@ -175,7 +185,7 @@ window.renderFooter = function () {
       <a href="terms.html"   class="footer-link">Terms</a>
       <a href="admin.html"   class="footer-link" style="color:rgba(255,255,255,.25)">Admin →</a>
     </div>
-    <div class="footer-copy">© 2025 Print Vatika · F-298, Lado Sarai, New Delhi 110030 · 098114 27517</div>
+    <div class="footer-copy">© ${new Date().getFullYear()} Print Vatika · F-298, Himmat Singh Marg, Near Saket Metro, Lado Sarai, New Delhi 110030 · 098114 27517</div>
   </div>`;
 };
 

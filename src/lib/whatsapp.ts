@@ -20,7 +20,7 @@ export async function sendAdminOrderNotification(order: Order): Promise<boolean>
     })
     .join('\n');
 
-  const adminDashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/dashboard?order=${order.id}`;
+  const adminDashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://printvatika.vercel.app'}/admin/dashboard?order=${order.id}`;
 
   const messagePayload = `*🟢 NEW PRINT ORDER - Print Vatika*
 

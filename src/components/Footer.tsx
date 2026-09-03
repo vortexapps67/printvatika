@@ -16,11 +16,11 @@ export const Footer: React.FC = () => {
               <span>Print Vatika</span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Vatika's leading commercial printing press. Premium business cards, banners, t-shirts, flyers, stickers, and custom printing services delivered right to your doorstep.
+              New Delhi's premier commercial printing press. Premium business cards, flex banners, customized t-shirts, flyers, stickers, and specialty printing delivered right to your doorstep.
             </p>
             <div className="flex items-center gap-1.5 text-xs text-slate-400">
               <ShieldCheck size={14} className="text-emerald-500" />
-              <span>Razorpay Safe Payments Enabled</span>
+              <span>Razorpay Verified Safe Payments</span>
             </div>
           </div>
 
@@ -68,16 +68,20 @@ export const Footer: React.FC = () => {
               <li className="flex items-start gap-2">
                 <MapPin size={16} className="text-primary-400 shrink-0 mt-0.5" />
                 <span className="text-slate-400 leading-tight">
-                  Main Bazar Road, Near Gandhi Chowk, Vatika, Jaipur, Rajasthan - 303905
+                  F-298, Himmat Singh Marg, Near Saket Metro, Lado Sarai, New Delhi - 110030
                 </span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone size={16} className="text-primary-400 shrink-0" />
-                <span className="text-slate-400 font-semibold">+91 99999 88888</span>
+                <a href="tel:09811427517" className="text-slate-400 font-semibold hover:text-white transition-colors">
+                  +91 98114 27517
+                </a>
               </li>
               <li className="flex items-center gap-2">
                 <Mail size={16} className="text-primary-400 shrink-0" />
-                <span className="text-slate-400">orders@printerwalavatika.com</span>
+                <a href="mailto:orders@printvatika.com" className="text-slate-400 hover:text-white transition-colors">
+                  orders@printvatika.com
+                </a>
               </li>
             </ul>
           </div>
@@ -86,10 +90,10 @@ export const Footer: React.FC = () => {
         <div className="mt-12 pt-8 border-t border-slate-800 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p>© {new Date().getFullYear()} Print Vatika. All rights reserved.</p>
           <div className="flex space-x-6 text-[11px]">
-            <span className="hover:text-slate-300 cursor-pointer">Privacy Policy</span>
-            <span className="hover:text-slate-300 cursor-pointer">Terms of Service</span>
-            <Link href="/admin/dashboard" className="hover:text-slate-300 font-medium">
-              Admin Login
+            <a href="/privacy.html" className="hover:text-slate-300 transition-colors">Privacy Policy</a>
+            <a href="/terms.html" className="hover:text-slate-300 transition-colors">Terms of Service</a>
+            <Link href="/admin/dashboard" className="hover:text-slate-300 font-medium transition-colors">
+              Admin Portal
             </Link>
           </div>
         </div>

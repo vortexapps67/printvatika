@@ -326,12 +326,17 @@ export const ProductCustomizer: React.FC<ProductCustomizerProps> = ({
             ))}
 
             {/* Quantity Selector Option */}
-            <div className="space-y-2">
-              <label className="block text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">
-                Select Quantity
-              </label>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">
+                  Select or Enter Quantity
+                </label>
+                <span className="text-xs font-bold text-primary-700 bg-primary-50 px-2.5 py-1 rounded-full border border-primary-200/60">
+                  {quantity} {quantity === 1 ? 'unit' : 'units'} selected
+                </span>
+              </div>
 
-              {quantityTiers[product.slug] ? (
+              {quantityTiers[product.slug] && (
                 <div className="flex flex-wrap gap-2.5">
                   {quantityTiers[product.slug].map(qty => (
                     <button
@@ -348,15 +353,31 @@ export const ProductCustomizer: React.FC<ProductCustomizerProps> = ({
                     </button>
                   ))}
                 </div>
-              ) : (
-                <input
-                  type="number"
-                  min="1"
-                  value={quantity}
-                  onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-32 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                />
               )}
+
+              {/* Custom Quantity Input Field */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <span className="text-xs font-bold text-slate-700 shrink-0">
+                  Custom Quantity:
+                </span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="1"
+                    max="100000"
+                    value={quantity}
+                    onChange={e => {
+                      const val = parseInt(e.target.value, 10);
+                      setQuantity(isNaN(val) || val < 1 ? 1 : val);
+                    }}
+                    className="w-32 bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs sm:text-sm font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="e.g. 350"
+                  />
+                  <span className="text-[11px] text-slate-500">
+                    units (volume discount calculates automatically)
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Design File Uploader Section */}

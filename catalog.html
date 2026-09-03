@@ -8,12 +8,13 @@
   <link rel="stylesheet" href="styles.css">
 
   <!-- Open Graph / Social Media Meta Tags -->
-  <meta property="og:title" content="Print Vatika � Premium Printing Press & Custom Print Shop">
+  <meta property="og:title" content="Print Vatika - Premium Printing Press &amp; Custom Print Shop">
   <meta property="og:description" content="Configure business cards, custom t-shirts, flex banners, flyers, posters, and stickers online. Premium Lado Sarai press in New Delhi.">
-  <meta property="og:image" content="https://printvatika-weld.vercel.app/imgs/og-image.jpg">
-  <meta property="og:url" content="https://printvatika-weld.vercel.app">
+  <meta property="og:image" content="https://printvatika.vercel.app/imgs/og-image.jpg">
+  <meta property="og:url" content="https://printvatika.vercel.app">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://printvatika.vercel.app/catalog.html">
 </head>
 <body class="catalog-page">
   <header class="site-header" id="site-header"></header>
@@ -22,7 +23,18 @@
     <div class="container">
       <div class="label">What we print</div>
       <h1 class="heading-xl">Print Catalog</h1>
-      <p class="body-sm" style="margin-top:.5rem;max-width:500px;">Click any product to configure specs, upload your artwork, and get a price instantly.</p>
+      <p class="body-sm" style="margin-top:.5rem;max-width:550px;">Click any product to configure specs, upload your artwork, and get an instant custom quote.</p>
+
+      <!-- Search Bar -->
+      <div class="search-bar-wrap">
+        <div class="search-input-box">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="catalog-search-input" placeholder="Search products (business cards, t-shirts, flex banners, flyers)..." autocomplete="off" aria-label="Search catalog products">
+          <button type="button" id="catalog-search-clear" class="search-clear-btn" style="display:none;" aria-label="Clear search">✕</button>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
       <div class="filter-bar" id="filter-bar">
         <button class="filter-btn active" data-cat="all">All</button>
         <button class="filter-btn" data-cat="stationery">Stationery</button>
@@ -31,6 +43,8 @@
         <button class="filter-btn" data-cat="marketing">Marketing</button>
         <button class="filter-btn" data-cat="specialty">Specialty</button>
       </div>
+
+      <div class="search-status-bar" id="search-status-bar" style="display:none;"></div>
     </div>
   </div>
 
@@ -43,28 +57,128 @@
   <footer class="site-footer" id="site-footer"></footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="env.js"></script>
   <script src="js/supabase.js"></script>
   <script src="js/products.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/utils.js"></script>
   <script>
     let activeFilter = 'all';
+    let searchQuery = '';
 
     function render() {
       const activeProducts = PRODUCTS.filter(p => p.active !== false);
-      const list = activeFilter === 'all' ? activeProducts : activeProducts.filter(p => p.category === activeFilter);
+      const q = searchQuery.trim().toLowerCase();
+
+      const list = activeProducts.filter(p => {
+        const matchesCategory = activeFilter === 'all' || (p.category && p.category.toLowerCase() === activeFilter.toLowerCase());
+        if (!matchesCategory) return false;
+        if (!q) return true;
+        const nameMatch = (p.name || '').toLowerCase().includes(q);
+        const descMatch = (p.desc || '').toLowerCase().includes(q);
+        const catMatch = (p.category || '').toLowerCase().includes(q);
+        return nameMatch || descMatch || catMatch;
+      });
+
       const grid = document.getElementById('catalog-grid');
+      const statusBar = document.getElementById('search-status-bar');
+      const clearBtn = document.getElementById('catalog-search-clear');
+
+      if (clearBtn) clearBtn.style.display = q ? 'block' : 'none';
+
+      if (statusBar) {
+        if (q || activeFilter !== 'all') {
+          const catLabel = activeFilter === 'all' ? '' : ' in ' + activeFilter;
+          statusBar.innerHTML = 'Showing <strong>' + list.length + '</strong> of ' + activeProducts.length + ' products' + catLabel + (q ? ' matching "<em>' + escapeHTML(q) + '</em>"' : '') + ' &bull; <button type="button" onclick="resetSearchFilters()" class="status-reset-link">Reset filters</button>';
+          statusBar.style.display = 'block';
+        } else {
+          statusBar.style.display = 'none';
+        }
+      }
+
       if (!grid) return;
-      grid.innerHTML = list.length
-        ? list.map(productCardHTML).join('')
-        : `<p class="body-sm" style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--ink-mute);">No products in this category.</p>`;
+      if (list.length) {
+        grid.innerHTML = list.map(productCardHTML).join('');
+      } else {
+        grid.innerHTML = `
+          <div class="empty-search-state" style="grid-column:1/-1;text-align:center;padding:3.5rem 1rem;background:var(--white);border-radius:16px;border:1px dashed var(--border);margin:1rem 0;">
+            <div style="font-size:2.2rem;margin-bottom:0.75rem;">🔍</div>
+            <h3 style="font-size:1.1rem;font-weight:700;color:var(--ink);margin-bottom:0.35rem;">No matching products found</h3>
+            <p style="font-size:0.85rem;color:var(--ink-mute);max-width:360px;margin:0 auto 1.25rem;">We couldn't find any products matching your search. Try different terms or reset your filters.</p>
+            <button onclick="resetSearchFilters()" class="btn btn-primary btn-sm" style="border-radius:8px;padding:0.45rem 1.25rem;">Clear All Filters</button>
+          </div>
+        `;
+      }
     }
+
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      }[tag] || tag));
+    }
+
+    window.resetSearchFilters = function () {
+      searchQuery = '';
+      activeFilter = 'all';
+      const input = document.getElementById('catalog-search-input');
+      if (input) input.value = '';
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.cat === 'all');
+      });
+      render();
+    };
 
     window.addEventListener('DOMContentLoaded', async () => {
       renderHeader('catalog');
       renderFooter();
       await loadProducts();
+
+      const params = new URLSearchParams(window.location.search);
+      const urlQuery = params.get('q') || params.get('search');
+      const urlCat = params.get('cat') || params.get('category');
+
+      const searchInput = document.getElementById('catalog-search-input');
+      const clearBtn = document.getElementById('catalog-search-clear');
+
+      if (urlQuery && searchInput) {
+        searchQuery = urlQuery;
+        searchInput.value = urlQuery;
+      }
+
+      if (urlCat) {
+        activeFilter = urlCat;
+        document.querySelectorAll('.filter-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.cat === urlCat);
+        });
+      }
+
       render();
+
+      if (searchInput) {
+        searchInput.addEventListener('input', e => {
+          searchQuery = e.target.value;
+          render();
+        });
+
+        searchInput.addEventListener('keydown', e => {
+          if (e.key === 'Escape') {
+            resetSearchFilters();
+          }
+        });
+      }
+
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          searchQuery = '';
+          if (searchInput) searchInput.value = '';
+          render();
+          if (searchInput) searchInput.focus();
+        });
+      }
 
       document.getElementById('filter-bar').addEventListener('click', e => {
         const btn = e.target.closest('.filter-btn');

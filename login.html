@@ -104,10 +104,10 @@
   </style>
 
   <!-- Open Graph / Social Media Meta Tags -->
-  <meta property="og:title" content="Print Vatika — Premium Printing Press & Custom Print Shop">
+  <meta property="og:title" content="Print Vatika ï¿½ Premium Printing Press & Custom Print Shop">
   <meta property="og:description" content="Configure business cards, custom t-shirts, flex banners, flyers, posters, and stickers online. Premium Lado Sarai press in New Delhi.">
-  <meta property="og:image" content="https://printvatika-weld.vercel.app/imgs/og-image.jpg">
-  <meta property="og:url" content="https://printvatika-weld.vercel.app">
+  <meta property="og:image" content="https://printvatika.vercel.app/imgs/og-image.jpg">
+  <meta property="og:url" content="https://printvatika.vercel.app">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
 </head>
@@ -179,6 +179,7 @@
   <footer class="site-footer" id="site-footer"></footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="env.js"></script>
   <script src="js/supabase.js"></script>
   <script src="js/products.js"></script>
   <script src="js/cart.js"></script>
@@ -260,10 +261,9 @@
       } else {
         showToast('Welcome back!', 'success');
         setTimeout(() => {
-          // Redirect to checkout if coming from cart, otherwise home
           const params = new URLSearchParams(location.search);
-          if (params.get('ref') === 'cart') location.href = 'cart.html';
-          else location.href = 'index.html';
+          const dest = params.get('returnTo') || (params.get('ref') === 'cart' ? 'cart.html' : 'index.html');
+          location.href = dest;
         }, 800);
       }
     }

@@ -13,7 +13,8 @@ import {
   MessageSquare,
   HelpCircle,
   Printer,
-  ChevronRight
+  ChevronRight,
+  Search
 } from 'lucide-react';
 
 export const revalidate = 0; // Disable caching to fetch fresh DB values
@@ -111,7 +112,26 @@ export default async function HomePage() {
             Upload your designs, configure paper size, lamination, or shirt details, preview in 2D instantly, and receive high-quality prints with WhatsApp notifications.
           </p>
 
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4">
+          {/* Hero Product Search Bar */}
+          <form action="/catalog" method="GET" className="max-w-lg mx-auto pt-2">
+            <div className="relative flex items-center">
+              <Search className="absolute left-4 text-slate-400" size={18} />
+              <input
+                type="text"
+                name="q"
+                placeholder="Search products (visiting cards, banners, t-shirts, flyers)..."
+                className="w-full pl-11 pr-24 py-3 bg-white/95 backdrop-blur-sm text-slate-900 placeholder-slate-400 rounded-xl shadow-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 transition-all"
+              />
+              <button
+                type="submit"
+                className="absolute right-2 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition-colors shadow-sm"
+              >
+                Search
+              </button>
+            </div>
+          </form>
+
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-2">
             <Link
               href="/catalog"
               className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg hover:shadow-primary-600/30 transition-all flex items-center justify-center gap-2"

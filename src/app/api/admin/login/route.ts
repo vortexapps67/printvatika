@@ -1,8 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DbClient } from '../../../../lib/db';
+import { checkRateLimit } from '../../../../lib/rateLimit';
 
 export async function POST(req: NextRequest) {
   try {
+    const rateCheck = checkRateLimit(req, {
+      limit: 5,
+      windowMs: 5 * 60 * 1000,
+      prefix: 'admin-login',
+    });
+
+    if (!rateCheck.success) {
+      return NextResponse.json(
+        { error: `Too many login attempts. Please try again in ${rateCheck.resetInSeconds} seconds.` },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(rateCheck.resetInSeconds) }
+        }
+      );
+    }
+
     const { email, password } = await req.json();
 
     if (!email || !password) {

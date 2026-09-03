@@ -1,12 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DbClient } from '../../../lib/db';
 import { Order, OrderItem } from '../../../types';
+import { checkRateLimit } from '../../../lib/rateLimit';
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Rate Limiting: 5 orders per minute per IP
+    const rateCheck = checkRateLimit(req, {
+      limit: 5,
+      windowMs: 60 * 1000,
+      prefix: 'create-order',
+    });
+
+    if (!rateCheck.success) {
+      return NextResponse.json(
+        { error: `Too many order requests. Please try again in ${rateCheck.resetInSeconds} seconds.` },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rateCheck.resetInSeconds),
+            'X-RateLimit-Limit': String(rateCheck.limit),
+            'X-RateLimit-Remaining': String(rateCheck.remaining),
+          },
+        }
+      );
+    }
+
     const body = await req.json();
+
+    // 2. Authentication Gate: Must be signed in to place an order
+    const authHeader = req.headers.get('authorization');
+    const userToken = authHeader?.replace(/^Bearer\s+/i, '') || body.userToken || body.userId;
+
+    if (!userToken) {
+      return NextResponse.json(
+        { error: 'Authentication required: You must be signed in to place an order.' },
+        { status: 401 }
+      );
+    }
     
-    // 1. Basic validation
+    // 3. Mandatory Fields Validation
     const {
       customerName,
       customerEmail,
@@ -27,13 +60,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing mandatory checkout fields.' }, { status: 400 });
     }
 
-    // 2. Determine unique serial Order ID e.g. #PV-1001
+    // 4. Determine unique serial Order ID e.g. #PV-1001
     const allOrders = await DbClient.getOrders();
     const count = allOrders.length;
     const orderSerial = 1001 + count;
     const orderId = `#PV-${orderSerial}`;
 
-    // 3. Construct Order input schema
+    // 5. Construct Order input schema
     const orderInput = {
       id: orderId,
       customer_name: customerName,
@@ -52,7 +85,7 @@ export async function POST(req: NextRequest) {
       notes: notes || undefined
     };
 
-    // 4. Construct items list
+    // 6. Construct items list
     const itemsInput = items.map((item: any) => ({
       product_slug: item.product_slug,
       product_name: item.product_name,
@@ -60,20 +93,18 @@ export async function POST(req: NextRequest) {
       selected_options: item.selected_options || {},
       unit_price: Number(item.unit_price),
       total_price: Number(item.total_price),
-      original_file_url: item.original_file?.base64 || undefined, // Store base64 content locally in JSON fallback DB
+      original_file_url: item.original_file?.base64 || undefined,
       preview_file_url: item.preview_base64 || undefined,
       design_config: item.design_config || undefined
     }));
 
-    // 5. Save to database
+    // 7. Save to database
     const createdOrder = await DbClient.createOrder(orderInput, itemsInput);
 
-    // 6. Razorpay Integration hook
-    // If Razorpay keys are configured, initialize Razorpay order object here
+    // 8. Razorpay Integration hook
     let razorpay_order_id = null;
     if (process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
       try {
-        // Dynamic load razorpay in backend to avoid bundle issues
         const Razorpay = require('razorpay');
         const rzp = new Razorpay({
           key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,

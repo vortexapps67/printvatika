@@ -3,8 +3,8 @@
 // The SECRET key should NEVER appear here or in any JS file.
 // Include Supabase CDN before this script in every HTML page.
 
-const SUPABASE_URL = 'https://vbbcijydjuziocfbcagn.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_pRjENfyp4wRDPhSITiPNRg_7ymjGJpj';
+const SUPABASE_URL = (typeof window !== 'undefined' && window.ENV?.SUPABASE_URL) || 'https://vbbcijydjuziocfbcagn.supabase.co';
+const SUPABASE_KEY = (typeof window !== 'undefined' && window.ENV?.SUPABASE_ANON_KEY) || 'sb_publishable_pRjENfyp4wRDPhSITiPNRg_7ymjGJpj';
 
 window.db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 

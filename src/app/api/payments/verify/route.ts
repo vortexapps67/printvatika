@@ -1,10 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DbClient } from '../../../../lib/db';
 import { sendAdminOrderNotification } from '../../../../lib/whatsapp';
+import { checkRateLimit } from '../../../../lib/rateLimit';
 import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
   try {
+    const rateCheck = checkRateLimit(req, {
+      limit: 15,
+      windowMs: 60 * 1000,
+      prefix: 'verify-payment',
+    });
+
+    if (!rateCheck.success) {
+      return NextResponse.json(
+        { error: `Too many payment verification requests. Please try again in ${rateCheck.resetInSeconds} seconds.` },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(rateCheck.resetInSeconds) }
+        }
+      );
+    }
+
     const body = await req.json();
     const { orderId, razorpayPaymentId, razorpayOrderId, razorpaySignature, paymentId, status } = body;
 
