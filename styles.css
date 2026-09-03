@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
 
 /* ── DESIGN SYSTEM TOKENS ─────────────────────────────────── */
 :root {
@@ -97,43 +97,54 @@ button, input, select, textarea { font-family: inherit; }
 .page-view.active { display: block; }
 
 /* ── TYPOGRAPHY ─────────────────────────────────────────── */
+/* ── TYPOGRAPHY ─────────────────────────────────────────── */
 .display {
-  font-family: var(--font-serif);
-  font-size: clamp(2.75rem, 5.5vw, 5rem);
-  font-weight: 900;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
+  font-family: var(--font-sans);
+  font-size: clamp(2.75rem, 5.5vw, 4.75rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
   color: var(--ink);
 }
 
 .heading-xl {
-  font-family: var(--font-serif);
-  font-size: clamp(2rem, 3.8vw, 3rem);
+  font-family: var(--font-sans);
+  font-size: clamp(2rem, 3.8vw, 2.75rem);
   font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  line-height: 1.18;
+  letter-spacing: -0.03em;
   color: var(--ink);
 }
 
 .heading-lg {
-  font-family: var(--font-serif);
-  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  font-family: var(--font-sans);
+  font-size: clamp(1.35rem, 2.5vw, 1.85rem);
   font-weight: 800;
   line-height: 1.25;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.025em;
   color: var(--ink);
 }
 
 .heading-md {
   font-size: 1.05rem;
   font-weight: 800;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   color: var(--ink);
 }
 
-.body-lg { font-size: 1.05rem; line-height: 1.7; color: var(--ink-soft); }
-.body-sm { font-size: 0.875rem; line-height: 1.6; color: var(--ink-soft); }
-.body-xs { font-size: 0.75rem; line-height: 1.5; color: var(--ink-mute); }
+.text-gradient {
+  background: linear-gradient(135deg, var(--ink) 25%, var(--cyan-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-cyan {
+  color: var(--cyan-dark);
+}
+
+.body-lg { font-size: 1.05rem; line-height: 1.7; color: var(--ink-soft); font-weight: 400; }
+.body-sm { font-size: 0.875rem; line-height: 1.6; color: var(--ink-soft); font-weight: 400; }
+.body-xs { font-size: 0.75rem; line-height: 1.5; color: var(--ink-mute); font-weight: 500; }
 
 /* ── BUTTONS ────────────────────────────────────────────── */
 .btn {
@@ -237,11 +248,11 @@ button, input, select, textarea { font-family: inherit; }
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  font-family: var(--font-serif);
-  font-size: 1.35rem;
-  font-weight: 900;
+  font-family: var(--font-sans);
+  font-size: 1.25rem;
+  font-weight: 800;
   color: var(--ink);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   flex-shrink: 0;
 }
 
@@ -423,11 +434,12 @@ button, input, select, textarea { font-family: inherit; }
 }
 
 .hero-stat-val {
-  font-size: 1.45rem;
-  font-weight: 900;
+  font-size: 1.5rem;
+  font-weight: 800;
   color: var(--ink);
   display: block;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
+  letter-spacing: -0.03em;
   line-height: 1.1;
 }
 
@@ -561,11 +573,12 @@ button, input, select, textarea { font-family: inherit; }
 }
 
 .process-num {
-  font-family: var(--font-serif);
-  font-size: 2rem;
+  font-family: var(--font-sans);
+  font-size: 2.25rem;
   font-weight: 900;
   color: var(--cyan);
   margin-bottom: 0.75rem;
+  letter-spacing: -0.04em;
   line-height: 1;
 }
 
@@ -1595,9 +1608,10 @@ canvas#canvas-preview {
 }
 
 .footer-brand {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 1.25rem;
-  font-weight: 900;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   color: var(--white);
 }
 
@@ -1891,11 +1905,11 @@ canvas#canvas-preview {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-family: var(--font-serif);
-  font-size: 1.6rem;
-  font-weight: 900;
+  font-family: var(--font-sans);
+  font-size: 1.5rem;
+  font-weight: 800;
   color: var(--white);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
 .loader-mark {
@@ -1956,9 +1970,10 @@ canvas#canvas-preview {
 }
 
 .static-body h2 {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 1.35rem;
   font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--ink);
   margin: 2.5rem 0 0.75rem;
   padding-bottom: 0.5rem;
