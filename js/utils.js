@@ -56,11 +56,11 @@ window.calcPrice = function (product, options, qty, dims) {
 
 // ── PRODUCT CARD HTML ─────────────────────────────────────────
 window.productCardHTML = function (p) {
-  const price = p.basePrice === 0 ? 'Get a Quote' : '₹' + fmt(p.basePrice);
-  const unit  = p.basePrice === 0 ? '' : `<small style="font-size:.62rem;font-weight:400;color:var(--ink-mute)"> ${p.baseUnit}</small>`;
+  const price = p.basePrice === 0 ? 'Custom Quote' : '₹' + fmt(p.basePrice);
+  const unit  = p.basePrice === 0 ? '' : `<small style="font-size:0.75rem;font-weight:600;color:var(--ink-mute);"> ${p.baseUnit}</small>`;
   return `<div class="product-card" onclick="location.href='product.html?slug=${p.slug}'">
     <div class="product-img-wrap">
-      <img src="${p.image}" alt="${p.name}" loading="lazy">
+      <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src='imgs/business-cards.jpg';">
       <span class="product-cat-tag">${p.category}</span>
     </div>
     <div class="product-body">

@@ -151,15 +151,20 @@
 
     // Quantity
     if (p.quantities.length > 1) {
-      html += `<div class="spec-block"><div class="spec-block-header"><div class="spec-block-title">Quantity</div></div><div class="spec-block-body"><div class="qty-row">`;
+      html += `<div class="spec-block"><div class="spec-block-header"><div class="spec-block-title">Quantity & Bulk Savings</div></div><div class="spec-block-body"><div class="qty-row">`;
       p.quantities.forEach(q => {
-        html += `<button class="qty-btn${selQty===q?' active':''}" onclick="setQty(${q})">${q} ${q===1?'unit':'units'}</button>`;
+        const discFactor = Object.entries(p.qtyDiscounts || {})
+          .filter(([dq]) => q >= +dq)
+          .sort(([a],[b]) => +b - +a)[0]?.[1] ?? 1.0;
+        const pct = Math.round((1 - discFactor) * 100);
+        const saveTag = pct > 0 ? `<span style="display:block;font-size:0.65rem;color:${selQty===q?'#86EFAC':'#10B981'};font-weight:800;margin-top:2px;">Save ${pct}%</span>` : '';
+        html += `<button class="qty-btn${selQty===q?' active':''}" onclick="setQty(${q})">${q} ${q===1?'unit':'units'}${saveTag}</button>`;
       });
       html += `</div>
         <div style="margin-top:0.85rem;display:flex;align-items:center;gap:0.6rem;padding-top:0.75rem;border-top:1px solid var(--border);">
           <span style="font-size:0.75rem;font-weight:700;color:var(--ink-soft);">Custom Quantity:</span>
           <input type="number" min="1" max="100000" value="${selQty}" class="form-input" style="width:110px;padding:0.35rem 0.6rem;font-size:0.85rem;font-weight:700;" oninput="setQty(Math.max(1,parseInt(this.value)||1))" placeholder="e.g. 350">
-          <span style="font-size:0.7rem;color:var(--ink-mute);">(Volume discounts apply)</span>
+          <span style="font-size:0.7rem;color:var(--ink-mute);">(Automatic volume discounts apply)</span>
         </div>
       </div></div>`;
     }
