@@ -69,17 +69,19 @@
 
     function render() {
       const activeProducts = PRODUCTS.filter(p => p.active !== false);
-      const q = searchQuery.trim().toLowerCase();
+      const q = searchQuery.trim();
 
-      const list = activeProducts.filter(p => {
+      const scoredList = activeProducts.map(p => {
         const matchesCategory = activeFilter === 'all' || (p.category && p.category.toLowerCase() === activeFilter.toLowerCase());
-        if (!matchesCategory) return false;
-        if (!q) return true;
-        const nameMatch = (p.name || '').toLowerCase().includes(q);
-        const descMatch = (p.desc || '').toLowerCase().includes(q);
-        const catMatch = (p.category || '').toLowerCase().includes(q);
-        return nameMatch || descMatch || catMatch;
-      });
+        if (!matchesCategory) return null;
+        if (!q) return { product: p, score: 100 };
+        const { match, score } = window.matchProductSearch(p, q);
+        return match ? { product: p, score } : null;
+      }).filter(Boolean);
+
+      // Sort by best match score
+      scoredList.sort((a, b) => b.score - a.score);
+      const list = scoredList.map(item => item.product);
 
       const grid = document.getElementById('catalog-grid');
       const statusBar = document.getElementById('search-status-bar');

@@ -54,6 +54,150 @@ window.calcPrice = function (product, options, qty, dims) {
   return { unit, subtotal, discount, discPct, total };
 };
 
+// ── FUZZY & TYPO-TOLERANT SEARCH ENGINE ─────────────────────────
+function levenshteinDistance(a, b) {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  const matrix = [];
+  for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
+      }
+    }
+  }
+  return matrix[b.length][a.length];
+}
+
+const PRINT_SYNONYMS = {
+  'tshirt': ['t-shirt', 't shirt', 'apparel', 'tee', 'tshirts', 'clothing', 'polos'],
+  't-shirt': ['t-shirt', 't shirt', 'tshirt', 'tee', 'apparel', 'round neck', 'polo'],
+  'shirt': ['t-shirt', 'tshirt', 'apparel', 'tee'],
+  'tee': ['t-shirt', 'tshirt', 'apparel'],
+  'card': ['business-cards', 'business card', 'visiting card', 'visiting', 'vcard', 'cards'],
+  'vcard': ['business-cards', 'business card', 'visiting card'],
+  'visiting': ['business-cards', 'business card', 'visiting card'],
+  'banner': ['flex-banners', 'flex', 'banner', 'hoarding', 'standee', 'board', 'vinyl', 'signage'],
+  'flex': ['flex-banners', 'banner', 'flex banner', 'hoarding', 'signage', 'vinyl'],
+  'standee': ['flex-banners', 'banner', 'signage'],
+  'board': ['flex-banners', 'banner', 'signage'],
+  'flyer': ['flyers', 'flier', 'pamphlet', 'leaflet', 'handout', 'brochure', 'marketing'],
+  'flier': ['flyers', 'flyer', 'pamphlet', 'leaflet'],
+  'pamphlet': ['flyers', 'flyer', 'brochures', 'brochure', 'leaflet'],
+  'poster': ['posters', 'poster', 'wall art', 'chart', 'signage'],
+  'brochure': ['brochures', 'brochure', 'booklet', 'catalog', 'pamphlet', 'tri-fold', 'bi-fold'],
+  'pamphlets': ['flyers', 'brochures', 'pamphlet'],
+  'sticker': ['stickers', 'sticker', 'label', 'tag', 'decal', 'die cut', 'labels'],
+  'label': ['stickers', 'labels', 'sticker', 'tag'],
+  'tag': ['stickers', 'labels', 'business-cards'],
+  'decal': ['stickers', 'sticker'],
+  'custom': ['custom-print', 'specialty', 'quote', 'printing']
+};
+
+function fuzzyTokenMatch(queryToken, targetTokens) {
+  if (!queryToken) return { match: true, score: 100 };
+  const qLen = queryToken.length;
+
+  // For very short 1-2 letter tokens (e.g. 't', '3d')
+  if (qLen <= 2) {
+    for (const target of targetTokens) {
+      if (target === queryToken) return { match: true, score: 100 };
+      if (target.startsWith(queryToken)) return { match: true, score: 85 };
+    }
+    return { match: false, score: 0 };
+  }
+
+  for (const target of targetTokens) {
+    if (!target) continue;
+    // 1. Exact match
+    if (target === queryToken) return { match: true, score: 100 };
+    // 2. Substring match
+    if (target.includes(queryToken)) return { match: true, score: 92 };
+    if (queryToken.includes(target) && target.length >= 3) return { match: true, score: 88 };
+
+    // 3. Subsequence match (e.g. 'bc' -> 'business-cards')
+    let qIdx = 0;
+    for (let i = 0; i < target.length && qIdx < qLen; i++) {
+      if (target[i] === queryToken[qIdx]) qIdx++;
+    }
+    if (qIdx === qLen && qLen >= 3) return { match: true, score: 80 };
+
+    // 4. Typo tolerance (Levenshtein distance)
+    const maxAllowedDistance = qLen <= 3 ? 1 : qLen <= 6 ? 2 : 3;
+    const dist = levenshteinDistance(queryToken, target);
+    if (dist <= maxAllowedDistance) {
+      return { match: true, score: Math.max(50, 85 - dist * 15) };
+    }
+
+    // 5. Sliding window sub-word typo check
+    if (target.length > qLen + 1 && qLen >= 4) {
+      for (let i = 0; i <= target.length - qLen; i++) {
+        const sub = target.substring(i, i + qLen);
+        if (levenshteinDistance(queryToken, sub) <= 1) {
+          return { match: true, score: 65 };
+        }
+      }
+    }
+  }
+  return { match: false, score: 0 };
+}
+
+window.matchProductSearch = function(product, rawQuery) {
+  if (!rawQuery || !rawQuery.trim()) return { match: true, score: 100 };
+  const query = rawQuery.trim().toLowerCase();
+
+  // Extract all searchable text fields from product
+  const rawFields = [
+    product.name || '',
+    product.slug || '',
+    product.category || '',
+    product.desc || '',
+    ...(product.tags || []),
+    ...(product.options ? product.options.flatMap(o => [o.label, ...(o.choices || []).map(c => c.label)]) : [])
+  ].join(' ').toLowerCase();
+
+  const productTokens = rawFields.replace(/[^a-z0-9\s-]/g, ' ').split(/\s+/).filter(Boolean);
+
+  // Normalize query tokens (combine 't' + 'shirt' -> 'tshirt')
+  let queryTokens = query.replace(/[^a-z0-9\s-]/g, ' ').split(/\s+/).filter(Boolean);
+  if (!queryTokens.length) return { match: true, score: 100 };
+
+  // Handle special compound queries like "t shirt", "v card"
+  if (queryTokens.length >= 2 && queryTokens[0] === 't' && (queryTokens[1].startsWith('sh') || queryTokens[1] === 'shirt')) {
+    queryTokens = ['tshirt', ...queryTokens.slice(2)];
+  }
+
+  let totalScore = 0;
+  for (const qToken of queryTokens) {
+    const tokenSynonyms = PRINT_SYNONYMS[qToken] || [];
+    const allQueryVariations = [qToken, ...tokenSynonyms];
+
+    let bestTokenScore = 0;
+    for (const variation of allQueryVariations) {
+      const { match, score } = fuzzyTokenMatch(variation, productTokens);
+      if (match && score > bestTokenScore) {
+        bestTokenScore = score;
+      }
+    }
+
+    if (bestTokenScore === 0) {
+      return { match: false, score: 0 };
+    }
+    totalScore += bestTokenScore;
+  }
+
+  return { match: true, score: Math.round(totalScore / queryTokens.length) };
+};
+
 // ── PRODUCT CARD HTML ─────────────────────────────────────────
 window.productCardHTML = function (p) {
   const price = p.basePrice === 0 ? 'Custom Quote' : '₹' + fmt(p.basePrice);
@@ -197,12 +341,16 @@ window.renderHeader = function (activePage) {
 };
 
 // Initialize theme immediately on script execution
-if (typeof window !== 'undefined') {
-  initTheme();
-  document.addEventListener('DOMContentLoaded', () => {
-    initTheme();
-    initScrollReveal();
-  });
+if (typeof window !== 'undefined' && typeof window.initTheme === 'function') {
+  try {
+    window.initTheme();
+    if (typeof document !== 'undefined' && document.addEventListener) {
+      document.addEventListener('DOMContentLoaded', () => {
+        if (typeof window.initTheme === 'function') window.initTheme();
+        if (typeof window.initScrollReveal === 'function') window.initScrollReveal();
+      });
+    }
+  } catch (e) {}
 }
 
 window.toggleMobileMenu = function () {
