@@ -345,6 +345,130 @@ window.renderHeader = function (activePage) {
   Cart.updateBadge();
   updateHeaderAuth();
   initScrollReveal();
+  renderMobileBottomNav(activePage);
+};
+
+// ── MOBILE BOTTOM NAVIGATION DOCK ────────────────────────────
+window.renderMobileBottomNav = function (activePage) {
+  let el = document.getElementById('mobile-bottom-dock');
+  if (!el) {
+    el = document.createElement('nav');
+    el.id = 'mobile-bottom-dock';
+    el.className = 'mobile-bottom-dock';
+    document.body.appendChild(el);
+  }
+
+  el.innerHTML = `
+    <a href="index.html" class="dock-item ${activePage==='home' ? 'active':''}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="catalog.html" class="dock-item ${activePage==='catalog' ? 'active':''}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+      <span>Catalog</span>
+    </a>
+    <a href="cart.html" class="dock-item ${activePage==='cart' ? 'active':''}">
+      <div style="position:relative;display:inline-flex;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+        <span class="dock-cart-badge cart-badge" style="display:none;">0</span>
+      </div>
+      <span>Cart</span>
+    </a>
+    <a href="track.html" class="dock-item ${activePage==='track' ? 'active':''}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>Track</span>
+    </a>
+    <a href="https://wa.me/919811427517?text=Hi%20Print%20Vatika%2C%20I%20have%20a%20printing%20inquiry" target="_blank" class="dock-item dock-item-wa">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.121.553 4.112 1.524 5.84L0 24l6.318-1.524A11.94 11.94 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.007-1.373l-.36-.214-3.73.978.994-3.638-.234-.374A9.818 9.818 0 1 1 12 21.818z"/></svg>
+      <span>WhatsApp</span>
+    </a>
+  `;
+  Cart.updateBadge();
+};
+
+// ── PINCODE DELIVERY & ESTIMATOR ─────────────────────────────
+window.checkPincodeDelivery = function(pincode) {
+  const pin = (pincode || '').toString().trim().replace(/\D/g, '');
+  if (pin.length !== 6) {
+    return { valid: false, message: 'Please enter a valid 6-digit Indian PIN code.' };
+  }
+
+  const num = parseInt(pin, 10);
+  
+  // Local South Delhi (Saket, Hauz Khas, Malviya Nagar, Mehrauli, Nai Basti)
+  const southDelhiPins = [110030, 110017, 110016, 110029, 110049, 110062, 110070, 110068, 110074];
+  if (southDelhiPins.includes(num)) {
+    return {
+      valid: true,
+      zone: 'Local South Delhi (Press Hub)',
+      speed: '⚡ Lightning 2–3 Hour Porter Dispatch',
+      badge: 'Local Press Delivery',
+      color: '#10B981',
+      details: 'Same-day instant dispatch directly from our Lado Sarai press near Saket Metro. Porter pickup ready in 120 mins.'
+    };
+  }
+
+  // Delhi NCT (110001 - 110096)
+  if (num >= 110001 && num <= 110096) {
+    return {
+      valid: true,
+      zone: 'Delhi NCT Express',
+      speed: '🛵 Same-Day / Next-Day Morning Porter',
+      badge: 'Delhi Express',
+      color: '#00B2EC',
+      details: 'Fast doorstep Porter courier delivery across all Delhi districts. Order before 4 PM for today\'s press run.'
+    };
+  }
+
+  // NCR Suburbs (Gurugram, Noida, Ghaziabad, Faridabad)
+  if ((num >= 122001 && num <= 122505) || (num >= 201301 && num <= 201318) || (num >= 201001 && num <= 201017) || (num >= 121001 && num <= 121010)) {
+    return {
+      valid: true,
+      zone: 'Delhi NCR (Gurugram / Noida / Faridabad)',
+      speed: '🚚 Express 24-Hour NCR Dispatch',
+      badge: 'NCR Porter Dispatch',
+      color: '#8B5CF6',
+      details: 'Direct Porter / WeFast courier connection. Delivered to your office/home within 24 hours of printing.'
+    };
+  }
+
+  // Rest of India
+  return {
+    valid: true,
+    zone: 'All-India Shipping',
+    speed: '📦 2–3 Business Days Air Express',
+    badge: 'National Express',
+    color: '#3B82F6',
+    details: 'Dispatched via BlueDart / Delhivery Express with live courier tracking number.'
+  };
+};
+
+// ── REORDER PREVIOUS JOB ─────────────────────────────────────
+window.reorderJob = function(order) {
+  if (!order || !order.items || !order.items.length) {
+    showToast('Unable to load items from this order.', 'error');
+    return;
+  }
+  
+  order.items.forEach(item => {
+    Cart.add({
+      id: Date.now() + Math.random().toString(36).substring(2, 7),
+      productId: item.productId || item.id,
+      name: item.name,
+      category: item.category || 'Printing',
+      price: item.total || (item.unitPrice * (item.qty || 100)),
+      qty: item.qty || 100,
+      options: item.options || {},
+      dims: item.dims || null,
+      artwork: item.artwork || null,
+      slug: item.slug || 'custom-print'
+    });
+  });
+
+  showToast('✓ ' + order.items.length + ' item(s) added to cart!', 'success');
+  setTimeout(() => {
+    location.href = 'cart.html';
+  }, 400);
 };
 
 // Initialize theme immediately on script execution

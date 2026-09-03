@@ -2345,3 +2345,126 @@ canvas#canvas-preview {
 [data-theme="dark"]::-webkit-scrollbar-thumb:hover {
   background: #334155;
 }
+
+/* ── MOBILE BOTTOM DOCK ──────────────────────────────────── */
+.mobile-bottom-dock {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 72px !important;
+  }
+  
+  .mobile-bottom-dock {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: var(--header-bg, rgba(250, 248, 245, 0.92));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    z-index: 1000;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 0.5rem;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  [data-theme="dark"] .mobile-bottom-dock {
+    background: rgba(6, 9, 15, 0.92);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.5);
+  }
+
+  .dock-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: var(--ink-mute);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-decoration: none;
+    flex: 1;
+    padding: 6px 0;
+    transition: all 0.15s ease;
+    position: relative;
+  }
+
+  .dock-item svg {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .dock-item:hover,
+  .dock-item.active {
+    color: var(--cyan);
+  }
+
+  .dock-item:active svg {
+    transform: scale(0.85);
+  }
+
+  .dock-item.active svg {
+    color: var(--cyan);
+    transform: translateY(-2px);
+  }
+
+  .dock-item-wa {
+    color: #25D366;
+  }
+
+  .dock-cart-badge {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    background: var(--cyan);
+    color: #FFFFFF;
+    font-size: 0.58rem;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: var(--radius-full);
+    min-width: 16px;
+    text-align: center;
+  }
+}
+
+/* ── PINCODE ESTIMATOR WIDGET ────────────────────────────── */
+.pincode-estimator-card {
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-top: 1rem;
+}
+
+.pincode-input-wrap {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.pincode-input-wrap input {
+  flex: 1;
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  background: var(--bg-input);
+  color: var(--ink);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.pincode-result-box {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-xs);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  display: none;
+}

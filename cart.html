@@ -531,9 +531,10 @@
                 </div>
                 <div class="form-field">
                   <label class="form-label">Pincode *</label>
-                  <input id="f-pin"  type="text" class="form-input" placeholder="6-digit PIN" maxlength="6">
+                  <input id="f-pin"  type="text" class="form-input" placeholder="6-digit PIN" maxlength="6" oninput="onCartPincodeInput(this.value)">
                 </div>
               </div>
+              <div id="cart-pincode-result" style="display:none;padding:0.6rem 0.8rem;border-radius:6px;font-size:0.75rem;margin-top:-0.2rem;"></div>
             </div>
 
             <!-- Optional GSTIN / B2B Section -->
@@ -641,6 +642,30 @@
     fulfillment = mode;
     renderCart();
   }
+
+  window.onCartPincodeInput = function(pin) {
+    const resBox = document.getElementById('cart-pincode-result');
+    if (!resBox) return;
+    if (!pin || pin.trim().length < 6) {
+      resBox.style.display = 'none';
+      return;
+    }
+    const res = checkPincodeDelivery(pin);
+    if (!res.valid) {
+      resBox.style.display = 'block';
+      resBox.style.background = 'rgba(239, 68, 68, 0.08)';
+      resBox.style.border = '1px solid rgba(239, 68, 68, 0.2)';
+      resBox.innerHTML = `<span style="color:#EF4444;font-weight:700;">${res.message}</span>`;
+      return;
+    }
+    resBox.style.display = 'block';
+    resBox.style.background = 'rgba(16, 185, 129, 0.08)';
+    resBox.style.border = '1px solid rgba(16, 185, 129, 0.25)';
+    resBox.innerHTML = `
+      <div style="font-weight:800;color:var(--ink);font-size:0.8rem;">${res.speed}</div>
+      <div style="color:var(--ink-soft);font-size:0.72rem;margin-top:2px;">${res.details}</div>
+    `;
+  };
 
   function toggleRushPrint(e) {
     if (e) {

@@ -170,29 +170,124 @@
       </div></div>`;
     }
 
-    // Upload
+    // Multi-Artwork Upload (Front & Back)
     if (p.slug !== 'custom-print') {
-      html += `<div class="spec-block"><div class="spec-block-header"><div class="spec-block-title">Upload Your Design</div></div><div class="spec-block-body">`;
-      if (uploadedFile) {
-        html += `<div class="upload-success"><span style="color:#16A34A;font-weight:700;font-size:.85rem;">✓ ${uploadedFile.name} <span style="font-weight:400;color:var(--ink-mute);">(${(uploadedFile.size/1024/1024).toFixed(2)} MB)</span></span><button onclick="clearUpload()" class="btn btn-ghost btn-sm">Remove</button></div>`;
+      const isTwoSided = (selOptions['sides'] === 'double' || selOptions['sides'] === 'two' || p.slug === 'business-cards' || p.slug === 'flyers');
+      
+      html += `<div class="spec-block">
+        <div class="spec-block-header" style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="spec-block-title">Artwork & Design Files</div>
+          ${isTwoSided ? `
+            <div style="display:flex;gap:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:2px;">
+              <button type="button" onclick="switchArtworkSide('front')" class="btn btn-sm ${activeArtworkSide==='front'?'btn-primary':'btn-ghost'}" style="padding:2px 10px;font-size:0.7rem;border-radius:14px;">Front</button>
+              <button type="button" onclick="switchArtworkSide('back')" class="btn btn-sm ${activeArtworkSide==='back'?'btn-primary':'btn-ghost'}" style="padding:2px 10px;font-size:0.7rem;border-radius:14px;">Back</button>
+            </div>
+          ` : ''}
+        </div>
+        <div class="spec-block-body">`;
+
+      const currentFile = activeArtworkSide === 'front' ? uploadedFrontFile : uploadedBackFile;
+      const sideLabel = isTwoSided ? (activeArtworkSide === 'front' ? 'Front Side' : 'Back Side') : 'Design';
+
+      if (currentFile) {
+        html += `
+          <div class="upload-success" style="margin-bottom:0.75rem;">
+            <span style="color:#16A34A;font-weight:700;font-size:.85rem;">
+              ✓ ${sideLabel}: ${currentFile.name} <span style="font-weight:400;color:var(--ink-mute);">(${(currentFile.size/1024/1024).toFixed(2)} MB)</span>
+            </span>
+            <button onclick="clearUpload('${activeArtworkSide}')" class="btn btn-ghost btn-sm" style="padding:2px 8px;">Remove</button>
+          </div>
+        `;
       } else {
-        html += `<div class="upload-zone"><input type="file" accept=".png,.jpg,.jpeg,.pdf" onchange="handleUpload(event)"><div class="upload-icon">↑</div><div class="upload-text">Click or drop your design file here</div><div class="upload-hint">PNG, JPG, PDF — max 20 MB</div></div>`;
+        html += `
+          <div class="upload-zone" style="margin-bottom:0.75rem;">
+            <input type="file" accept=".png,.jpg,.jpeg,.pdf" onchange="handleUpload(event, '${activeArtworkSide}')">
+            <div class="upload-icon">↑</div>
+            <div class="upload-text">Upload ${sideLabel} File</div>
+            <div class="upload-hint">PNG, JPG, PDF — max 20 MB (300 DPI recommended)</div>
+          </div>
+        `;
       }
+
+      if (isTwoSided) {
+        html += `
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;color:var(--ink-mute);padding-top:0.4rem;border-top:1px solid var(--border);">
+            <span>Front: ${uploadedFrontFile ? '✅ Uploaded' : '⏱ Required'}</span>
+            <span>Back: ${uploadedBackFile ? '✅ Uploaded' : '⚪ Optional / Single-sided'}</span>
+          </div>
+        `;
+      }
+
       html += `<div id="upload-warning" style="margin-top:.75rem;"></div></div></div>`;
     }
 
     // Price
     html += `<div id="price-box"></div>`;
 
+    // Pincode & Delivery Estimator
+    html += `
+      <div class="pincode-estimator-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:0.45rem;font-size:0.8rem;font-weight:800;color:var(--ink);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Delhi NCR Delivery Estimator
+          </div>
+          <span style="font-size:0.68rem;color:var(--emerald);font-weight:800;text-transform:uppercase;">⚡ Same-Day Porter</span>
+        </div>
+        <div class="pincode-input-wrap">
+          <input type="text" id="pincode-input" maxlength="6" placeholder="Enter 6-digit PIN code (e.g. 110030)" value="${lastPincode||'110030'}" oninput="runPincodeCheck(this.value)">
+          <button type="button" onclick="runPincodeCheck(document.getElementById('pincode-input').value)" class="btn btn-outline btn-sm">Check</button>
+        </div>
+        <div id="pincode-result" class="pincode-result-box" style="display:block;"></div>
+      </div>
+    `;
+
     // CTA
-    html += `<div style="display:flex;gap:.75rem;">
+    html += `<div style="display:flex;gap:.75rem;margin-top:1.5rem;">
       <a href="catalog.html" class="btn btn-ghost" style="flex:1;">Cancel</a>
       <button onclick="addToCart()" class="btn btn-primary" style="flex:2;padding:1rem;">Add to Cart →</button>
     </div>`;
 
     document.getElementById('spec-panel').innerHTML = html;
     refreshPrice();
-    if (uploadedFile && imageObj) checkResWarn(imageObj);
+    runPincodeCheck(lastPincode || '110030');
+    const curImg = activeArtworkSide === 'front' ? imageObjFront : imageObjBack;
+    if (curImg) checkResWarn(curImg);
+  }
+
+  let activeArtworkSide = 'front';
+  let uploadedFrontFile = null;
+  let uploadedBackFile = null;
+  let imageObjFront = null;
+  let imageObjBack = null;
+  let lastPincode = '110030';
+
+  function switchArtworkSide(side) {
+    activeArtworkSide = side;
+    imageObj = activeArtworkSide === 'front' ? imageObjFront : imageObjBack;
+    uploadedFile = activeArtworkSide === 'front' ? uploadedFrontFile : uploadedBackFile;
+    renderSpec();
+    drawCanvas();
+  }
+
+  function runPincodeCheck(pin) {
+    const resBox = document.getElementById('pincode-result');
+    if (!resBox) return;
+    lastPincode = pin;
+    const res = checkPincodeDelivery(pin);
+    if (!res.valid) {
+      resBox.innerHTML = `<span style="color:#EF4444;font-weight:700;">${res.message}</span>`;
+      resBox.style.background = 'rgba(239, 68, 68, 0.08)';
+      resBox.style.border = '1px solid rgba(239, 68, 68, 0.2)';
+      return;
+    }
+    resBox.style.display = 'block';
+    resBox.style.background = 'rgba(16, 185, 129, 0.08)';
+    resBox.style.border = '1px solid rgba(16, 185, 129, 0.25)';
+    resBox.innerHTML = `
+      <div style="font-weight:800;color:var(--ink);font-size:0.85rem;">${res.speed}</div>
+      <div style="color:var(--ink-soft);font-size:0.75rem;margin-top:2px;">${res.details}</div>
+    `;
   }
 
   function pick(key, val) { selOptions[key] = val; renderSpec(); drawCanvas(); }
@@ -215,19 +310,32 @@
   }
 
   // ── UPLOAD ────────────────────────────────────
-  function handleUpload(e) {
+  function handleUpload(e, side = 'front') {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 20*1024*1024) { alert('File too large. Max 20 MB.'); return; }
     const ext = file.name.split('.').pop().toLowerCase();
     if (!['png','jpg','jpeg','pdf'].includes(ext)) { alert('Unsupported format. Use PNG, JPG, or PDF.'); return; }
-    uploadedFile = { name: file.name, size: file.size };
+
+    const fileMeta = { name: file.name, size: file.size, side };
+    if (side === 'front') {
+      uploadedFrontFile = fileMeta;
+    } else {
+      uploadedBackFile = fileMeta;
+    }
+    uploadedFile = uploadedFrontFile || uploadedBackFile;
     warnAck = false;
+
     const reader = new FileReader();
     reader.onload = ev => {
       const img = new Image();
       img.onload = () => {
-        imageObj = img;
+        if (side === 'front') {
+          imageObjFront = img;
+        } else {
+          imageObjBack = img;
+        }
+        imageObj = activeArtworkSide === 'front' ? imageObjFront : imageObjBack;
         designPos = { x: 0, y: 0, scale: 0.45, rot: 0 };
         const sz = document.getElementById('slider-zoom'); if (sz) sz.value = 0.45;
         renderSpec(); drawCanvas();
@@ -237,28 +345,68 @@
     reader.readAsDataURL(file);
   }
 
-  function clearUpload() { uploadedFile = null; imageObj = null; warnAck = false; renderSpec(); drawCanvas(); }
+  function clearUpload(side = 'front') {
+    if (side === 'front') {
+      uploadedFrontFile = null;
+      imageObjFront = null;
+    } else {
+      uploadedBackFile = null;
+      imageObjBack = null;
+    }
+    uploadedFile = uploadedFrontFile || uploadedBackFile;
+    imageObj = activeArtworkSide === 'front' ? imageObjFront : imageObjBack;
+    warnAck = false;
+    renderSpec();
+    drawCanvas();
+  }
 
   function checkResWarn(img) {
     const el = document.getElementById('upload-warning');
-    if (!el) return;
+    if (!el || !img) return;
     let msg = '';
-    if (product.slug === 'business-cards' && (img.width < 700 || img.height < 400)) msg = 'Low resolution: recommended min 1050 × 600 px for sharp card prints.';
-    else if (product.slug === 't-shirts' && img.width < 800) msg = 'Low resolution: recommended min 1200 × 1200 px for crisp t-shirt prints.';
-    if (msg) el.innerHTML = `<div class="warning-strip"><div>⚠ ${msg}</div><label style="display:flex;align-items:flex-start;gap:.5rem;cursor:pointer;"><input type="checkbox" ${warnAck?'checked':''} onchange="warnAck=this.checked"><span>I understand and want to proceed.</span></label></div>`;
+    const approxDpi = Math.round(Math.min(img.width / 3.5, img.height / 2));
+    if (product.slug === 'business-cards' && (img.width < 700 || img.height < 400)) {
+      msg = `Low resolution (${approxDpi} DPI): recommended min 1050 × 600 px for sharp 300 DPI business cards.`;
+    } else if (product.slug === 't-shirts' && img.width < 800) {
+      msg = 'Low resolution: recommended min 1200 × 1200 px for high-definition apparel printing.';
+    }
+    if (msg) {
+      el.innerHTML = `<div class="warning-strip"><div>⚠ ${msg}</div><label style="display:flex;align-items:flex-start;gap:.5rem;cursor:pointer;"><input type="checkbox" ${warnAck?'checked':''} onchange="warnAck=this.checked"><span>I understand and want to proceed with this file.</span></label></div>`;
+    } else {
+      el.innerHTML = `<div style="font-size:0.75rem;color:var(--emerald);font-weight:700;margin-top:0.4rem;">✅ Print Quality: High Definition (300+ DPI Equivalent)</div>`;
+    }
   }
 
   // ── ADD TO CART ───────────────────────────────
   function addToCart() {
-    if (product.slug !== 'custom-print' && !uploadedFile) { alert('Please upload a design file before adding to cart.'); return; }
+    if (product.slug !== 'custom-print' && !uploadedFrontFile && !uploadedBackFile) {
+      alert('Please upload your design file before adding to cart.');
+      return;
+    }
     const warnEl = document.getElementById('upload-warning');
-    if (warnEl?.querySelector('input[type=checkbox]') && !warnAck) { alert('Please acknowledge the resolution warning.'); return; }
+    if (warnEl?.querySelector('input[type=checkbox]') && !warnAck) {
+      alert('Please acknowledge the resolution warning.');
+      return;
+    }
     const { total } = calcPrice(product, selOptions, selQty, selDims);
     const canvas = document.getElementById('canvas-preview');
     const preview = canvas ? canvas.toDataURL('image/jpeg', 0.65) : '';
-    Cart.add({ id: 'item-'+Date.now(), product, qty: selQty, options: { ...selOptions }, dims: product.slug==='flex-banners'?{...selDims}:null, file: uploadedFile, preview, price: total });
-    showToast('Added to cart!');
-    setTimeout(() => location.href = 'cart.html', 600);
+
+    Cart.add({
+      id: 'item-' + Date.now(),
+      product,
+      qty: selQty,
+      options: { ...selOptions },
+      dims: product.slug === 'flex-banners' ? { ...selDims } : null,
+      file: uploadedFrontFile || uploadedBackFile,
+      frontFile: uploadedFrontFile,
+      backFile: uploadedBackFile,
+      preview,
+      price: total
+    });
+
+    showToast('✓ Added to cart!');
+    setTimeout(() => location.href = 'cart.html', 500);
   }
 
   // ── CANVAS ────────────────────────────────────

@@ -169,6 +169,7 @@
 
   <footer class="site-footer" id="site-footer"></footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="env.js"></script>
   <script src="js/supabase.js"></script>
@@ -178,9 +179,28 @@
   <script>
     let currentOrder = null;
 
+    // Celebratory Confetti Burst
+    function fireCelebration() {
+      if (typeof confetti === 'function') {
+        const count = 200;
+        const defaults = { origin: { y: 0.7 }, zIndex: 9999 };
+        function fire(particleRatio, opts) {
+          confetti(Object.assign({}, defaults, opts, {
+            particleCount: Math.floor(count * particleRatio)
+          }));
+        }
+        fire(0.25, { spread: 26, startVelocity: 55, colors: ['#00B2EC', '#38BDF8', '#10B981'] });
+        fire(0.2, { spread: 60, colors: ['#FBBF24', '#F472B6', '#A78BFA'] });
+        fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+        fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+        fire(0.1, { spread: 120, startVelocity: 45 });
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', async () => {
       renderHeader('');
       renderFooter();
+      setTimeout(fireCelebration, 300);
 
       const params = new URLSearchParams(window.location.search);
       const orderId = params.get('id') || params.get('order_id');
