@@ -417,9 +417,9 @@ button, input, select, textarea { font-family: inherit; }
 
 .cart-btn {
   position: relative;
-  background: var(--ink);
-  color: var(--white);
-  border: none;
+  background: var(--bg-card-dark, #0F172A);
+  color: #FFFFFF !important;
+  border: 1px solid var(--border);
   padding: 0.55rem 1.15rem;
   border-radius: var(--radius-full);
   font-size: 0.82rem;
@@ -430,11 +430,25 @@ button, input, select, textarea { font-family: inherit; }
   gap: 0.45rem;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
   transition: all 0.15s ease;
+  text-decoration: none;
 }
 .cart-btn:hover {
   background: #1E293B;
+  color: #FFFFFF !important;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.22);
+}
+
+[data-theme="dark"] .cart-btn {
+  background: #0D121F;
+  color: var(--cyan) !important;
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+[data-theme="dark"] .cart-btn:hover {
+  background: #141B2D;
+  color: #FFFFFF !important;
+  border-color: var(--cyan);
 }
 
 .cart-badge {
@@ -1947,28 +1961,36 @@ canvas#canvas-preview {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    background: var(--white);
-    border-bottom: 1.5px solid var(--border-dark);
-    padding: 1rem;
-    gap: 0.75rem;
+    background: var(--bg-card, #FFFFFF);
+    border-bottom: 1.5px solid var(--border);
+    padding: 1.25rem 1rem;
+    gap: 0.65rem;
     box-sizing: border-box;
+    box-shadow: var(--shadow-md);
   }
   .mobile-nav-menu.open {
     display: flex;
   }
   .mobile-nav-link {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    color: var(--ink-soft);
-    padding: 0.5rem 0;
+    color: var(--ink);
+    padding: 0.65rem 1rem;
     width: 100%;
     text-align: center;
-    border-radius: 4px;
-    transition: background 0.2s, color 0.2s;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+    text-decoration: none;
+    border: 1px solid transparent;
+  }
+  .mobile-nav-link:hover {
+    color: var(--cyan);
+    background: var(--bg-card-subtle);
   }
   .mobile-nav-link.active {
-    color: var(--cyan-dark);
-    background: var(--parchment);
+    color: var(--cyan);
+    background: var(--bg-card-subtle);
+    border-color: var(--border);
   }
   
   .display { font-size: 2.2rem; }
@@ -2467,4 +2489,39 @@ canvas#canvas-preview {
   font-size: 0.8rem;
   line-height: 1.5;
   display: none;
+}
+
+/* ── ANNOUNCEMENT TICKER ────────────────────────────────── */
+.announcement-ticker {
+  background: #06090F;
+  color: #FFFFFF;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.45rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  position: relative;
+  z-index: 101;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+[data-theme="dark"] .announcement-ticker {
+  background: #030509;
+  border-bottom-color: rgba(56, 189, 248, 0.2);
+}
+
+.ticker-tag {
+  background: var(--cyan);
+  color: #04060A;
+  font-size: 0.6rem;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
 }

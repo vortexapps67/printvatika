@@ -230,6 +230,12 @@
       <button class="admin-nav-item" onclick="switchTab('products',this)">
         <span class="admin-nav-icon">🖨</span> Products
       </button>
+      <button class="admin-nav-item" onclick="switchTab('coupons',this)">
+        <span class="admin-nav-icon">🎟️</span> Coupons
+      </button>
+      <button class="admin-nav-item" onclick="switchTab('ticker',this)">
+        <span class="admin-nav-icon">📢</span> Announcement
+      </button>
       <button class="admin-nav-item" onclick="switchTab('settings',this)">
         <span class="admin-nav-icon">⚙️</span> Settings
       </button>
@@ -343,6 +349,110 @@
         <div class="prod-admin-grid" id="prod-admin-grid"></div>
       </div>
 
+      <!-- ── COUPONS TAB ──────────────────────── -->
+      <div id="tab-coupons" class="admin-tab">
+        <div style="margin-bottom:1.5rem;">
+          <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-mute);margin-bottom:.35rem;">Discount Coupons &amp; Offers</div>
+          <p class="body-sm">Create, activate, or delete promo codes for percentage discounts, flat cash off, or free delivery at checkout.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:320px 1fr;gap:1.5rem;align-items:start;">
+          <!-- Add Coupon Card -->
+          <div class="settings-card">
+            <div class="settings-section-title">+ Create New Coupon</div>
+            <form onsubmit="handleCreateCoupon(event)" style="display:flex;flex-direction:column;gap:0.85rem;">
+              <div class="form-field">
+                <label class="form-label">Coupon Code *</label>
+                <input type="text" id="cp-code" class="form-input" placeholder="e.g. FESTIVE20" required style="text-transform:uppercase;font-weight:800;letter-spacing:0.05em;">
+              </div>
+              <div class="form-field">
+                <label class="form-label">Discount Type *</label>
+                <select id="cp-type" class="form-input" onchange="updateCouponUnitLabel()">
+                  <option value="percent">Percentage Off (%)</option>
+                  <option value="flat">Flat Amount Off (₹)</option>
+                  <option value="delivery">Free Porter Delivery</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="form-label" id="cp-value-lbl">Discount Value (%) *</label>
+                <input type="number" id="cp-value" class="form-input" min="1" max="10000" placeholder="e.g. 20" required value="20">
+              </div>
+              <div class="form-field">
+                <label class="form-label">Minimum Order Amount (₹)</label>
+                <input type="number" id="cp-min" class="form-input" min="0" placeholder="e.g. 500" value="0">
+              </div>
+              <div class="form-field">
+                <label class="form-label">Display Label / Description</label>
+                <input type="text" id="cp-label" class="form-input" placeholder="e.g. 20% OFF Special Discount" value="20% OFF Special Discount">
+              </div>
+              <button type="submit" class="btn btn-primary" style="margin-top:0.5rem;justify-content:center;">Create Coupon</button>
+            </form>
+          </div>
+
+          <!-- Coupons List Table -->
+          <div class="table-wrap">
+            <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+              <strong style="font-size:0.88rem;color:var(--ink);">Active Promo Codes</strong>
+              <button onclick="renderCouponsTab()" class="btn btn-ghost btn-sm">↻ Refresh</button>
+            </div>
+            <div class="table-scroll">
+              <table class="dt" id="coupons-table">
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Discount</th>
+                    <th>Min Order</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th style="text-align:right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="coupons-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ANNOUNCEMENT TICKER TAB ──────────── -->
+      <div id="tab-ticker" class="admin-tab">
+        <div style="margin-bottom:1.5rem;">
+          <div style="font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-mute);margin-bottom:.35rem;">Store Announcement Bar</div>
+          <p class="body-sm">Display an urgent notice, promotional banner, or operational schedule at the very top of all customer storefront pages.</p>
+        </div>
+
+        <div class="settings-card" style="max-width:720px;">
+          <div class="settings-section-title">Announcement Settings</div>
+          <form onsubmit="handleSaveTicker(event)" style="display:flex;flex-direction:column;gap:1.25rem;">
+            <label style="display:flex;align-items:center;gap:0.75rem;cursor:pointer;background:var(--bg-card-subtle);padding:0.75rem 1rem;border-radius:var(--radius-sm);border:1px solid var(--border);">
+              <input type="checkbox" id="tk-enable" checked style="width:18px;height:18px;">
+              <div>
+                <strong style="font-size:0.88rem;color:var(--ink);">Enable Announcement Bar</strong>
+                <div style="font-size:0.75rem;color:var(--ink-mute);">Show the announcement strip across the storefront header.</div>
+              </div>
+            </label>
+
+            <div class="form-field">
+              <label class="form-label">Announcement Text *</label>
+              <textarea id="tk-text" class="form-input" rows="3" placeholder="Enter headline or discount announcement…" required style="resize:vertical;font-size:0.9rem;font-weight:600;" oninput="document.getElementById('tk-preview-text').textContent=this.value">⚡ SAME-DAY PORTER DISPATCH IN DELHI-NCR • Use code FIRST10 for 10% OFF • 📞 Call/WhatsApp: 098114 27517</textarea>
+            </div>
+
+            <!-- Live Preview -->
+            <div>
+              <label class="form-label">Live Storefront Preview</label>
+              <div style="background:#06090F;color:#FFFFFF;padding:0.6rem 1rem;border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:0.75rem;font-size:0.78rem;font-weight:700;">
+                <span class="ticker-tag" style="background:var(--cyan);color:#04060A;padding:2px 6px;border-radius:4px;font-size:0.62rem;font-weight:900;">NOTICE</span>
+                <span id="tk-preview-text">⚡ SAME-DAY PORTER DISPATCH IN DELHI-NCR • Use code FIRST10 for 10% OFF • 📞 Call/WhatsApp: 098114 27517</span>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+              <button type="submit" class="btn btn-primary">Save &amp; Publish Announcement</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
       <!-- ── SETTINGS TAB ────────────────────── -->
       <div id="tab-settings" class="admin-tab">
         <div style="margin-bottom:1.5rem;">
@@ -431,6 +541,8 @@ async function init() {
   await loadProducts();
   localProds = PRODUCTS.map(p => ({ ...p }));
   await loadAll();
+  await loadCoupons();
+  await loadTickerSettings();
   subscribeRealtime();
   renderProducts();
   renderSettingsForm();
@@ -1010,8 +1122,155 @@ function exportCSV() {
   a.download = 'orders-'+new Date().toISOString().split('T')[0]+'.csv'; a.click();
 }
 
+// ── COUPONS LOGIC ───────────────────────────────
+let adminCoupons = [];
+
+async function loadCoupons() {
+  adminCoupons = await window.getAvailableCoupons();
+  renderCouponsTab();
+}
+
+function updateCouponUnitLabel() {
+  const type = document.getElementById('cp-type').value;
+  const lbl = document.getElementById('cp-value-lbl');
+  const valInput = document.getElementById('cp-value');
+  if (type === 'percent') {
+    lbl.textContent = 'Discount Value (%) *';
+    valInput.placeholder = 'e.g. 20';
+    valInput.disabled = false;
+  } else if (type === 'flat') {
+    lbl.textContent = 'Discount Value (₹) *';
+    valInput.placeholder = 'e.g. 100';
+    valInput.disabled = false;
+  } else if (type === 'delivery') {
+    lbl.textContent = 'Delivery Discount (₹)';
+    valInput.value = '50';
+    valInput.disabled = true;
+  }
+}
+
+function renderCouponsTab() {
+  const tbody = document.getElementById('coupons-tbody');
+  if (!tbody) return;
+
+  if (!adminCoupons || adminCoupons.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="dt-empty">No coupons created yet. Add one using the form on the left.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = adminCoupons.map((cp, idx) => {
+    const discDisplay = cp.type === 'percent' ? `${cp.value}% OFF` : cp.type === 'flat' ? `₹${cp.value} OFF` : 'Free Delivery';
+    const statusTag = cp.active !== false
+      ? `<span class="sb sb-READY" style="cursor:pointer;" onclick="toggleCouponStatus(${idx})">Active</span>`
+      : `<span class="sb sb-CANCELLED" style="cursor:pointer;" onclick="toggleCouponStatus(${idx})">Inactive</span>`;
+
+    return `
+      <tr>
+        <td><strong style="color:var(--cyan);font-family:var(--font-display);letter-spacing:0.05em;">${cp.code}</strong></td>
+        <td><strong style="color:var(--ink);">${discDisplay}</strong></td>
+        <td>₹${cp.minOrder || 0}</td>
+        <td><span style="color:var(--ink-soft);font-size:0.75rem;">${cp.label || '—'}</span></td>
+        <td>${statusTag}</td>
+        <td style="text-align:right;">
+          <button onclick="deleteCoupon(${idx})" class="btn btn-ghost btn-sm" style="color:#EF4444;padding:2px 8px;font-size:0.75rem;" title="Delete Coupon">🗑 Delete</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function handleCreateCoupon(e) {
+  e.preventDefault();
+  const code = document.getElementById('cp-code').value.trim().toUpperCase();
+  const type = document.getElementById('cp-type').value;
+  const value = parseInt(document.getElementById('cp-value').value, 10) || 0;
+  const minOrder = parseInt(document.getElementById('cp-min').value, 10) || 0;
+  const label = document.getElementById('cp-label').value.trim() || `${code} Discount`;
+
+  if (!code) { showToast('Please enter a coupon code.', 'error'); return; }
+
+  const existingIdx = adminCoupons.findIndex(c => c.code === code);
+  if (existingIdx >= 0) {
+    adminCoupons[existingIdx] = { code, type, value, minOrder, label, active: true };
+  } else {
+    adminCoupons.unshift({ code, type, value, minOrder, label, active: true });
+  }
+
+  await saveCouponsToDB();
+  document.getElementById('cp-code').value = '';
+  showToast(`Coupon ${code} created successfully!`, 'success');
+  renderCouponsTab();
+}
+
+async function deleteCoupon(idx) {
+  const cp = adminCoupons[idx];
+  if (!confirm(`Are you sure you want to delete coupon ${cp.code}?`)) return;
+  adminCoupons.splice(idx, 1);
+  await saveCouponsToDB();
+  showToast(`Coupon ${cp.code} deleted.`, 'info');
+  renderCouponsTab();
+}
+
+async function toggleCouponStatus(idx) {
+  adminCoupons[idx].active = !adminCoupons[idx].active;
+  await saveCouponsToDB();
+  showToast(`Coupon ${adminCoupons[idx].code} updated.`, 'info');
+  renderCouponsTab();
+}
+
+async function saveCouponsToDB() {
+  try {
+    localStorage.setItem('pv_coupons', JSON.stringify(adminCoupons));
+    const { error } = await db.from('settings').upsert({
+      key: 'discount_coupons',
+      value: JSON.stringify(adminCoupons)
+    }, { onConflict: 'key' });
+    if (error) console.warn('Coupons DB save warning:', error);
+  } catch (e) {
+    console.warn('Coupons save error:', e);
+  }
+}
+
+// ── ANNOUNCEMENT TICKER LOGIC ───────────────────
+async function loadTickerSettings() {
+  const cfg = await window.getAnnouncementTicker();
+  const enableInput = document.getElementById('tk-enable');
+  const textInput = document.getElementById('tk-text');
+  const prev = document.getElementById('tk-preview-text');
+  if (enableInput) enableInput.checked = cfg.enabled !== false;
+  if (textInput) textInput.value = cfg.text || '';
+  if (prev) prev.textContent = cfg.text || '';
+}
+
+async function handleSaveTicker(e) {
+  e.preventDefault();
+  const enabled = document.getElementById('tk-enable').checked;
+  const text = document.getElementById('tk-text').value.trim();
+  const cfg = { text, enabled, theme: 'cyan' };
+
+  try {
+    localStorage.setItem('pv_ticker', JSON.stringify(cfg));
+    const { error } = await db.from('settings').upsert({
+      key: 'announcement_ticker',
+      value: JSON.stringify(cfg)
+    }, { onConflict: 'key' });
+    if (error) showToast('Error saving announcement: ' + error.message, 'error');
+    else showToast('Announcement updated and published live!', 'success');
+  } catch (e) {
+    showToast('Saved locally!', 'success');
+  }
+}
+
 // ── TAB SWITCHER ───────────────────────────────
-const tabTitles = { dashboard: 'Dashboard', orders: 'All Orders', products: 'Products', settings: 'Settings' };
+const tabTitles = {
+  dashboard: 'Dashboard',
+  orders: 'All Orders',
+  products: 'Products',
+  coupons: 'Discount Coupons & Offers',
+  ticker: 'Storefront Announcement Bar',
+  settings: 'Settings'
+};
+
 function switchTab(id, btnEl) {
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
@@ -1020,6 +1279,8 @@ function switchTab(id, btnEl) {
   else document.querySelectorAll('.admin-nav-item').forEach(b => { if(b.textContent.toLowerCase().includes(id.slice(0,4))) b.classList.add('active'); });
   document.getElementById('topbar-title').textContent = tabTitles[id] || id;
   if (id === 'orders') { renderOrdersTable(); }
+  if (id === 'coupons') { renderCouponsTab(); }
+  if (id === 'ticker') { loadTickerSettings(); }
 }
 </script>
 </body>

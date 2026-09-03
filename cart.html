@@ -307,19 +307,34 @@
   let currentCheckoutOrder = null;
 
   // Available discount coupons
-  const AVAILABLE_COUPONS = {
+  let AVAILABLE_COUPONS = {
     'FIRST10':   { type: 'percent', value: 10, label: '10% OFF Welcome Discount', minOrder: 0 },
     'WELCOME10': { type: 'percent', value: 10, label: '10% OFF Welcome Discount', minOrder: 0 },
     'VATIKA50':  { type: 'flat',    value: 50, label: '₹50 OFF on Orders > ₹500', minOrder: 500 },
     'FREEDEL':   { type: 'delivery',value: 50, label: 'Free Porter Delivery',     minOrder: 300 },
     'BULK100':   { type: 'flat',    value: 100,label: '₹100 OFF on Orders > ₹1000',minOrder: 1000 },
   };
+  let dynamicCouponList = [];
+
+  async function loadCartCoupons() {
+    try {
+      dynamicCouponList = await window.getAvailableCoupons();
+      dynamicCouponList.forEach(c => {
+        if (c.active !== false) {
+          AVAILABLE_COUPONS[c.code] = c;
+        }
+      });
+    } catch (e) {
+      console.warn('Coupon load warning:', e);
+    }
+  }
 
   window.addEventListener('DOMContentLoaded', async () => {
     renderHeader('cart');
     renderFooter();
     await loadSettings();
     await loadProducts();
+    await loadCartCoupons();
     await renderCart();
   });
 
@@ -567,9 +582,13 @@
                 <button type="button" class="btn btn-primary btn-sm" onclick="applyCouponCode()">Apply</button>
               </div>
               <div class="coupon-chips">
-                <span class="coupon-chip" onclick="quickApplyCoupon('FIRST10')">🏷️ FIRST10 (10% off)</span>
-                <span class="coupon-chip" onclick="quickApplyCoupon('VATIKA50')">🏷️ VATIKA50 (₹50 off)</span>
-                <span class="coupon-chip" onclick="quickApplyCoupon('FREEDEL')">🏷️ FREEDEL (Free Delivery)</span>
+                ${(dynamicCouponList && dynamicCouponList.length ? dynamicCouponList.filter(c=>c.active!==false).slice(0, 4) : [
+                  {code:'FIRST10', label:'10% off'},
+                  {code:'VATIKA50', label:'₹50 off'},
+                  {code:'FREEDEL', label:'Free Delivery'}
+                ]).map(c => `
+                  <span class="coupon-chip" onclick="quickApplyCoupon('${c.code}')">🏷️ ${c.code} (${c.type==='percent'?c.value+'% off':c.type==='flat'?'₹'+c.value+' off':'Free Delivery'})</span>
+                `).join('')}
               </div>
               ${appliedCoupon ? `
                 <div class="coupon-applied-tag">

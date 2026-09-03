@@ -282,6 +282,74 @@ window.initScrollReveal = function () {
   });
 };
 
+// ── ANNOUNCEMENT TICKER ───────────────────────────────────────
+window.getAnnouncementTicker = async function() {
+  try {
+    const { data, error } = await db.from('settings').select('value').eq('key', 'announcement_ticker').single();
+    if (data && data.value) {
+      const parsed = typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
+      return parsed;
+    }
+  } catch (e) {}
+  try {
+    const local = localStorage.getItem('pv_ticker');
+    if (local) return JSON.parse(local);
+  } catch (e) {}
+  return {
+    text: "⚡ SAME-DAY PORTER DISPATCH IN DELHI-NCR • Use code FIRST10 for 10% OFF • 📞 Call/WhatsApp: 098114 27517",
+    enabled: true,
+    theme: "cyan"
+  };
+};
+
+window.renderAnnouncementTicker = async function() {
+  const existing = document.getElementById('announcement-ticker');
+  if (existing) existing.remove();
+
+  const cfg = await window.getAnnouncementTicker();
+  if (!cfg || cfg.enabled === false || !cfg.text) return;
+
+  const header = document.getElementById('site-header');
+  if (!header) return;
+
+  const ticker = document.createElement('div');
+  ticker.id = 'announcement-ticker';
+  ticker.className = 'announcement-ticker';
+  ticker.innerHTML = `
+    <div style="display:flex;align-items:center;gap:0.75rem;max-width:1200px;margin:0 auto;width:100%;justify-content:center;">
+      <span class="ticker-tag">Notice</span>
+      <span style="font-size:0.75rem;font-weight:700;color:#FFFFFF;letter-spacing:0.02em;">${cfg.text}</span>
+    </div>
+  `;
+  header.parentNode.insertBefore(ticker, header);
+};
+
+// ── DYNAMIC COUPON ENGINE ─────────────────────────────────────
+window.DEFAULT_COUPONS = [
+  { code: 'FIRST10', type: 'percent', value: 10, label: '10% OFF Welcome Discount', minOrder: 0, active: true },
+  { code: 'WELCOME10', type: 'percent', value: 10, label: '10% OFF Welcome Discount', minOrder: 0, active: true },
+  { code: 'VATIKA50', type: 'flat', value: 50, label: '₹50 OFF on Orders > ₹500', minOrder: 500, active: true },
+  { code: 'FREEDEL', type: 'delivery', value: 50, label: 'Free Porter Delivery', minOrder: 300, active: true },
+  { code: 'BULK100', type: 'flat', value: 100, label: '₹100 OFF on Orders > ₹1000', minOrder: 1000, active: true }
+];
+
+window.getAvailableCoupons = async function() {
+  try {
+    const { data, error } = await db.from('settings').select('value').eq('key', 'discount_coupons').single();
+    if (data && data.value) {
+      const parsed = typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {}
+  try {
+    const local = localStorage.getItem('pv_coupons');
+    if (local) return JSON.parse(local);
+  } catch (e) {}
+  return window.DEFAULT_COUPONS;
+};
+
 // ── SHARED HEADER / FOOTER ────────────────────────────────────
 window.renderHeader = function (activePage) {
   const el = document.getElementById('site-header');
@@ -335,6 +403,7 @@ window.renderHeader = function (activePage) {
     <a href="index.html"   class="mobile-nav-link ${activePage==='home'    ? 'active':''}">Home</a>
     <a href="catalog.html" class="mobile-nav-link ${activePage==='catalog' ? 'active':''}">Catalog</a>
     <a href="track.html"   class="mobile-nav-link ${activePage==='track'   ? 'active':''}">Track Order</a>
+    <a href="admin.html"   class="mobile-nav-link ${activePage==='admin'   ? 'active':''}">Admin Portal</a>
     <div style="display:flex;justify-content:space-between;align-items:center;width:100%;padding:0.5rem;border-top:1px solid var(--border);margin-top:0.5rem;">
       <span style="font-size:0.85rem;font-weight:700;color:var(--ink);">Appearance</span>
       <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme">${themeIcon}</button>
@@ -346,6 +415,7 @@ window.renderHeader = function (activePage) {
   updateHeaderAuth();
   initScrollReveal();
   renderMobileBottomNav(activePage);
+  renderAnnouncementTicker();
 };
 
 // ── MOBILE BOTTOM NAVIGATION DOCK ────────────────────────────
@@ -360,26 +430,30 @@ window.renderMobileBottomNav = function (activePage) {
 
   el.innerHTML = `
     <a href="index.html" class="dock-item ${activePage==='home' ? 'active':''}">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       <span>Home</span>
     </a>
     <a href="catalog.html" class="dock-item ${activePage==='catalog' ? 'active':''}">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
       <span>Catalog</span>
     </a>
     <a href="cart.html" class="dock-item ${activePage==='cart' ? 'active':''}">
       <div style="position:relative;display:inline-flex;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
         <span class="dock-cart-badge cart-badge" style="display:none;">0</span>
       </div>
       <span>Cart</span>
     </a>
     <a href="track.html" class="dock-item ${activePage==='track' ? 'active':''}">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       <span>Track</span>
     </a>
+    <a href="admin.html" class="dock-item ${activePage==='admin' ? 'active':''}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Admin</span>
+    </a>
     <a href="https://wa.me/919811427517?text=Hi%20Print%20Vatika%2C%20I%20have%20a%20printing%20inquiry" target="_blank" class="dock-item dock-item-wa">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.121.553 4.112 1.524 5.84L0 24l6.318-1.524A11.94 11.94 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.007-1.373l-.36-.214-3.73.978.994-3.638-.234-.374A9.818 9.818 0 1 1 12 21.818z"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.121.553 4.112 1.524 5.84L0 24l6.318-1.524A11.94 11.94 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.007-1.373l-.36-.214-3.73.978.994-3.638-.234-.374A9.818 9.818 0 1 1 12 21.818z"/></svg>
       <span>WhatsApp</span>
     </a>
   `;
