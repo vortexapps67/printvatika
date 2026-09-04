@@ -93,38 +93,38 @@ export default async function HomePage() {
   return (
     <div className="space-y-16 pb-20">
       {/* 1. Hero Section */}
-      <Hero className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 text-white">
+      <Hero className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 text-slate-900 dark:text-white">
         <div className="max-w-5xl mx-auto text-center space-y-8 relative z-10">
-          <div className="inline-flex items-center gap-2 bg-slate-900/80 backdrop-blur-md text-cyan-300 border border-cyan-500/30 px-4 py-1.5 rounded-full text-xs font-semibold shadow-[0_0_20px_rgba(6,182,212,0.15)]">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-            <Sparkles size={13} className="text-cyan-400" />
+          <div className="inline-flex items-center gap-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-purple-700 dark:text-cyan-300 border border-purple-200/80 dark:border-cyan-500/30 px-4 py-1.5 rounded-full text-xs font-semibold shadow-sm dark:shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+            <span className="w-2 h-2 rounded-full bg-purple-500 dark:bg-cyan-400 animate-ping"></span>
+            <Sparkles size={13} className="text-purple-600 dark:text-cyan-400" />
             Modern Indian Printing Press & Custom Studio
           </div>
           
           <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1]">
             Print Anything,{' '}
-            <span className="bg-gradient-to-r from-cyan-300 via-sky-300 to-indigo-400 bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(56,189,248,0.3)]">
+            <span className="bg-gradient-to-r from-purple-700 via-indigo-600 to-primary-600 dark:from-cyan-300 dark:via-sky-300 dark:to-indigo-400 bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(147,51,234,0.15)] dark:drop-shadow-[0_4px_24px_rgba(56,189,248,0.3)]">
               Extraordinarily.
             </span>
           </h1>
           
-          <p className="text-slate-300/90 max-w-2xl mx-auto text-sm sm:text-base lg:text-lg leading-relaxed font-normal">
+          <p className="text-slate-700 dark:text-slate-300/90 max-w-2xl mx-auto text-sm sm:text-base lg:text-lg leading-relaxed font-normal">
             Upload custom designs, configure precision dimensions & finishes, inspect live 2D proofs, and receive factory-grade prints with real-time WhatsApp updates.
           </p>
 
           {/* Hero Product Search Bar */}
           <form action="/catalog" method="GET" className="max-w-xl mx-auto pt-2">
-            <div className="relative flex items-center shadow-[0_10px_35px_-5px_rgba(0,0,0,0.5)] rounded-2xl">
-              <Search className="absolute left-4 text-cyan-400/70" size={20} />
+            <div className="relative flex items-center shadow-lg dark:shadow-[0_10px_35px_-5px_rgba(0,0,0,0.5)] rounded-2xl">
+              <Search className="absolute left-4 text-purple-500 dark:text-cyan-400/70" size={20} />
               <input
                 type="text"
                 name="q"
                 placeholder="Search business cards, flex banners, t-shirts, brochures..."
-                className="w-full pl-12 pr-28 py-4 bg-slate-900/85 backdrop-blur-xl text-white placeholder-slate-400 rounded-2xl border border-white/15 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400/80 focus:border-cyan-400 transition-all shadow-inner"
+                className="w-full pl-12 pr-28 py-4 bg-white/95 dark:bg-slate-900/85 backdrop-blur-xl text-slate-900 dark:text-white placeholder-slate-400 rounded-2xl border border-purple-200/80 dark:border-white/15 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-cyan-400/80 focus:border-purple-500 dark:focus:border-cyan-400 transition-all shadow-inner"
               />
               <button
                 type="submit"
-                className="absolute right-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition-all shadow-md hover:shadow-cyan-500/30"
+                className="absolute right-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 dark:from-cyan-500 dark:to-blue-600 dark:hover:from-cyan-400 dark:hover:to-blue-500 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition-all shadow-md hover:shadow-purple-500/30 dark:hover:shadow-cyan-500/30"
               >
                 Search
               </button>
@@ -135,25 +135,25 @@ export default async function HomePage() {
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-2">
             <Link
               href="/catalog"
-              className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold px-8 py-4 rounded-xl shadow-[0_0_30px_rgba(6,182,212,0.35)] hover:shadow-[0_0_40px_rgba(6,182,212,0.55)] transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5 text-sm sm:text-base"
+              className="w-full sm:w-auto bg-gradient-to-r from-purple-600 via-indigo-600 to-primary-600 hover:from-purple-700 hover:to-indigo-700 dark:from-cyan-500 dark:via-sky-500 dark:to-blue-600 dark:hover:from-cyan-400 dark:hover:to-blue-500 text-white font-bold px-8 py-4 rounded-xl shadow-[0_0_25px_rgba(147,51,234,0.25)] hover:shadow-[0_0_35px_rgba(147,51,234,0.4)] dark:shadow-[0_0_30px_rgba(6,182,212,0.35)] dark:hover:shadow-[0_0_40px_rgba(6,182,212,0.55)] transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5 text-sm sm:text-base"
             >
               Browse Products
               <ChevronRight size={18} />
             </Link>
             <Link
               href="/customize/custom-print"
-              className="w-full sm:w-auto bg-slate-900/60 hover:bg-slate-800/80 text-white border border-white/20 backdrop-blur-md font-bold px-8 py-4 rounded-xl transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5 text-sm sm:text-base hover:border-cyan-400/40 shadow-lg"
+              className="w-full sm:w-auto bg-white/90 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-800/80 text-slate-800 dark:text-white border border-purple-200 dark:border-white/20 backdrop-blur-md font-bold px-8 py-4 rounded-xl transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5 text-sm sm:text-base hover:border-purple-300 dark:hover:border-cyan-400/40 shadow-md"
             >
-              <UploadCloud size={18} className="text-cyan-300" />
+              <UploadCloud size={18} className="text-purple-600 dark:text-cyan-300" />
               Upload Custom Design
             </Link>
           </div>
 
           {/* Trust Highlights */}
-          <div className="pt-4 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-400 border-t border-white/10 max-w-2xl mx-auto">
-            <span className="flex items-center gap-1.5"><Zap size={14} className="text-cyan-400" /> 24-48h Express Dispatch</span>
-            <span className="flex items-center gap-1.5"><Sparkles size={14} className="text-indigo-400" /> Ultra HD 300 DPI Quality</span>
-            <span className="flex items-center gap-1.5"><Truck size={14} className="text-emerald-400" /> Pan-India Courier & Store Pickup</span>
+          <div className="pt-4 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-600 dark:text-slate-400 border-t border-purple-200/60 dark:border-white/10 max-w-2xl mx-auto">
+            <span className="flex items-center gap-1.5"><Zap size={14} className="text-purple-600 dark:text-cyan-400" /> 24-48h Express Dispatch</span>
+            <span className="flex items-center gap-1.5"><Sparkles size={14} className="text-indigo-600 dark:text-indigo-400" /> Ultra HD 300 DPI Quality</span>
+            <span className="flex items-center gap-1.5"><Truck size={14} className="text-emerald-600 dark:text-emerald-400" /> Pan-India Courier & Store Pickup</span>
           </div>
         </div>
       </Hero>
