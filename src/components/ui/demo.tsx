@@ -1,5 +1,9 @@
-import { Hero } from "@/components/ui/tailwind-css-background-snippet";
+import { ShaderBackground } from "@/components/ui/fluted-glass"
 
-export default function HeroDemo() {
-  return <Hero />;
+export default function ShaderBackgroundDemo() {
+  return (
+    <div className="relative h-screen w-full overflow-hidden">
+      <ShaderBackground className="h-full w-full" />
+    </div>
+  )
 }
