@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { DbClient } from '../lib/db';
 import { ProductCard } from '../components/ProductCard';
+import { Hero } from '@/components/ui/tailwind-css-background-snippet';
 import {
   UploadCloud,
   LayoutGrid,
@@ -92,10 +93,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-16 pb-20">
       {/* 1. Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-900 via-primary-850 to-primary-900 text-white py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        {/* Subtle grid backdrop */}
-        <div className="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-        
+      <Hero className="py-20 px-4 sm:px-6 lg:px-8 text-white">
         <div className="max-w-5xl mx-auto text-center space-y-6 relative z-10">
           <span className="inline-flex items-center gap-1.5 bg-primary-400/20 text-primary-200 border border-primary-400/30 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
             <Sparkles size={12} /> Modern Indian Printing Press
@@ -148,7 +146,7 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
-      </section>
+      </Hero>
 
       {/* 2. Popular Products Catalog Showcase */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
