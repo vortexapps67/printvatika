@@ -472,17 +472,23 @@ button, input, select, textarea { font-family: inherit; }
 /* ── HERO ───────────────────────────────────────────────── */
 .hero {
   border-bottom: 1px solid var(--border);
-  background-color: var(--parchment);
+  background: radial-gradient(125% 125% at 50% 10%, #ffffff 40%, #63e 100%);
   padding: 5.5rem 0 6rem;
   position: relative;
   overflow: hidden;
+  transition: background 0.4s ease;
+}
+
+[data-theme="dark"] .hero {
+  background: radial-gradient(125% 125% at 50% 10%, #000000 40%, #63e 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .hero::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 75% 40%, rgba(0, 178, 236, 0.10) 0%, transparent 65%);
+  background: radial-gradient(circle at 75% 40%, rgba(99, 51, 238, 0.08) 0%, transparent 65%);
   pointer-events: none;
 }
 
