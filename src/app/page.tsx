@@ -93,57 +93,67 @@ export default async function HomePage() {
   return (
     <div className="space-y-16 pb-20">
       {/* 1. Hero Section */}
-      <Hero className="py-20 px-4 sm:px-6 lg:px-8 text-white">
-        <div className="max-w-5xl mx-auto text-center space-y-6 relative z-10">
-          <span className="inline-flex items-center gap-1.5 bg-primary-400/20 text-primary-200 border border-primary-400/30 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
-            <Sparkles size={12} /> Modern Indian Printing Press
-          </span>
+      <Hero className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 text-white">
+        <div className="max-w-5xl mx-auto text-center space-y-8 relative z-10">
+          <div className="inline-flex items-center gap-2 bg-slate-900/80 backdrop-blur-md text-cyan-300 border border-cyan-500/30 px-4 py-1.5 rounded-full text-xs font-semibold shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+            <Sparkles size={13} className="text-cyan-400" />
+            Modern Indian Printing Press & Custom Studio
+          </div>
           
-          <h1 className="font-serif text-4xl sm:text-6xl font-black tracking-tight leading-tight sm:leading-none">
+          <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1]">
             Print Anything,{' '}
-            <span className="bg-gradient-to-r from-primary-200 via-primary-300 to-primary-400 bg-clip-text text-transparent">
-              Easily.
+            <span className="bg-gradient-to-r from-cyan-300 via-sky-300 to-indigo-400 bg-clip-text text-transparent drop-shadow-[0_4px_24px_rgba(56,189,248,0.3)]">
+              Extraordinarily.
             </span>
           </h1>
           
-          <p className="text-slate-300 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
-            Upload your designs, configure paper size, lamination, or shirt details, preview in 2D instantly, and receive high-quality prints with WhatsApp notifications.
+          <p className="text-slate-300/90 max-w-2xl mx-auto text-sm sm:text-base lg:text-lg leading-relaxed font-normal">
+            Upload custom designs, configure precision dimensions & finishes, inspect live 2D proofs, and receive factory-grade prints with real-time WhatsApp updates.
           </p>
 
           {/* Hero Product Search Bar */}
-          <form action="/catalog" method="GET" className="max-w-lg mx-auto pt-2">
-            <div className="relative flex items-center">
-              <Search className="absolute left-4 text-slate-400" size={18} />
+          <form action="/catalog" method="GET" className="max-w-xl mx-auto pt-2">
+            <div className="relative flex items-center shadow-[0_10px_35px_-5px_rgba(0,0,0,0.5)] rounded-2xl">
+              <Search className="absolute left-4 text-cyan-400/70" size={20} />
               <input
                 type="text"
                 name="q"
-                placeholder="Search products (visiting cards, banners, t-shirts, flyers)..."
-                className="w-full pl-11 pr-24 py-3 bg-white/95 backdrop-blur-sm text-slate-900 placeholder-slate-400 rounded-xl shadow-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 transition-all"
+                placeholder="Search business cards, flex banners, t-shirts, brochures..."
+                className="w-full pl-12 pr-28 py-4 bg-slate-900/85 backdrop-blur-xl text-white placeholder-slate-400 rounded-2xl border border-white/15 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400/80 focus:border-cyan-400 transition-all shadow-inner"
               />
               <button
                 type="submit"
-                className="absolute right-2 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition-colors shadow-sm"
+                className="absolute right-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition-all shadow-md hover:shadow-cyan-500/30"
               >
                 Search
               </button>
             </div>
           </form>
 
+          {/* CTA Actions */}
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-2">
             <Link
               href="/catalog"
-              className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg hover:shadow-primary-600/30 transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold px-8 py-4 rounded-xl shadow-[0_0_30px_rgba(6,182,212,0.35)] hover:shadow-[0_0_40px_rgba(6,182,212,0.55)] transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5 text-sm sm:text-base"
             >
               Browse Products
-              <ChevronRight size={16} />
+              <ChevronRight size={18} />
             </Link>
             <Link
               href="/customize/custom-print"
-              className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold px-8 py-3.5 rounded-xl transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto bg-slate-900/60 hover:bg-slate-800/80 text-white border border-white/20 backdrop-blur-md font-bold px-8 py-4 rounded-xl transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5 text-sm sm:text-base hover:border-cyan-400/40 shadow-lg"
             >
-              <UploadCloud size={16} />
+              <UploadCloud size={18} className="text-cyan-300" />
               Upload Custom Design
             </Link>
+          </div>
+
+          {/* Trust Highlights */}
+          <div className="pt-4 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-400 border-t border-white/10 max-w-2xl mx-auto">
+            <span className="flex items-center gap-1.5"><Zap size={14} className="text-cyan-400" /> 24-48h Express Dispatch</span>
+            <span className="flex items-center gap-1.5"><Sparkles size={14} className="text-indigo-400" /> Ultra HD 300 DPI Quality</span>
+            <span className="flex items-center gap-1.5"><Truck size={14} className="text-emerald-400" /> Pan-India Courier & Store Pickup</span>
           </div>
         </div>
       </Hero>
