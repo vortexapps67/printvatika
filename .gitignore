@@ -24,8 +24,13 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # local env files (IMPORTANT: protect secrets!)
-.env*.local
-.env.local
+# Values live in the Vercel project settings. The committed .env used to carry
+# the Razorpay secret, Supabase service-role key and WhatsApp token; it is
+# untracked now, so never re-add it.
+.env
+.env.*
+!.env.example
+!.env.local.example
 
 # vercel
 .vercel
