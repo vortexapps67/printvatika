@@ -13,11 +13,13 @@ import {
   AlertTriangle,
   UploadCloud,
   FileCheck,
-  Tag,
   ArrowLeft,
-  X
+  X,
+  Crosshair,
 } from 'lucide-react';
 import Link from 'next/link';
+import { Badge, Button, Panel, PanelHead, SpecRow } from './ui/press';
+import { SITE } from '../lib/site';
 
 interface ProductCustomizerProps {
   product: Product;
@@ -209,19 +211,27 @@ export const ProductCustomizer: React.FC<ProductCustomizerProps> = ({
     'stickers': [50, 100, 250, 500, 1000]
   };
 
-  return (
+return (
     <div className="space-y-6">
-      {/* Back Link */}
-      <Link href="/catalog" className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-700 font-semibold text-sm">
-        <ArrowLeft size={16} /> Back to Catalog
+      <Link
+        href="/catalog"
+        className="group inline-flex items-center gap-2 font-mono text-label font-medium uppercase tracking-wider2 text-ink-500 transition-colors hover:text-ink-950"
+      >
+        <ArrowLeft
+          size={14}
+          className="transition-transform group-hover:-translate-x-0.5"
+          aria-hidden="true"
+        />
+        Back to catalog
       </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Side: Interactive Preview Editor (Canvas) */}
-        <div className="lg:col-span-5 flex flex-col items-center gap-4 sticky top-20">
-          <h2 className="font-bold text-slate-800 text-base self-start">
-            Interactive Print Mockup
-          </h2>
+      <div className="grid items-start gap-8 lg:grid-cols-12">
+        {/* ---- Proof canvas ---- */}
+        <div className="sticky top-20 flex flex-col gap-4 lg:col-span-5">
+          <div className="flex items-center gap-2.5">
+            <Crosshair size={14} className="text-primary-500" aria-hidden="true" />
+            <h2 className="label-caps">Live proof</h2>
+          </div>
           <PreviewCanvas
             productSlug={product.slug}
             imageSrc={imageSrc}
@@ -231,137 +241,170 @@ export const ProductCustomizer: React.FC<ProductCustomizerProps> = ({
           />
         </div>
 
-        {/* Right Side: Configuration & Form options */}
-        <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
-          {/* Header Title */}
-          <div>
-            <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2.5 py-1 rounded-md uppercase tracking-wider">
-              {product.category}
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">
-              {product.name}
-            </h1>
-            <p className="text-slate-500 text-xs sm:text-sm mt-1 leading-relaxed">
-              {product.description}
-            </p>
-          </div>
+        {/* ---- Configuration ---- */}
+        <div className="lg:col-span-7">
+          <Panel flush>
+            {/* Header */}
+            <div className="border-b border-ink-200 p-5 sm:p-6">
+              <Badge tone="accent">{product.category}</Badge>
+              <h1 className="mt-3 text-title-l">{product.name}</h1>
+              <p className="mt-2 text-body leading-relaxed text-ink-500">{product.description}</p>
+            </div>
 
-          <div className="border-t border-slate-100 my-6"></div>
+            <div className="space-y-7 p-5 sm:p-6">
+              {/* Specification options */}
+              {options.map(opt => (
+                <section key={opt.id}>
+                  <h3 className="label-caps mb-3">{opt.display_name}</h3>
 
-          {/* Specification Configurations */}
-          <div className="space-y-6">
-            {options.map(opt => (
-              <div key={opt.id} className="space-y-2">
-                <label className="block text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">
-                  {opt.display_name}
-                </label>
-
-                {/* Option Type select dropdown */}
-                {opt.type === 'select' && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {opt.options_json.map(choice => (
-                      <button
-                        key={choice.value}
-                        type="button"
-                        onClick={() => handleOptionChange(opt.name, choice.value)}
-                        className={`flex flex-col text-left p-3.5 border rounded-xl transition-all ${
-                          selectedOptions[opt.name] === choice.value
-                            ? 'border-primary-600 bg-primary-50/40 ring-1 ring-primary-600 shadow-sm'
-                            : 'border-slate-200 hover:border-slate-300 bg-white'
-                        }`}
-                      >
-                        <span className="text-xs font-bold text-slate-900">{choice.label}</span>
-                        {choice.price_modifier && choice.price_modifier !== 0 ? (
-                          <span className="text-[10px] text-slate-500 font-medium mt-1">
-                            {choice.price_modifier > 0 ? `+ ₹${choice.price_modifier}` : `- ₹${Math.abs(choice.price_modifier)}`}
-                          </span>
-                        ) : (
-                          <span className="text-[10px] text-slate-400 font-medium mt-1">Base Included</span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Option Type custom banner dimension boxes */}
-                {opt.type === 'dimensions' && (
-                  <div className="flex items-center gap-4 bg-slate-50 border border-slate-200 rounded-xl p-4">
-                    <div className="flex-1 space-y-1">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Width (Feet)</span>
-                      <input
-                        type="number"
-                        min="2"
-                        max="30"
-                        value={dimensions.width}
-                        onChange={e => setDimensions(prev => ({ ...prev, width: Math.max(1, parseInt(e.target.value) || 1) }))}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                      />
+                  {opt.type === 'select' && (
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {opt.options_json.map(choice => {
+                        const active = selectedOptions[opt.name] === choice.value;
+                        const delta = choice.price_modifier ?? 0;
+                        return (
+                          <button
+                            key={choice.value}
+                            type="button"
+                            onClick={() => handleOptionChange(opt.name, choice.value)}
+                            aria-pressed={active}
+                            className={
+                              active
+                                ? 'flex flex-col rounded-sm border-2 border-ink-950 bg-ink-50 p-3 text-left transition-colors'
+                                : 'flex flex-col rounded-sm border border-ink-200 bg-white p-3 text-left transition-colors hover:border-ink-400'
+                            }
+                          >
+                            <span className="font-display text-body font-bold text-ink-950">
+                              {choice.label}
+                            </span>
+                            <span
+                              className={`tnum mt-1.5 font-mono text-micro ${
+                                delta === 0 ? 'text-ink-400' : active ? 'text-primary-600' : 'text-ink-500'
+                              }`}
+                            >
+                              {delta === 0
+                                ? 'Included'
+                                : `${delta > 0 ? '+' : '−'} ₹${Math.abs(delta)}`}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
-                    <div className="text-slate-400 font-bold self-end pb-2">×</div>
-                    <div className="flex-1 space-y-1">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Height (Feet)</span>
-                      <input
-                        type="number"
-                        min="2"
-                        max="30"
-                        value={dimensions.height}
-                        onChange={e => setDimensions(prev => ({ ...prev, height: Math.max(1, parseInt(e.target.value) || 1) }))}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                      />
+                  )}
+
+                  {opt.type === 'dimensions' && (
+                    <div className="rounded-sm border border-ink-200 bg-ink-50 p-4">
+                      <div className="flex items-end gap-3">
+                        <div className="flex-1">
+                          <label
+                            htmlFor={`${opt.name}-w`}
+                            className="label-caps mb-1.5 block"
+                          >
+                            Width (ft)
+                          </label>
+                          <input
+                            id={`${opt.name}-w`}
+                            type="number"
+                            min="2"
+                            max="30"
+                            value={dimensions.width}
+                            onChange={e =>
+                              setDimensions(prev => ({
+                                ...prev,
+                                width: Math.max(1, parseInt(e.target.value) || 1),
+                              }))
+                            }
+                            className="tnum font-display text-title font-bold"
+                          />
+                        </div>
+                        <span
+                          className="pb-3 font-display text-title text-ink-300"
+                          aria-hidden="true"
+                        >
+                          ×
+                        </span>
+                        <div className="flex-1">
+                          <label
+                            htmlFor={`${opt.name}-h`}
+                            className="label-caps mb-1.5 block"
+                          >
+                            Height (ft)
+                          </label>
+                          <input
+                            id={`${opt.name}-h`}
+                            type="number"
+                            min="2"
+                            max="30"
+                            value={dimensions.height}
+                            onChange={e =>
+                              setDimensions(prev => ({
+                                ...prev,
+                                height: Math.max(1, parseInt(e.target.value) || 1),
+                              }))
+                            }
+                            className="tnum font-display text-title font-bold"
+                          />
+                        </div>
+                      </div>
+                      <p className="tnum mt-3 border-t border-ink-200 pt-3 font-mono text-body-s text-ink-600">
+                        {dimensions.width}′ × {dimensions.height}′ ={' '}
+                        <strong className="text-ink-950">
+                          {dimensions.width * dimensions.height} sq ft
+                        </strong>
+                      </p>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Option Type custom text instructions */}
-                {opt.type === 'text' && (
-                  <textarea
-                    rows={4}
-                    value={selectedOptions[opt.name] || ''}
-                    onChange={e => handleOptionChange(opt.name, e.target.value)}
-                    placeholder="Enter custom specifications (paper GSM, quantities, shapes, or printing notes)..."
-                    className="w-full border border-slate-200 rounded-xl p-3 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
-                  />
-                )}
-              </div>
-            ))}
+                  {opt.type === 'text' && (
+                    <textarea
+                      rows={4}
+                      value={selectedOptions[opt.name] || ''}
+                      onChange={e => handleOptionChange(opt.name, e.target.value)}
+                      aria-label={opt.display_name}
+                      placeholder="Paper GSM, quantities, shapes or anything else we should know…"
+                    />
+                  )}
+                </section>
+              ))}
 
-            {/* Quantity Selector Option */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">
-                  Select or Enter Quantity
-                </label>
-                <span className="text-xs font-bold text-primary-700 bg-primary-50 px-2.5 py-1 rounded-full border border-primary-200/60">
-                  {quantity} {quantity === 1 ? 'unit' : 'units'} selected
-                </span>
-              </div>
-
-              {quantityTiers[product.slug] && (
-                <div className="flex flex-wrap gap-2.5">
-                  {quantityTiers[product.slug].map(qty => (
-                    <button
-                      key={qty}
-                      type="button"
-                      onClick={() => setQuantity(qty)}
-                      className={`px-4 py-2 border text-xs sm:text-sm font-bold rounded-xl transition-all ${
-                        quantity === qty
-                          ? 'border-primary-600 bg-primary-600 text-white shadow-md'
-                          : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'
-                      }`}
-                    >
-                      {qty} units
-                    </button>
-                  ))}
+              {/* ---- Quantity ---- */}
+              <section>
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <h3 className="label-caps">Quantity</h3>
+                  <span className="tnum font-mono text-label font-medium text-primary-600">
+                    {quantity} {quantity === 1 ? 'unit' : 'units'}
+                  </span>
                 </div>
-              )}
 
-              {/* Custom Quantity Input Field */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 bg-slate-50 border border-slate-200 rounded-xl p-3">
-                <span className="text-xs font-bold text-slate-700 shrink-0">
-                  Custom Quantity:
-                </span>
-                <div className="flex items-center gap-2">
+                {quantityTiers[product.slug] && (
+                  <div className="flex flex-wrap gap-2">
+                    {quantityTiers[product.slug].map(qty => {
+                      const active = quantity === qty;
+                      return (
+                        <button
+                          key={qty}
+                          type="button"
+                          onClick={() => setQuantity(qty)}
+                          aria-pressed={active}
+                          className={
+                            active
+                              ? 'tnum rounded-sm bg-ink-950 px-4 py-2.5 font-mono text-label font-medium text-white transition-colors'
+                              : 'tnum rounded-sm border border-ink-200 bg-white px-4 py-2.5 font-mono text-label font-medium text-ink-600 transition-colors hover:border-ink-950 hover:text-ink-950'
+                          }
+                        >
+                          {qty}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <label htmlFor="custom-qty" className="label-caps">
+                    Custom
+                  </label>
                   <input
+                    id="custom-qty"
                     type="number"
                     min="1"
                     max="100000"
@@ -370,180 +413,177 @@ export const ProductCustomizer: React.FC<ProductCustomizerProps> = ({
                       const val = parseInt(e.target.value, 10);
                       setQuantity(isNaN(val) || val < 1 ? 1 : val);
                     }}
-                    className="w-32 bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs sm:text-sm font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="e.g. 350"
+                    className="tnum w-32 font-display text-title font-bold"
                   />
-                  <span className="text-[11px] text-slate-500">
-                    units (volume discount calculates automatically)
+                  <span className="font-mono text-micro uppercase tracking-wider2 text-ink-400">
+                    units · tier discount applies automatically
                   </span>
                 </div>
-              </div>
+              </section>
+
+              {/* ---- Artwork upload ---- */}
+              {product.slug !== 'custom-print' && (
+                <section>
+                  <h3 className="label-caps mb-3">Artwork</h3>
+
+                  {!uploadedFile ? (
+                    <div className="group relative cursor-pointer rounded-sm border-2 border-dashed border-ink-300 bg-ink-50 px-6 py-10 text-center transition-colors hover:border-primary-500 hover:bg-primary-50/40">
+                      <input
+                        type="file"
+                        accept=".png,.jpg,.jpeg,.pdf,.svg"
+                        onChange={handleFileUpload}
+                        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                        aria-label="Upload design file"
+                      />
+                      <UploadCloud
+                        size={28}
+                        className="mx-auto mb-3 text-ink-400 transition-colors group-hover:text-primary-500"
+                        aria-hidden="true"
+                      />
+                      <span className="block font-display text-body font-bold text-ink-900">
+                        Drop your file here, or click to choose
+                      </span>
+                      <span className="mt-1.5 block font-mono text-micro uppercase tracking-wider2 text-ink-400">
+                        PNG · JPG · JPEG · PDF · SVG — max 20 MB
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-4 rounded-sm border border-emerald-300 bg-emerald-50 p-4">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className="flex h-9 w-9 flex-none items-center justify-center rounded-sm bg-emerald-100 text-emerald-700">
+                          <FileCheck size={17} aria-hidden="true" />
+                        </span>
+                        <div className="min-w-0">
+                          <span className="block truncate font-mono text-body-s font-medium text-ink-900">
+                            {uploadedFile.name}
+                          </span>
+                          <span className="tnum block font-mono text-micro text-ink-500">
+                            {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleRemoveFile}
+                        className="flex h-7 w-7 flex-none items-center justify-center rounded-sm text-ink-500 transition-colors hover:bg-white hover:text-red-600"
+                        aria-label="Remove uploaded file"
+                      >
+                        <X size={15} />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Validation messages */}
+                  {validation && (
+                    <div className="mt-3 space-y-2">
+                      {validation.errors.map((err, i) => (
+                        <div
+                          key={i}
+                          role="alert"
+                          className="flex items-start gap-2.5 rounded-sm border border-red-300 bg-red-50 p-3.5 text-body-s font-medium text-red-700"
+                        >
+                          <X size={15} className="mt-0.5 flex-none" aria-hidden="true" />
+                          <span>{err}</span>
+                        </div>
+                      ))}
+
+                      {validation.warnings.map((warn, i) => (
+                        <div
+                          key={i}
+                          className="space-y-3 rounded-sm border border-amber-300 bg-amber-50 p-3.5"
+                        >
+                          <div className="flex items-start gap-2.5 text-body-s font-medium text-amber-900">
+                            <AlertTriangle size={15} className="mt-0.5 flex-none" aria-hidden="true" />
+                            <span>{warn}</span>
+                          </div>
+                          <label className="flex cursor-pointer items-start gap-2.5 text-body-s text-ink-700">
+                            <input
+                              type="checkbox"
+                              checked={ackWarning}
+                              onChange={e => setAckWarning(e.target.checked)}
+                              className="mt-0.5"
+                            />
+                            I understand the resolution is below 300 DPI and want to proceed anyway.
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
             </div>
 
-            {/* Design File Uploader Section */}
-            {product.slug !== 'custom-print' && (
-              <div className="space-y-3 pt-2">
-                <label className="block text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">
-                  Upload Design File
-                </label>
+            {/* ---- Cost sheet ---- */}
+            {priceBreakdown && (
+              <div className="border-t border-ink-200 bg-ink-50 p-5 sm:p-6">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <h3 className="label-caps">Cost sheet</h3>
+                  <Badge tone="accent">Price rules applied</Badge>
+                </div>
 
-                {!uploadedFile ? (
-                  <div className="border-2 border-dashed border-slate-200 hover:border-primary-500 rounded-2xl p-6 text-center transition-all bg-slate-50/50 cursor-pointer relative">
-                    <input
-                      type="file"
-                      accept=".png,.jpg,.jpeg,.pdf,.svg"
-                      onChange={handleFileUpload}
-                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                <dl className="divide-y divide-ink-200 border-y border-ink-200">
+                  <SpecRow
+                    label="Base unit price"
+                    value={`₹${priceBreakdown.basePrice.toFixed(2)}${
+                      product.slug === 'flex-banners' ? ' / sq ft' : ''
+                    }`}
+                  />
+
+                  {!!priceBreakdown.dimensionsAreaSqFt && (
+                    <SpecRow
+                      label="Print area"
+                      value={`${dimensions.width}′ × ${dimensions.height}′ = ${priceBreakdown.dimensionsAreaSqFt} sq ft`}
                     />
-                    <UploadCloud className="mx-auto text-slate-400 mb-2" size={32} />
-                    <span className="block text-xs sm:text-sm font-bold text-slate-700">
-                      Click to upload design file
-                    </span>
-                    <span className="block text-[10px] text-slate-400 mt-1">
-                      PNG, JPG, JPEG, PDF, SVG (Max 20MB)
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between border border-emerald-200 bg-emerald-50/40 rounded-xl p-4 shadow-sm">
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      <div className="p-2 bg-emerald-100 rounded-lg text-emerald-700 shrink-0">
-                        <FileCheck size={20} />
-                      </div>
-                      <div className="text-left overflow-hidden">
-                        <span className="block text-xs font-bold text-slate-800 truncate">
-                          {uploadedFile.name}
+                  )}
+
+                  {priceBreakdown.optionsDetails.map((opt, i) => (
+                    <SpecRow key={i} label={`${opt.name} · ${opt.label}`} value={`₹${opt.cost.toFixed(2)}`} />
+                  ))}
+
+                  <SpecRow label="Unit subtotal" value={`₹${priceBreakdown.unitPrice.toFixed(2)}`} />
+                  <SpecRow
+                    label={`Quantity · ${priceBreakdown.quantity} units`}
+                    value={`₹${priceBreakdown.rawSubtotal.toFixed(2)}`}
+                  />
+
+                  {priceBreakdown.discountPercentage > 0 && (
+                    <SpecRow
+                      label={`Bulk tier · ${priceBreakdown.discountPercentage}% off`}
+                      value={
+                        <span className="text-emerald-700">
+                          − ₹{(priceBreakdown.rawSubtotal - priceBreakdown.subtotal).toFixed(2)}
                         </span>
-                        <span className="block text-[10px] text-slate-500 font-medium">
-                          {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleRemoveFile}
-                      className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-lg transition-colors shrink-0"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                )}
+                      }
+                    />
+                  )}
+                </dl>
 
-                {/* Validation Warnings Panel */}
-                {validation && (
-                  <div className="space-y-2">
-                    {/* Hard error lists */}
-                    {validation.errors.map((err, i) => (
-                      <div key={i} className="flex items-start gap-2 border border-red-200 bg-red-50 text-red-700 text-xs font-bold p-3.5 rounded-xl">
-                        <X size={16} className="mt-0.5 shrink-0" />
-                        <span>{err}</span>
-                      </div>
-                    ))}
-                    
-                    {/* Soft warnings list */}
-                    {validation.warnings.map((warn, i) => (
-                      <div key={i} className="flex flex-col border border-amber-200 bg-amber-50 text-amber-800 text-xs p-3.5 rounded-xl space-y-2">
-                        <div className="flex items-start gap-2 font-bold">
-                          <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-                          <span>{warn}</span>
-                        </div>
-                        <label className="flex items-center gap-2 pl-6 mt-1 font-semibold text-[10px] text-slate-600 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={ackWarning}
-                            onChange={e => setAckWarning(e.target.checked)}
-                            className="rounded border-slate-300 text-amber-600 focus:ring-amber-500"
-                          />
-                          I understand and want to proceed with this file resolution.
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="border-t border-slate-100 my-6"></div>
-
-          {/* Pricing Summary Panel & Add to Cart */}
-          {priceBreakdown && (
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-slate-800 text-sm">Live Cost Estimation</span>
-                <span className="text-[10px] font-bold text-indigo-600 uppercase bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 flex items-center gap-1">
-                  <Tag size={10} /> Active Price Rules
-                </span>
-              </div>
-
-              {/* Specs Breakdown */}
-              <div className="space-y-2 text-xs text-slate-500 border-b border-slate-200 pb-3 font-medium">
-                <div className="flex justify-between">
-                  <span>Base Unit Price:</span>
-                  <span>₹{priceBreakdown.basePrice.toFixed(2)}{product.slug === 'flex-banners' && ' / sqft'}</span>
-                </div>
-
-                {priceBreakdown.dimensionsAreaSqFt && (
-                  <div className="flex justify-between text-slate-700">
-                    <span>Banner Size Area:</span>
-                    <span>{dimensions.width}′ × {dimensions.height}′ = {priceBreakdown.dimensionsAreaSqFt} Sq.Ft.</span>
-                  </div>
-                )}
-
-                {priceBreakdown.optionsDetails.map((opt, i) => (
-                  <div key={i} className="flex justify-between">
-                    <span>{opt.name} ({opt.label}):</span>
-                    <span>₹{opt.cost.toFixed(2)}</span>
-                  </div>
-                ))}
-
-                <div className="flex justify-between font-semibold text-slate-700">
-                  <span>Unit Subtotal:</span>
-                  <span>₹{priceBreakdown.unitPrice.toFixed(2)}</span>
-                </div>
-              </div>
-
-              {/* Totals */}
-              <div className="space-y-2.5">
-                <div className="flex justify-between text-xs font-semibold">
-                  <span>Quantity Subtotal ({priceBreakdown.quantity} units):</span>
-                  <span>₹{priceBreakdown.rawSubtotal.toFixed(2)}</span>
-                </div>
-
-                {priceBreakdown.discountPercentage > 0 && (
-                  <div className="flex justify-between text-xs text-emerald-600 font-bold">
-                    <span>Bulk Tier Discount ({priceBreakdown.discountPercentage}% off):</span>
-                    <span>- ₹{(priceBreakdown.rawSubtotal - priceBreakdown.subtotal).toFixed(2)}</span>
-                  </div>
-                )}
-
-                <div className="flex justify-between items-end border-t border-slate-200 pt-3">
+                <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <span className="block text-slate-500 text-[10px] uppercase font-bold tracking-wider">Subtotal (Excl. delivery)</span>
-                    <span className="text-2xl font-extrabold text-slate-900 leading-none">
+                    <span className="label-caps">Subtotal · excl. delivery</span>
+                    <span className="tnum mt-1.5 block font-display text-display-s font-black tracking-tightest text-ink-950">
                       ₹{priceBreakdown.subtotal.toFixed(2)}
                     </span>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={handleAddToCart}
-                    className="bg-primary-600 hover:bg-primary-700 text-white font-bold px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 text-sm"
-                  >
-                    <ShoppingCart size={16} />
-                    Add to Cart
-                  </button>
+                  <Button type="button" onClick={handleAddToCart} size="lg" plate>
+                    <ShoppingCart size={16} aria-hidden="true" />
+                    Add to cart
+                  </Button>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </Panel>
 
-          {/* Quick Notice */}
-          <div className="flex gap-2 items-start text-[11px] text-slate-400 bg-slate-50 border border-slate-100 rounded-xl p-3 font-medium">
-            <Info size={14} className="text-slate-400 shrink-0 mt-0.5" />
+          {/* Fulfillment notice */}
+          <p className="mt-4 flex items-start gap-2.5 border border-ink-200 bg-white p-4 text-body-s leading-relaxed text-ink-500">
+            <Info size={15} className="mt-0.5 flex-none text-ink-400" aria-hidden="true" />
             <span>
-              Delivery fees (₹50 flat within Jaipur & India) or Store Pickup will be chosen during checkout. Original design files are archived securely for printing press operators.
+              Delivery is a flat ₹{SITE.deliveryCharge} anywhere in India, or collect free from the
+              counter — you choose at checkout. Your original file is archived intact so the press
+              runs exactly what you uploaded.
             </span>
-          </div>
+          </p>
         </div>
       </div>
     </div>

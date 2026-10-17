@@ -1,4 +1,5 @@
 import { Order } from '../types';
+import { SITE } from './site';
 
 /**
  * Sends a WhatsApp notification to the printing press owner when a paid order comes in.
@@ -6,7 +7,7 @@ import { Order } from '../types';
  * In production, it can make an HTTP post request to an approved provider API (e.g. Twilio, Meta, or Wati).
  */
 export async function sendAdminOrderNotification(order: Order): Promise<boolean> {
-  const adminPhone = process.env.ADMIN_WHATSAPP_NUMBER || '919876543210';
+  const adminPhone = process.env.ADMIN_WHATSAPP_NUMBER || SITE.phoneRaw.replace(/\D/g, '');
   const whatsappApiToken = process.env.WHATSAPP_API_TOKEN;
   const whatsappApiUrl = process.env.WHATSAPP_API_URL || 'https://graph.facebook.com/v18.0/YOUR_PHONE_NUMBER_ID/messages';
 
@@ -107,7 +108,7 @@ Track live printing progress or view order specifications at:
 ${trackingUrl}
 
 Thank you for choosing Print Vatika!
-📞 Contact: +91 99999 88888`;
+📞 Contact: ${SITE.phoneDisplay}`;
 
   console.log('\n==================================================');
   console.log('📬 OUTGOING CUSTOMER WHATSAPP NOTIFICATION LOG');

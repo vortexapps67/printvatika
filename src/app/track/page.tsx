@@ -1,56 +1,51 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
 import { Order, OrderStatus } from '../../types';
+import { SITE } from '../../lib/site';
 import {
-  Search,
-  Printer,
-  CheckCircle,
-  Clock,
-  Truck,
-  Building,
-  Calendar,
-  AlertCircle,
-  FileDown,
-  Loader2,
-  Phone,
-  Tag
-} from 'lucide-react';
+  Button,
+  ColourStrip,
+  Field,
+  Panel,
+  PanelHead,
+  RegistrationMark,
+  SpecRow,
+  StatusPill,
+} from '../../components/ui/press';
+import { Search, Truck, Building2, AlertCircle, Loader2, Phone, Check } from 'lucide-react';
 
-// Wrapper component to provide search params context correctly in Next.js App Router
+/* This page reads nothing from the query string during render. The URL
+   parameters only prefill the form and kick off a lookup, which happens after
+   mount anyway — so reading them from window.location here rather than
+   through useSearchParams keeps the page statically prerenderable. It used to
+   use useSearchParams behind a Suspense boundary, and because the route was
+   static, Next baked the spinner fallback into the HTML and shipped an empty
+   <main> to anyone who did not run JavaScript. */
 export default function TrackPage() {
-  return (
-    <Suspense fallback={
-      <div className="flex justify-center items-center min-h-[400px]">
-        <Loader2 className="animate-spin text-primary-600" size={32} />
-      </div>
-    }>
-      <TrackerContent />
-    </Suspense>
-  );
+  return <TrackerContent />;
 }
 
 function TrackerContent() {
-  const searchParams = useSearchParams();
-  
   const [orderId, setOrderId] = useState('');
   const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState('');
 
-  // Handle direct query links e.g. /track?id=PV-1001&phone=9876543210
+  // Direct query links e.g. /track?id=PV-1001&phone=9876543210
   useEffect(() => {
-    const urlId = searchParams.get('id');
-    const urlPhone = searchParams.get('phone');
-    
+    const params = new URLSearchParams(window.location.search);
+    const urlId = params.get('id');
+    const urlPhone = params.get('phone');
+
     if (urlId && urlPhone) {
       setOrderId(urlId);
       setPhone(urlPhone);
       fetchOrderStatus(urlId, urlPhone);
     }
-  }, [searchParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchOrderStatus = async (queryId: string, queryPhone: string) => {
     setIsLoading(true);
@@ -58,10 +53,9 @@ function TrackerContent() {
     setOrder(null);
 
     try {
-      // Clean order ID: remove # if client entered it
       const cleanId = queryId.replace('#', '').trim();
       const res = await fetch(`/api/orders/track?id=${cleanId}&phone=${queryPhone}`);
-      
+
       if (!res.ok) {
         if (res.status === 404) {
           throw new Error('Order not found or mobile number mismatch.');
@@ -92,28 +86,37 @@ function TrackerContent() {
     fetchOrderStatus(orderId, phone);
   };
 
-  // Timeline list setup
   const getTimelineSteps = (currentStatus: OrderStatus, fulfillment: string) => {
     const isDelivery = fulfillment === 'delivery';
 
     const steps = [
-      { status: 'PAYMENT_PENDING', label: 'Order Placed', desc: 'Order submitted, payment pending verification.' },
-      { status: 'PAID', label: 'Payment Verified', desc: 'Transaction approved and secured.' },
-      { status: 'CONFIRMED', label: 'Job Confirmed', desc: 'Design approved by print operators.' },
-      { status: 'PRINTING', label: 'Printing Press', desc: 'Your design is being printed on plates.' },
-      { status: 'READY', label: isDelivery ? 'Ready for Dispatch' : 'Ready for Pickup', desc: isDelivery ? 'Order packed and ready for courier.' : 'Awaiting collection at Vatika press.' },
-      { status: isDelivery ? 'OUT_FOR_DELIVERY' : 'READY', label: isDelivery ? 'Out for Delivery' : 'Collect', desc: isDelivery ? 'Package out with courier driver.' : 'Pickup completed.' },
-      { status: 'DELIVERED', label: isDelivery ? 'Delivered' : 'Collected', desc: isDelivery ? 'Package handed over to customer.' : 'Order collected by customer.' }
+      { status: 'PAYMENT_PENDING', label: 'Order placed', desc: 'Order received, payment awaiting verification.' },
+      { status: 'PAID', label: 'Payment verified', desc: 'Transaction approved and secured.' },
+      { status: 'CONFIRMED', label: 'Job confirmed', desc: 'Artwork approved by the print operators.' },
+      { status: 'PRINTING', label: 'On press', desc: 'Your design is running on the machine.' },
+      {
+        status: 'READY',
+        label: isDelivery ? 'Ready for dispatch' : 'Ready for pickup',
+        desc: isDelivery ? 'Packed and handed to the courier.' : 'Waiting at the counter for collection.',
+      },
+      {
+        status: isDelivery ? 'OUT_FOR_DELIVERY' : 'READY',
+        label: isDelivery ? 'Out for delivery' : 'Collected',
+        desc: isDelivery ? 'Out with the courier driver.' : 'Collected from the counter.',
+      },
+      {
+        status: 'DELIVERED',
+        label: isDelivery ? 'Delivered' : 'Collected',
+        desc: isDelivery ? 'Handed over at the address.' : 'Order collected by the customer.',
+      },
     ];
 
-    // Filter status keys to avoid duplication based on fulfillment choice
-    return steps.filter((s, idx) => {
+    return steps.filter(s => {
       if (!isDelivery && s.status === 'OUT_FOR_DELIVERY') return false;
       return true;
     });
   };
 
-  // Determine if step is finished
   const getStepState = (stepStatus: string, currentStatus: OrderStatus) => {
     const statusOrder: OrderStatus[] = [
       'PAYMENT_PENDING',
@@ -122,222 +125,265 @@ function TrackerContent() {
       'PRINTING',
       'READY',
       'OUT_FOR_DELIVERY',
-      'DELIVERED'
+      'DELIVERED',
     ];
 
     const currentIdx = statusOrder.indexOf(currentStatus);
     const stepIdx = statusOrder.indexOf(stepStatus as OrderStatus);
 
-    if (currentStatus === 'CANCELLED') {
-      return 'cancelled';
-    }
-
+    if (currentStatus === 'CANCELLED') return 'cancelled';
     if (stepIdx === -1) return 'pending';
     if (stepIdx < currentIdx) return 'completed';
     if (stepIdx === currentIdx) return 'active';
     return 'pending';
   };
 
-  return (
-    <div className="max-w-4xl mx-auto px-4 py-12 sm:px-6 lg:px-8 space-y-8">
-      {/* Page Title */}
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">
-          Track Your Print Order
-        </h1>
-        <p className="text-slate-500 text-xs sm:text-sm max-w-md mx-auto">
-          Enter your unique order reference and registered mobile number to check real-time printing progress.
-        </p>
-      </div>
+  const isDelivery = order?.fulfillment_type === 'delivery';
+  const steps = order ? getTimelineSteps(order.order_status, order.fulfillment_type) : [];
 
-      {/* Tracker Lookup form */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm max-w-xl mx-auto">
-        <form onSubmit={handleSearch} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-600 uppercase">Order Number</label>
+  // Progress as a fraction of steps reached — drives the ink meter.
+  const completedCount = order
+    ? steps.filter(s => getStepState(s.status, order.order_status) === 'completed').length
+    : 0;
+  const progress = steps.length ? Math.round((completedCount / steps.length) * 100) : 0;
+
+  return (
+    <div className="mx-auto max-w-sheet px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+      <header className="border-b border-ink-200 pb-6">
+        <div className="flex items-center gap-2.5">
+          <RegistrationMark className="text-primary-500" />
+          <span className="label-caps">Order tracking</span>
+        </div>
+        <h1 className="mt-4 text-display-s">Where is my print job?</h1>
+        <p className="mt-3 max-w-xl text-body text-ink-500">
+          Enter the order reference from your confirmation along with the mobile number you ordered
+          with.
+        </p>
+        <ColourStrip rule className="mt-6" />
+      </header>
+
+      {/* ---- Lookup ---- */}
+      <Panel className="mx-auto mt-8 max-w-2xl">
+        <form onSubmit={handleSearch} className="space-y-5">
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field label="Order number" htmlFor="orderId" required>
               <input
+                id="orderId"
                 type="text"
                 value={orderId}
                 onChange={e => setOrderId(e.target.value)}
                 placeholder="e.g. PV-1002"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                autoComplete="off"
               />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-600 uppercase">Mobile Number</label>
+            </Field>
+            <Field label="Mobile number" htmlFor="phone" required>
               <input
+                id="phone"
                 type="tel"
+                inputMode="numeric"
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
-                placeholder="10-digit phone"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                placeholder="10-digit number"
+                autoComplete="tel"
               />
-            </div>
+            </Field>
           </div>
 
           {error && (
-            <div className="flex gap-2 items-center text-xs text-red-700 bg-red-50 border border-red-200 p-3 rounded-xl font-semibold">
-              <AlertCircle size={16} />
-              <span>{error}</span>
+            <div
+              role="alert"
+              className="flex items-center gap-2.5 rounded border border-red-300 bg-red-50 px-3.5 py-2.5 text-body-s font-medium text-red-700"
+            >
+              <AlertCircle size={15} className="flex-none" aria-hidden="true" />
+              {error}
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-xs sm:text-sm"
-          >
+          <Button type="submit" size="lg" plate disabled={isLoading} className="w-full">
             {isLoading ? (
               <>
-                <Loader2 size={16} className="animate-spin" />
-                Querying Press Database...
+                <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+                Looking up
               </>
             ) : (
               <>
-                <Search size={16} />
-                Lookup Order Status
+                <Search size={16} aria-hidden="true" />
+                Look up order
               </>
             )}
-          </button>
+          </Button>
         </form>
-      </div>
+      </Panel>
 
-      {/* Tracker Details Results */}
+      {/* ---- Results ---- */}
       {order && (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start animate-in fade-in duration-300">
-          {/* Left: Progress Timeline */}
-          <div className="md:col-span-7 bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
-            <div className="flex justify-between items-center border-b border-slate-100 pb-4">
-              <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Order Reference</span>
-                <span className="text-xl font-extrabold text-slate-900">{order.id}</span>
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-semibold">Current State</span>
-                <span className={`inline-block text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
-                  order.order_status === 'DELIVERED' || order.order_status === 'READY'
-                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                    : order.order_status === 'CANCELLED'
-                    ? 'bg-red-100 text-red-800 border border-red-200'
-                    : 'bg-indigo-100 text-indigo-800 border border-indigo-200 animate-pulse'
-                }`}>
-                  {order.order_status.replace(/_/g, ' ')}
+        <div className="mt-8 grid items-start gap-6 md:grid-cols-12">
+          {/* Timeline */}
+          <Panel flush className="md:col-span-7">
+            <PanelHead
+              title={<span className="tnum">{order.id}</span>}
+              hint={`Placed ${new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+              action={
+                order.order_status === 'CANCELLED' ? (
+                  <StatusPill status="CANCELLED" />
+                ) : (
+                  <StatusPill status={order.order_status} />
+                )
+              }
+            />
+
+            {/* Progress meter: completed steps in magenta, rest in ink */}
+            <div className="px-5 pt-4">
+              <div className="flex items-center justify-between">
+                <span className="label-caps">Progress</span>
+                <span className="tnum font-mono text-label font-medium text-ink-700">
+                  {completedCount}/{steps.length} stages
                 </span>
               </div>
+              <div className="mt-2 h-1 w-full overflow-hidden rounded-sm bg-ink-200">
+                <div
+                  className="h-full bg-primary-500 transition-all duration-500 ease-press"
+                  style={{ width: `${progress}%` }}
+                  role="progressbar"
+                  aria-valuenow={progress}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="Order progress"
+                />
+              </div>
             </div>
 
-            {/* Timeline graphics */}
-            <div className="relative pl-8 space-y-6">
-              {/* Vertical connector line */}
-              <div className="absolute left-3.5 top-2 bottom-2 w-0.5 bg-slate-200"></div>
-
-              {getTimelineSteps(order.order_status, order.fulfillment_type).map((step, idx) => {
+            <ol className="space-y-0 px-5 pb-6 pt-6">
+              {steps.map((step, idx) => {
                 const state = getStepState(step.status, order.order_status);
-                
-                return (
-                  <div key={idx} className="relative flex gap-4">
-                    {/* Circle icon indicator */}
-                    <div className={`absolute -left-7 w-7.5 h-7.5 rounded-full border-2 flex items-center justify-center z-10 font-bold text-xs ${
-                      state === 'completed'
-                        ? 'bg-emerald-500 border-emerald-500 text-white'
-                        : state === 'active'
-                        ? 'bg-indigo-600 border-indigo-600 text-white shadow-md'
-                        : 'bg-white border-slate-200 text-slate-400'
-                    }`}>
-                      {state === 'completed' ? '✓' : idx + 1}
-                    </div>
+                const isLast = idx === steps.length - 1;
 
-                    <div className="pt-0.5">
-                      <h4 className={`text-sm font-bold ${state === 'pending' ? 'text-slate-400' : 'text-slate-900'}`}>
+                return (
+                  <li key={idx} className="relative flex gap-4 pb-6 last:pb-0">
+                    {/* The rail */}
+                    {!isLast && (
+                      <span
+                        aria-hidden="true"
+                        className={`absolute left-[13px] top-7 h-[calc(100%-1.75rem)] w-px ${
+                          state === 'cancelled' ? 'bg-ink-200' : 'bg-ink-200'
+                        }`}
+                      />
+                    )}
+
+                    {/* The node — square, because this is a press sheet */}
+                    <span
+                      aria-hidden="true"
+                      className={`relative z-10 mt-0.5 flex h-7 w-7 flex-none items-center justify-center rounded-sm border font-mono text-micro font-semibold ${
+                        state === 'completed'
+                          ? 'border-ink-950 bg-ink-950 text-white'
+                          : state === 'active'
+                          ? 'border-primary-600 bg-primary-500 text-white'
+                          : 'border-ink-300 bg-white text-ink-400'
+                      }`}
+                    >
+                      {state === 'completed' ? <Check size={13} /> : idx + 1}
+                    </span>
+
+                    <div className="min-w-0 flex-1 pt-1">
+                      <h3
+                        className={`font-display text-body font-bold ${
+                          state === 'pending' ? 'text-ink-400' : 'text-ink-950'
+                        }`}
+                      >
                         {step.label}
-                      </h4>
-                      <p className="text-xs text-slate-500 leading-normal mt-0.5">
-                        {step.desc}
-                      </p>
+                      </h3>
+                      <p className="mt-1 text-body-s leading-relaxed text-ink-500">{step.desc}</p>
                     </div>
-                  </div>
+                  </li>
                 );
               })}
-            </div>
-          </div>
+            </ol>
+          </Panel>
 
-          {/* Right: Job details specs summary */}
-          <div className="md:col-span-5 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
-            <h3 className="font-extrabold text-slate-900 text-sm">Specification Card</h3>
-            
-            {/* Items */}
-            <div className="space-y-4 border-b border-slate-100 pb-4">
-              {order.items?.map((item, i) => (
-                <div key={i} className="flex gap-3 text-left">
-                  {/* Thumbnail mockup */}
-                  <div className="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden border shrink-0">
-                    <img src={item.preview_file_url || item.original_file_url} className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900 leading-tight">{item.product_name}</h4>
-                    <p className="text-[10px] text-slate-500 font-medium">Qty: {item.quantity} units</p>
-                    <div className="flex flex-wrap gap-0.5 mt-1">
-                      {Object.entries(item.selected_options).map(([k, v]) => (
-                        <span key={k} className="bg-slate-100 text-slate-500 text-[8px] px-1 py-0.5 rounded font-bold">
-                          {k}: {v}
-                        </span>
-                      ))}
-                    </div>
+          {/* Spec card */}
+          <div className="space-y-6 md:col-span-5">
+            <Panel flush>
+              <PanelHead title="Job specification" />
+              <div className="space-y-5 p-5">
+                <ul className="space-y-4">
+                  {order.items?.map((item, i) => (
+                    <li key={i} className="flex gap-3">
+                      <div className="h-12 w-12 flex-none overflow-hidden rounded-sm border border-ink-200 bg-ink-50">
+                        <img
+                          src={item.preview_file_url || item.original_file_url}
+                          alt={item.product_name}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-display text-body font-bold leading-tight text-ink-950">
+                          {item.product_name}
+                        </h4>
+                        <p className="tnum mt-1 font-mono text-micro uppercase tracking-wider2 text-ink-500">
+                          {item.quantity} units
+                        </p>
+                        <ul className="mt-1.5 flex flex-wrap gap-1">
+                          {Object.entries(item.selected_options).map(([k, v]) => (
+                            <li
+                              key={k}
+                              className="rounded-sm border border-ink-200 bg-ink-50 px-1.5 py-0.5 font-mono text-micro text-ink-600"
+                            >
+                              <span className="text-ink-400">{k}</span> {v}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Fulfilment */}
+                <div className="flex gap-2.5 border-t border-ink-100 pt-5">
+                  {isDelivery ? (
+                    <Truck size={16} className="mt-0.5 flex-none text-primary-500" aria-hidden="true" />
+                  ) : (
+                    <Building2 size={16} className="mt-0.5 flex-none text-primary-500" aria-hidden="true" />
+                  )}
+                  <div className="min-w-0">
+                    <span className="label-caps">
+                      {isDelivery ? 'Delivering to' : 'Collect from'}
+                    </span>
+                    <p className="mt-1.5 text-body-s leading-relaxed text-ink-700">
+                      {isDelivery
+                        ? `${order.delivery_address}, ${order.delivery_city}, ${order.delivery_state} — ${order.delivery_pincode}`
+                        : SITE.pickupAddress}
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
 
-            {/* Delivery address / Pickup info */}
-            <div className="space-y-3 text-xs border-b border-slate-100 pb-4">
-              <div className="flex gap-2 items-start">
-                {order.fulfillment_type === 'delivery' ? (
-                  <>
-                    <Truck className="text-primary-600 shrink-0 mt-0.5" size={16} />
-                    <div>
-                      <span className="font-bold text-slate-800 block">Home Delivery Address</span>
-                      <p className="text-slate-500 leading-normal mt-0.5">
-                        {order.delivery_address}, {order.delivery_city}, {order.delivery_state} - {order.delivery_pincode}
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <Building className="text-indigo-600 shrink-0 mt-0.5" size={16} />
-                    <div>
-                      <span className="font-bold text-slate-800 block">Collect at Vatika Press</span>
-                      <p className="text-slate-500 leading-normal mt-0.5">
-                        Main Bazar Road, Near Gandhi Chowk, Vatika, Jaipur (Rajasthan)
-                      </p>
-                    </div>
-                  </>
-                )}
+                <dl className="divide-y divide-ink-200 border-y border-ink-200">
+                  <SpecRow label="Subtotal" value={`₹${order.subtotal.toFixed(2)}`} />
+                  <SpecRow
+                    label="Delivery"
+                    value={
+                      order.delivery_charge > 0 ? (
+                        `₹${order.delivery_charge.toFixed(2)}`
+                      ) : (
+                        <span className="text-emerald-700">Free</span>
+                      )
+                    }
+                  />
+                  <SpecRow label="Paid" value={`₹${order.total_amount.toFixed(2)}`} strong className="pb-3 pt-3" />
+                </dl>
               </div>
-            </div>
+            </Panel>
 
-            {/* Cost Details */}
-            <div className="space-y-1.5 text-xs font-medium text-slate-500">
-              <div className="flex justify-between">
-                <span>Subtotal:</span>
-                <span>₹{order.subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Shipping fee:</span>
-                <span>{order.delivery_charge > 0 ? `₹${order.delivery_charge.toFixed(2)}` : 'FREE'}</span>
-              </div>
-              <div className="flex justify-between font-bold text-slate-900 border-t pt-2 mt-1">
-                <span>Paid Amount:</span>
-                <span>₹{order.total_amount.toFixed(2)}</span>
-              </div>
-            </div>
-
-            {/* Customer Notice */}
-            <div className="flex gap-2 items-start text-[10px] text-slate-400 bg-slate-50 p-3 rounded-xl border border-slate-100 leading-normal font-semibold">
-              <Clock size={16} className="text-indigo-500 shrink-0" />
-              <span>
-                Need to change specifications or cancel the order? Please call Jaipur customer press team directly at +91 99999 88888. Reference Order ID {order.id}.
-              </span>
+            {/* Support — real number, not a placeholder */}
+            <div className="flex gap-3 rounded-xl border border-ink-200 bg-white p-4 shadow-card">
+              <Phone size={16} className="mt-0.5 flex-none text-primary-500" aria-hidden="true" />
+              <p className="text-body-s leading-relaxed text-ink-600">
+                Need to change the specification or cancel? Call the counter on{' '}
+                <a href={`tel:${SITE.phoneRaw}`} className="tnum font-medium text-ink-950 underline">
+                  {SITE.phoneDisplay}
+                </a>{' '}
+                and quote{' '}
+                <span className="tnum font-mono font-medium text-ink-950">{order.id}</span>.
+              </p>
             </div>
           </div>
         </div>

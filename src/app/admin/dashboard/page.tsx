@@ -8,27 +8,30 @@ import {
   ShoppingBag,
   TrendingUp,
   Clock,
-  ShieldCheck,
   Search,
-  Sliders,
-  DollarSign,
   Download,
   Notebook,
   RefreshCw,
   LogOut,
-  Edit2,
   ToggleLeft,
   ToggleRight,
-  Info,
-  CheckCircle,
   Truck,
   Building,
   User,
-  Settings,
   X,
   Loader2,
-  Phone
+  Phone,
 } from 'lucide-react';
+import {
+  Badge,
+  Button,
+  ColourStrip,
+  Panel,
+  PanelHead,
+  SpecRow,
+  StatusPill,
+} from '../../../components/ui/press';
+import { SITE } from '../../../lib/site';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -257,610 +260,669 @@ export default function AdminDashboardPage() {
     return matchesStatus && matchesSearch;
   });
 
-  if (isLoading) {
+if (isLoading) {
     return (
-      <div className="flex-grow flex flex-col items-center justify-center py-24 gap-4">
-        <Loader2 className="animate-spin text-primary-600" size={40} />
-        <span className="text-sm text-slate-500 font-semibold">Syncing Press Operations Dashboard...</span>
+      <div className="flex flex-grow flex-col items-center justify-center gap-4 py-24">
+        <Loader2 className="animate-spin text-primary-600" size={32} aria-hidden="true" />
+        <h1 className="label-caps">Syncing press operations</h1>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-      {/* Top Navbar Brand */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
+    <div className="mx-auto max-w-sheet px-4 py-8 sm:px-6 lg:px-8">
+      {/* ---- Header ---- */}
+      <header className="flex flex-col gap-5 border-b border-ink-200 pb-6 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
-          <div className="bg-primary-600 text-white p-2.5 rounded-2xl shadow-md">
-            <Printer size={22} className="stroke-[2.5]" />
-          </div>
+          <img
+            src="/images/logo-mark.png"
+            alt=""
+            width={192}
+            height={192}
+            className="h-10 w-10 flex-none rounded-sm ring-1 ring-ink-200"
+          />
           <div>
-            <h1 className="text-2xl font-black text-slate-900 leading-tight">Admin Console</h1>
-            <span className="text-slate-400 text-xs font-semibold">Print Vatika (Jaipur Hub)</span>
+            <h1 className="text-title-l">Admin console</h1>
+            <p className="font-mono text-micro uppercase tracking-wider2 text-ink-500">
+              Print Vatika · {SITE.city} hub
+            </p>
           </div>
         </div>
 
-        {/* Toolbar controls */}
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="flex items-center gap-1.5 text-slate-600 border border-slate-200 rounded-xl px-3.5 py-2 hover:bg-slate-50 text-xs font-bold transition-all shadow-sm shrink-0"
-          >
-            <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
-            Refresh Press Data
-          </button>
-          
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-1.5 text-red-600 border border-red-200 hover:bg-red-50 rounded-xl px-3.5 py-2 text-xs font-bold transition-all shadow-sm shrink-0"
-          >
-            <LogOut size={14} />
-            Logout Session
-          </button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
+            <RefreshCw size={13} className={isRefreshing ? 'animate-spin' : ''} aria-hidden="true" />
+            Refresh
+          </Button>
+          <Button variant="danger" size="sm" onClick={handleLogout}>
+            <LogOut size={13} aria-hidden="true" />
+            Log out
+          </Button>
         </div>
+      </header>
+
+      {/* ---- Tabs ---- */}
+      <div className="flex gap-6 border-b border-ink-200">
+        {(
+          [
+            { id: 'orders', label: `Orders queue (${orders.length})` },
+            { id: 'products', label: 'Catalog' },
+            { id: 'pricing', label: 'Pricing rules' },
+          ] as const
+        ).map(tab => {
+          const active = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              aria-current={active ? 'page' : undefined}
+              className={
+                active
+                  ? 'border-b-2 border-primary-500 pb-3 font-mono text-label font-medium uppercase tracking-wider2 text-ink-950'
+                  : 'border-b-2 border-transparent pb-3 font-mono text-label font-medium uppercase tracking-wider2 text-ink-400 transition-colors hover:text-ink-950'
+              }
+            >
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Tabs selectors */}
-      <div className="flex border-b border-slate-200 font-bold text-xs uppercase tracking-wider text-slate-500 space-x-6">
-        <button
-          onClick={() => setActiveTab('orders')}
-          className={`pb-3.5 border-b-2 transition-all ${activeTab === 'orders' ? 'border-primary-600 text-primary-700' : 'border-transparent hover:text-slate-700'}`}
-        >
-          Orders Queue ({orders.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('products')}
-          className={`pb-3.5 border-b-2 transition-all ${activeTab === 'products' ? 'border-primary-600 text-primary-700' : 'border-transparent hover:text-slate-700'}`}
-        >
-          Product Catalog Catalog
-        </button>
-        <button
-          onClick={() => setActiveTab('pricing')}
-          className={`pb-3.5 border-b-2 transition-all ${activeTab === 'pricing' ? 'border-primary-600 text-primary-700' : 'border-transparent hover:text-slate-700'}`}
-        >
-          Pricing Configurator
-        </button>
-      </div>
-
+      {/* ================= ORDERS ================= */}
       {activeTab === 'orders' && (
-        <>
-          {/* STATS OVERVIEW CARDS */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            {/* Total Orders Card */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-1">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Total Orders</span>
-              <div className="flex justify-between items-center">
-                <span className="text-2xl font-black text-slate-900">{stats.totalOrders}</span>
-                <ShoppingBag className="text-primary-500 shrink-0" size={20} />
+        <div className="mt-7 space-y-7">
+          {/* Stats */}
+          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded border border-ink-200 bg-ink-200 lg:grid-cols-4">
+            {[
+              { label: 'Total orders', value: stats.totalOrders, Icon: ShoppingBag },
+              { label: 'Press revenue', value: `₹${stats.revenue.toLocaleString('en-IN')}`, Icon: TrendingUp },
+              { label: 'Queue pending', value: stats.pendingCount, Icon: Clock },
+              { label: 'On press', value: stats.printingCount, Icon: Printer },
+            ].map(({ label, value, Icon }) => (
+              <div key={label} className="bg-white p-5">
+                <dt className="label-caps">{label}</dt>
+                <dd className="mt-2.5 flex items-baseline justify-between gap-2">
+                  <span className="tnum font-display text-title-l font-extrabold tracking-tightest text-ink-950">
+                    {value}
+                  </span>
+                  <Icon size={17} className="flex-none text-ink-300" aria-hidden="true" />
+                </dd>
               </div>
-            </div>
+            ))}
+          </dl>
 
-            {/* Total Revenue Card */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-1">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Press Revenue</span>
-              <div className="flex justify-between items-center">
-                <span className="text-2xl font-black text-slate-900">₹{stats.revenue.toLocaleString('en-IN')}</span>
-                <TrendingUp className="text-emerald-500 shrink-0" size={20} />
-              </div>
-            </div>
+          {/* Table */}
+          <Panel flush>
+            <PanelHead
+              title="Order queue"
+              hint="Select a row to manage status and notify the customer."
+            />
 
-            {/* Pending Verification Card */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-1">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Queue Pending</span>
-              <div className="flex justify-between items-center">
-                <span className="text-2xl font-black text-slate-900">{stats.pendingCount}</span>
-                <Clock className="text-amber-500 shrink-0" size={20} />
-              </div>
-            </div>
-
-            {/* Currently Printing Card */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-1">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">On Press Plates</span>
-              <div className="flex justify-between items-center">
-                <span className="text-2xl font-black text-slate-900">{stats.printingCount}</span>
-                <Printer className="text-indigo-500 shrink-0" size={20} />
-              </div>
-            </div>
-          </div>
-
-          {/* MAIN ORDERS TABLE LIST & FILTER CONTROLS */}
-          <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5">
-            {/* Filters Bar */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-              {/* Search */}
-              <div className="relative w-full sm:max-w-xs">
-                <Search size={16} className="absolute left-3 top-3 text-slate-400" />
+            {/* Filters */}
+            <div className="flex flex-col gap-4 border-b border-ink-200 p-5 lg:flex-row lg:items-center lg:justify-between">
+              <div className="relative w-full lg:max-w-xs">
+                <Search
+                  size={15}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400"
+                  aria-hidden="true"
+                />
                 <input
-                  type="text"
+                  type="search"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Search order id, customer name..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  placeholder="Order ID, customer name or phone"
+                  aria-label="Search orders"
+                  className="pl-9"
                 />
               </div>
 
-              {/* Status Filter */}
-              <div className="flex items-center gap-2 self-end sm:self-auto overflow-x-auto max-w-full pb-1 sm:pb-0">
-                {['ALL', 'PAYMENT_PENDING', 'CONFIRMED', 'PRINTING', 'READY', 'DELIVERED', 'CANCELLED'].map(filter => (
-                  <button
-                    key={filter}
-                    onClick={() => setStatusFilter(filter)}
-                    className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all shrink-0 ${
-                      statusFilter === filter
-                        ? 'bg-primary-600 text-white shadow-sm'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    {filter.replace(/_/g, ' ')}
-                  </button>
-                ))}
+              <div className="scrollbar-none flex gap-1.5 overflow-x-auto">
+                {['ALL', 'PAYMENT_PENDING', 'CONFIRMED', 'PRINTING', 'READY', 'DELIVERED', 'CANCELLED'].map(filter => {
+                  const active = statusFilter === filter;
+                  return (
+                    <button
+                      key={filter}
+                      type="button"
+                      onClick={() => setStatusFilter(filter)}
+                      aria-pressed={active}
+                      className={
+                        active
+                          ? 'flex-none whitespace-nowrap rounded-sm bg-ink-950 px-3 py-2 font-mono text-micro font-medium uppercase tracking-wider2 text-white transition-colors'
+                          : 'flex-none whitespace-nowrap rounded-sm border border-ink-200 px-3 py-2 font-mono text-micro font-medium uppercase tracking-wider2 text-ink-500 transition-colors hover:border-ink-950 hover:text-ink-950'
+                      }
+                    >
+                      {filter.replace(/_/g, ' ')}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Orders Table Grid */}
-            <div className="overflow-x-auto border border-slate-200 rounded-2xl">
-              <table className="w-full text-left text-xs border-collapse">
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-[10px] uppercase font-bold text-slate-500">
-                    <th className="p-4">OrderID</th>
-                    <th className="p-4">Customer Name</th>
-                    <th className="p-4">Fulfillment</th>
-                    <th className="p-4">Total Amount</th>
-                    <th className="p-4">Payment</th>
-                    <th className="p-4">Printing Progress</th>
-                    <th className="p-4 text-center">Action</th>
+                  <tr className="border-b border-ink-200 bg-ink-50">
+                    {['Order', 'Customer', 'Fulfilment', 'Amount', 'Payment', 'Status', ''].map(h => (
+                      <th key={h} className="label-caps whitespace-nowrap px-4 py-3">
+                        {h}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-150">
+                <tbody className="divide-y divide-ink-100">
                   {filteredOrders.length > 0 ? (
                     filteredOrders.map(o => (
-                      <tr key={o.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="p-4 font-bold text-slate-800">{o.id}</td>
-                        <td className="p-4 font-semibold text-slate-900">
-                          <div>{o.customer_name}</div>
-                          <div className="text-[10px] text-slate-400 mt-0.5">{o.customer_phone}</div>
+                      <tr key={o.id} className="transition-colors hover:bg-ink-50">
+                        <td className="tnum whitespace-nowrap px-4 py-3.5 font-mono text-body-s font-medium text-ink-950">
+                          {o.id}
                         </td>
-                        <td className="p-4">
-                          <span className={`inline-flex items-center gap-1 font-bold text-[9px] px-2 py-0.5 rounded capitalize ${o.fulfillment_type === 'delivery' ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-orange-50 text-orange-700 border border-orange-100'}`}>
-                            {o.fulfillment_type === 'delivery' ? <Truck size={10} /> : <Building size={10} />}
+                        <td className="px-4 py-3.5">
+                          <span className="block whitespace-nowrap text-body-s font-medium text-ink-900">
+                            {o.customer_name}
+                          </span>
+                          <span className="tnum mt-0.5 block font-mono text-micro text-ink-400">
+                            {o.customer_phone}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <Badge tone={o.fulfillment_type === 'delivery' ? 'neutral' : 'warning'}>
+                            {o.fulfillment_type === 'delivery' ? (
+                              <Truck size={11} aria-hidden="true" />
+                            ) : (
+                              <Building size={11} aria-hidden="true" />
+                            )}
                             {o.fulfillment_type}
-                          </span>
+                          </Badge>
                         </td>
-                        <td className="p-4 font-extrabold text-slate-950">₹{o.total_amount.toFixed(2)}</td>
-                        <td className="p-4">
-                          <span className={`inline-block text-[9px] font-extrabold px-2 py-0.5 rounded ${o.payment_status === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                        <td className="tnum whitespace-nowrap px-4 py-3.5 text-body-s font-semibold text-ink-950">
+                          ₹{o.total_amount.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <Badge tone={o.payment_status === 'PAID' ? 'success' : 'warning'}>
                             {o.payment_status}
-                          </span>
+                          </Badge>
                         </td>
-                        <td className="p-4">
-                          <span className={`inline-block text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
-                            o.order_status === 'DELIVERED' || o.order_status === 'READY'
-                              ? 'bg-emerald-50 text-emerald-700 font-bold border border-emerald-100'
-                              : o.order_status === 'CANCELLED'
-                              ? 'bg-red-50 text-red-700 border border-red-150'
-                              : 'bg-indigo-50 text-indigo-700 border border-indigo-150 animate-pulse'
-                          }`}>
-                            {o.order_status.replace(/_/g, ' ')}
-                          </span>
+                        <td className="px-4 py-3.5">
+                          <StatusPill status={o.order_status} />
                         </td>
-                        <td className="p-4 text-center">
-                          <button
+                        <td className="px-4 py-3.5">
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => setSelectedOrder(o)}
-                            className="bg-primary-50 text-primary-700 hover:bg-primary-100 font-bold px-3 py-1.5 rounded-lg border border-primary-150 transition-all text-[10px]"
                           >
-                            Manage Order
-                          </button>
+                            Manage
+                          </Button>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="p-8 text-center text-slate-400 font-semibold">
-                        No orders in queue matching parameters.
+                      <td colSpan={7} className="px-4 py-14 text-center">
+                        <p className="font-display text-title font-bold text-ink-950">Queue is clear</p>
+                        <p className="mx-auto mt-2 max-w-sm text-body-s text-ink-500">
+                          No orders match the current filter. Try a different status or clear the
+                          search.
+                        </p>
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </div>
-          </div>
-        </>
+          </Panel>
+        </div>
       )}
 
+      {/* ================= PRODUCTS ================= */}
       {activeTab === 'products' && (
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-lg font-extrabold text-slate-900">Catalog Visibility & Core Surcharges</h2>
-              <p className="text-slate-400 text-xs">Configure base item pricing values</p>
-            </div>
-            <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1">
-              <Info size={12} /> Click check toggle to show/hide products
-            </span>
-          </div>
+        <Panel flush className="mt-7">
+          <PanelHead
+            title="Catalog & base prices"
+            hint="Set the starting price for each product, and toggle what appears in the storefront."
+          />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <ul className="divide-y divide-ink-100">
             {products.map(p => (
-              <div key={p.id} className="border border-slate-200 rounded-2xl p-4 flex justify-between items-center bg-slate-50/50">
-                <div className="flex items-center gap-3 overflow-hidden">
-                  <img src={p.image_url} className="w-12 h-12 rounded-lg object-cover shrink-0" />
-                  <div className="overflow-hidden">
-                    <span className="font-bold text-slate-900 text-sm block truncate">{p.name}</span>
-                    <span className="text-[10px] text-slate-400">{p.category}</span>
+              <li
+                key={p.id}
+                className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex min-w-0 items-center gap-3.5">
+                  <img
+                    src={p.image_url}
+                    alt={p.name}
+                    className="h-12 w-12 flex-none rounded-sm border border-ink-200 object-cover"
+                  />
+                  <div className="min-w-0">
+                    <span className="block truncate font-display text-body font-bold text-ink-950">
+                      {p.name}
+                    </span>
+                    <span className="font-mono text-micro uppercase tracking-wider2 text-ink-400">
+                      {p.category} · /{p.slug}
+                    </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  {/* Price input */}
-                  <div className="flex items-center border border-slate-200 bg-white rounded-xl px-2.5 py-1">
-                    <span className="text-slate-400 font-semibold text-xs pr-1">₹</span>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center overflow-hidden rounded-sm border border-ink-200">
+                    <span className="tnum border-r border-ink-200 bg-ink-50 px-2.5 py-2 font-mono text-body-s text-ink-500">
+                      ₹
+                    </span>
                     <input
                       type="number"
                       step="0.1"
+                      aria-label={`Base price for ${p.name}`}
                       value={editingBasePrices[p.slug] || 0}
-                      onChange={e => setEditingBasePrices(prev => ({ ...prev, [p.slug]: parseFloat(e.target.value) || 0 }))}
-                      className="w-16 text-xs font-bold text-slate-800 focus:outline-none"
+                      onChange={e =>
+                        setEditingBasePrices(prev => ({ ...prev, [p.slug]: parseFloat(e.target.value) || 0 }))
+                      }
+                      className="tnum w-24 border-0 px-2.5 py-2 font-mono text-body-s font-medium"
                     />
-                    <button
+                    <Button
+                      size="sm"
                       onClick={() => handleUpdateBasePrice(p.slug)}
                       disabled={isSavingPrice}
-                      className="text-primary-600 hover:text-primary-700 font-bold text-[10px] pl-2 border-l border-slate-100"
+                      className="h-full rounded-none border-l border-ink-200"
                     >
                       Save
-                    </button>
+                    </Button>
                   </div>
 
-                  {/* Active Toggle */}
                   <button
+                    type="button"
                     onClick={() => handleToggleProductActive(p.slug)}
-                    className="text-slate-400 hover:text-slate-600"
+                    aria-label={`${p.is_active ? 'Hide' : 'Show'} ${p.name} in the storefront`}
+                    className="flex h-9 w-9 items-center justify-center rounded-sm transition-colors hover:bg-ink-100"
                   >
                     {p.is_active ? (
-                      <ToggleRight size={28} className="text-emerald-500" />
+                      <ToggleRight size={26} className="text-emerald-600" />
                     ) : (
-                      <ToggleLeft size={28} className="text-slate-300" />
+                      <ToggleLeft size={26} className="text-ink-300" />
                     )}
                   </button>
                 </div>
-              </div>
+              </li>
             ))}
-          </div>
-        </div>
+          </ul>
+        </Panel>
       )}
 
+      {/* ================= PRICING ================= */}
       {activeTab === 'pricing' && (
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b pb-4">
-            <div>
-              <h2 className="text-lg font-extrabold text-slate-900">Custom pricing rules & Option Modifiers</h2>
-              <p className="text-slate-400 text-xs">Modify select values and discount tiers</p>
-            </div>
-            
-            {/* Select Product */}
-            <select
-              value={selectedProductSlug}
-              onChange={e => setSelectedProductSlug(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-primary-500"
-            >
-              {products.map(p => (
-                <option key={p.slug} value={p.slug}>{p.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Pricing configurations forms */}
-          {productOptions.length > 0 ? (
-            <div className="space-y-6">
-              {productOptions.map((opt, optIdx) => {
-                if (opt.type !== 'select') return null;
-                
-                return (
-                  <div key={opt.id} className="border border-slate-150 rounded-2xl p-4 bg-slate-50/20 space-y-3">
-                    <span className="font-bold text-slate-800 text-xs uppercase tracking-wider block border-b pb-2">
-                      Option: {opt.display_name} ({opt.name})
-                    </span>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                      {opt.options_json.map((choice, choiceIdx) => (
-                        <div key={choice.value} className="flex justify-between items-center border border-slate-200 rounded-xl p-3 bg-white">
-                          <span className="text-xs font-bold text-slate-800">{choice.label}</span>
-                          
-                          <div className="flex items-center border rounded-lg px-2 py-1 bg-slate-50">
-                            <span className="text-[10px] text-slate-400 font-semibold pr-1">₹</span>
-                            <input
-                              type="number"
-                              value={choice.price_modifier || 0}
-                              onChange={e => {
-                                const val = parseFloat(e.target.value) || 0;
-                                setProductOptions(prev => {
-                                  const copy = [...prev];
-                                  copy[optIdx].options_json[choiceIdx].price_modifier = val;
-                                  return copy;
-                                });
-                              }}
-                              className="w-16 text-xs text-right font-extrabold bg-transparent focus:outline-none"
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* Volume tiers */}
-              {pricingRules.length > 0 && (
-                <div className="border border-slate-150 rounded-2xl p-4 bg-slate-50/20 space-y-3">
-                  <span className="font-bold text-slate-800 text-xs uppercase tracking-wider block border-b pb-2">
-                    Bulk Discounts & Quantity Tier Rules
-                  </span>
-
-                  <div className="space-y-3">
-                    {pricingRules.map((rule, ruleIdx) => (
-                      <div key={rule.id} className="flex items-center justify-between border border-slate-200 rounded-xl p-3 bg-white text-xs font-semibold">
-                        <span className="text-slate-800 uppercase font-bold">
-                          If {rule.option_key} exceeds {rule.tier_min_qty}
-                        </span>
-
-                        <div className="flex items-center gap-3">
-                          <span className="text-slate-400 font-medium">Apply Discount Factor:</span>
-                          <input
-                            type="number"
-                            step="0.05"
-                            min="0.5"
-                            max="1.0"
-                            value={rule.tier_discount_factor}
-                            onChange={e => {
-                              const val = parseFloat(e.target.value) || 1.0;
-                              setPricingRules(prev => {
-                                const copy = [...prev];
-                                copy[ruleIdx].tier_discount_factor = val;
-                                return copy;
-                              });
-                            }}
-                            className="w-16 border rounded-lg px-2 py-1 text-xs text-center font-extrabold focus:outline-none focus:ring-1 focus:ring-primary-500"
-                          />
-                          <span className="text-[10px] text-emerald-600 font-bold">
-                            ({Math.round((1 - rule.tier_discount_factor) * 100)}% off)
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Save changes */}
-              <button
-                onClick={handleSaveOptionModifiers}
-                disabled={isSavingPrice}
-                className="bg-primary-600 hover:bg-primary-700 text-white font-bold px-6 py-3 rounded-xl shadow-md transition-all text-xs"
-              >
-                Save Option Pricing Modifications
-              </button>
-            </div>
-          ) : (
-            <p className="text-slate-400 text-xs">No select choices configurable for this specialty product.</p>
-          )}
-        </div>
-      )}
-
-      {/* DETAIL MODAL OVERLAY: MANAGE ORDER */}
-      {selectedOrder && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl relative animate-in zoom-in-95 duration-200">
-            {/* Modal close */}
-            <button
-              onClick={() => setSelectedOrder(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-lg"
-            >
-              <X size={18} />
-            </button>
-
-            {/* Header info */}
-            <div className="border-b pb-4 pr-8 flex flex-col sm:flex-row justify-between gap-4">
+        <Panel flush className="mt-7">
+          <PanelHead
+            title="Pricing rules"
+            hint="Option surcharges apply per unit. Tier factors apply across the whole job."
+            action={
               <div>
-                <span className="bg-slate-100 border border-slate-200 text-slate-800 text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider block w-fit mb-1.5">
-                  Order Management
-                </span>
-                <h3 className="font-extrabold text-slate-900 text-xl flex items-center gap-2">
-                  Order ID: {selectedOrder.id}
-                </h3>
-                <span className="text-slate-400 text-xs font-medium">Placed on: {new Date(selectedOrder.created_at).toLocaleString()}</span>
+                <label htmlFor="pricing-product" className="sr-only">
+                  Product
+                </label>
+                <select
+                  id="pricing-product"
+                  value={selectedProductSlug}
+                  onChange={e => setSelectedProductSlug(e.target.value)}
+                  className="h-9 w-auto font-mono text-micro uppercase tracking-wider2"
+                >
+                  {products.map(p => (
+                    <option key={p.slug} value={p.slug}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
               </div>
+            }
+          />
 
-              {/* Delivery badge */}
-              <div className="sm:text-right shrink-0">
-                <span className={`inline-flex items-center gap-1 font-bold text-[10px] px-3 py-1 rounded-full uppercase border ${
-                  selectedOrder.fulfillment_type === 'delivery' 
-                    ? 'bg-blue-50 text-blue-700 border-blue-100' 
-                    : 'bg-orange-50 text-orange-700 border-orange-100'
-                }`}>
-                  {selectedOrder.fulfillment_type === 'delivery' ? <Truck size={12} /> : <Building size={12} />}
-                  {selectedOrder.fulfillment_type}
-                </span>
-              </div>
-            </div>
+          <div className="space-y-6 p-5">
+            {productOptions.length > 0 ? (
+              <>
+                {productOptions.map((opt, optIdx) => {
+                  if (opt.type !== 'select') return null;
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-6">
-              {/* Left detail grid */}
-              <div className="lg:col-span-7 space-y-6">
-                {/* Customer specs */}
-                <div className="space-y-3">
-                  <span className="font-bold text-slate-800 text-xs uppercase tracking-wider block border-b pb-1">Customer Profile</span>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div className="flex items-center gap-2 font-medium text-slate-600">
-                      <User size={14} className="text-slate-400" />
-                      <span>{selectedOrder.customer_name}</span>
-                    </div>
-                    <div className="flex items-center gap-2 font-medium text-slate-600">
-                      <Phone size={14} className="text-slate-400" />
-                      <span>{selectedOrder.customer_phone}</span>
-                    </div>
-                    <div className="flex items-center gap-2 font-medium text-slate-600 sm:col-span-2">
-                      <Notebook size={14} className="text-slate-400" />
-                      <span>{selectedOrder.customer_email}</span>
-                    </div>
-                  </div>
-                </div>
+                  return (
+                    <section key={opt.id}>
+                      <h3 className="label-caps mb-3">
+                        {opt.display_name} · <span className="text-ink-400">{opt.name}</span>
+                      </h3>
+                      <ul className="grid gap-2 sm:grid-cols-2">
+                        {opt.options_json.map((choice, choiceIdx) => (
+                          <li
+                            key={choice.value}
+                            className="flex items-center justify-between gap-3 rounded-sm border border-ink-200 bg-white p-3"
+                          >
+                            <span className="min-w-0 truncate text-body-s font-medium text-ink-800">
+                              {choice.label}
+                            </span>
+                            <div className="flex flex-none items-center overflow-hidden rounded-sm border border-ink-200">
+                              <span className="tnum border-r border-ink-200 bg-ink-50 px-2 py-1.5 font-mono text-micro text-ink-500">
+                                ₹
+                              </span>
+                              <input
+                                type="number"
+                                aria-label={`Surcharge for ${choice.label}`}
+                                value={choice.price_modifier || 0}
+                                onChange={e => {
+                                  const val = parseFloat(e.target.value) || 0;
+                                  setProductOptions(prev => {
+                                    const copy = [...prev];
+                                    copy[optIdx].options_json[choiceIdx].price_modifier = val;
+                                    return copy;
+                                  });
+                                }}
+                                className="tnum w-20 border-0 px-2 py-1.5 text-right font-mono text-body-s"
+                              />
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  );
+                })}
 
-                {/* Fulfillment specifics */}
-                {selectedOrder.fulfillment_type === 'delivery' && (
-                  <div className="space-y-1">
-                    <span className="font-bold text-slate-800 text-xs uppercase tracking-wider block border-b pb-1">Delivery Address</span>
-                    <p className="text-slate-500 text-xs leading-normal">
-                      {selectedOrder.delivery_address}, {selectedOrder.delivery_city}, {selectedOrder.delivery_state} - {selectedOrder.delivery_pincode}
-                    </p>
-                  </div>
+                {pricingRules.length > 0 && (
+                  <section>
+                    <h3 className="label-caps mb-3">Bulk discount tiers</h3>
+                    <ul className="divide-y divide-ink-200 border-y border-ink-200">
+                      {pricingRules.map((rule, ruleIdx) => (
+                        <li
+                          key={rule.id}
+                          className="flex flex-wrap items-center justify-between gap-3 py-3"
+                        >
+                          <span className="text-body-s text-ink-700">
+                            When <strong className="font-semibold">{rule.option_key}</strong> is set to{' '}
+                            <strong className="font-semibold">{rule.option_value}</strong> at{' '}
+                            <span className="tnum font-mono">{rule.tier_min_qty}+</span>
+                          </span>
+                          <div className="flex items-center gap-2.5">
+                            <div className="flex items-center overflow-hidden rounded-sm border border-ink-200">
+                              <input
+                                type="number"
+                                step="0.05"
+                                min="0.5"
+                                max="1.0"
+                                aria-label={`Discount factor for tier of ${rule.tier_min_qty}`}
+                                value={rule.tier_discount_factor}
+                                onChange={e => {
+                                  const val = parseFloat(e.target.value) || 1.0;
+                                  setPricingRules(prev => {
+                                    const copy = [...prev];
+                                    copy[ruleIdx].tier_discount_factor = val;
+                                    return copy;
+                                  });
+                                }}
+                                className="tnum w-16 border-0 px-2 py-1.5 text-center font-mono text-body-s"
+                              />
+                            </div>
+                            <span className="tnum w-16 font-mono text-micro text-emerald-700">
+                              {Math.round((1 - rule.tier_discount_factor) * 100)}% off
+                            </span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
                 )}
 
-                {/* Items and files list */}
-                <div className="space-y-4">
-                  <span className="font-bold text-slate-800 text-xs uppercase tracking-wider block border-b pb-1">Items Configured</span>
-                  
-                  {selectedOrder.items?.map((item, i) => (
-                    <div key={item.id} className="border border-slate-150 rounded-2xl p-4 space-y-3.5">
-                      <div className="flex justify-between items-start gap-4">
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-sm">{item.product_name}</h4>
-                          <span className="text-[10px] text-slate-500 font-bold block mt-0.5">Quantity: {item.quantity} units</span>
-                        </div>
-                        <span className="font-bold text-slate-900 text-xs">₹{item.total_price.toFixed(2)}</span>
-                      </div>
+                <Button onClick={handleSaveOptionModifiers} disabled={isSavingPrice} size="lg" plate>
+                  Save pricing rules
+                </Button>
+              </>
+            ) : (
+              <p className="text-body text-ink-500">
+                This product has no configurable options.
+              </p>
+            )}
+          </div>
+        </Panel>
+      )}
 
-                      {/* Display configured choices */}
-                      <div className="flex flex-wrap gap-1 text-[9px]">
-                        {Object.entries(item.selected_options).map(([k, v]) => (
-                          <span key={k} className="bg-slate-100 text-slate-600 border border-slate-150 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                            {k}: {v}
-                          </span>
-                        ))}
-                      </div>
+      {/* ================= ORDER DETAIL ================= */}
+      {selectedOrder && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink-950/70 p-4 sm:p-8"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="order-modal-title"
+        >
+          <div className="animate-fade-rise my-auto w-full max-w-5xl rounded-xl border border-ink-200 bg-white shadow-card">
+            <ColourStrip />
 
-                      {/* Files assets */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                        {/* Preview proof thumbnail */}
-                        <div className="border border-slate-200 rounded-xl overflow-hidden p-2 text-center bg-slate-50">
-                          <span className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Visual Preview proof</span>
-                          <div className="aspect-[4/3] bg-white rounded-lg overflow-hidden border border-slate-100 relative">
-                            {item.preview_file_url ? (
-                              <img src={item.preview_file_url} className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-[9px] text-slate-400 font-medium absolute inset-0 flex items-center justify-center">No preview available</span>
-                            )}
-                          </div>
-                        </div>
+            {/* Header */}
+            <div className="flex items-start justify-between gap-4 border-b border-ink-200 p-5 sm:p-6">
+              <div className="min-w-0">
+                <Badge tone="neutral">Order management</Badge>
+                <h2 id="order-modal-title" className="tnum mt-2.5 text-title-l">
+                  {selectedOrder.id}
+                </h2>
+                <p className="mt-1 font-mono text-body-s text-ink-500">
+                  Placed {new Date(selectedOrder.created_at).toLocaleString('en-IN')}
+                </p>
+              </div>
+              <div className="flex flex-none items-center gap-3">
+                <Badge tone={selectedOrder.fulfillment_type === 'delivery' ? 'neutral' : 'warning'}>
+                  {selectedOrder.fulfillment_type === 'delivery' ? (
+                    <Truck size={11} aria-hidden="true" />
+                  ) : (
+                    <Building size={11} aria-hidden="true" />
+                  )}
+                  {selectedOrder.fulfillment_type}
+                </Badge>
+                <button
+                  type="button"
+                  onClick={() => setSelectedOrder(null)}
+                  className="flex h-8 w-8 items-center justify-center rounded-sm text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-950"
+                  aria-label="Close order"
+                >
+                  <X size={17} />
+                </button>
+              </div>
+            </div>
 
-                        {/* Original Print File download */}
-                        <div className="border border-slate-200 rounded-xl p-3 bg-slate-50 flex flex-col justify-between items-center text-center">
-                          <div>
-                            <span className="text-[9px] font-bold text-slate-400 uppercase block mb-1">Print-Ready File</span>
-                            <span className="text-[10px] font-bold text-slate-700 line-clamp-2 leading-tight">
-                              {item.product_slug}-design-raw.png
-                            </span>
-                          </div>
-                          
-                          {item.original_file_url ? (
-                            <a
-                              href={item.original_file_url}
-                              download={`${item.product_slug}-order-${selectedOrder.id}-design`}
-                              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-[10px] shadow-sm flex items-center justify-center gap-1 mt-3"
-                            >
-                              <Download size={12} />
-                              Download Design File
-                            </a>
-                          ) : (
-                            <span className="text-[9px] text-slate-400 font-semibold bg-slate-200 px-3 py-1.5 rounded-lg mt-3 w-full block">
-                              No upload (custom print)
-                            </span>
-                          )}
-                        </div>
-                      </div>
+            <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-12">
+              {/* Left: customer + items */}
+              <div className="space-y-6 lg:col-span-7">
+                <section>
+                  <h3 className="label-caps mb-3">Customer</h3>
+                  <dl className="grid gap-2 sm:grid-cols-2">
+                    <div className="flex items-center gap-2 text-body-s text-ink-700">
+                      <dt className="sr-only">Name</dt>
+                      <User size={14} className="flex-none text-ink-300" aria-hidden="true" />
+                      <dd className="truncate">{selectedOrder.customer_name}</dd>
                     </div>
-                  ))}
-                </div>
+                    <div className="flex items-center gap-2 text-body-s text-ink-700">
+                      <dt className="sr-only">Phone</dt>
+                      <Phone size={14} className="flex-none text-ink-300" aria-hidden="true" />
+                      <dd className="tnum">{selectedOrder.customer_phone}</dd>
+                    </div>
+                    <div className="flex items-center gap-2 text-body-s text-ink-700 sm:col-span-2">
+                      <dt className="sr-only">Email</dt>
+                      <Notebook size={14} className="flex-none text-ink-300" aria-hidden="true" />
+                      <dd className="truncate">{selectedOrder.customer_email}</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                {selectedOrder.fulfillment_type === 'delivery' && (
+                  <section>
+                    <h3 className="label-caps mb-2.5">Delivery address</h3>
+                    <p className="text-body-s leading-relaxed text-ink-700">
+                      {selectedOrder.delivery_address}, {selectedOrder.delivery_city},{' '}
+                      {selectedOrder.delivery_state} — {selectedOrder.delivery_pincode}
+                    </p>
+                  </section>
+                )}
+
+                <section>
+                  <h3 className="label-caps mb-3">Items configured</h3>
+                  <div className="space-y-3">
+                    {selectedOrder.items?.map((item, i) => (
+                      <article key={item.id} className="rounded-sm border border-ink-200 p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <h4 className="font-display text-body font-bold text-ink-950">
+                              {item.product_name}
+                            </h4>
+                            <p className="tnum mt-0.5 font-mono text-micro uppercase tracking-wider2 text-ink-400">
+                              {item.quantity} units
+                            </p>
+                          </div>
+                          <span className="tnum shrink-0 font-display text-body font-bold text-ink-950">
+                            ₹{item.total_price.toFixed(2)}
+                          </span>
+                        </div>
+
+                        <ul className="mt-3 flex flex-wrap gap-1.5">
+                          {Object.entries(item.selected_options).map(([k, v]) => (
+                            <li
+                              key={k}
+                              className="rounded-sm border border-ink-200 bg-ink-50 px-2 py-0.5 font-mono text-micro text-ink-600"
+                            >
+                              <span className="text-ink-400">{k}</span> {v}
+                            </li>
+                          ))}
+                        </ul>
+
+                        <div className="mt-4 grid gap-3 border-t border-ink-100 pt-4 sm:grid-cols-2">
+                          <div>
+                            <span className="label-caps">Approved proof</span>
+                            <div className="mt-2 aspect-[4/3] overflow-hidden rounded-sm border border-ink-200 bg-white">
+                              {item.preview_file_url ? (
+                                <img
+                                  src={item.preview_file_url}
+                                  alt={`Proof for ${item.product_name}`}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <span className="flex h-full items-center justify-center text-body-s text-ink-400">
+                                  No proof
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col">
+                            <span className="label-caps">Print-ready file</span>
+                            <p className="mt-2 truncate font-mono text-micro text-ink-500">
+                              {item.product_slug}-design-raw.png
+                            </p>
+                            <div className="mt-auto pt-4">
+                              {item.original_file_url ? (
+                                <a
+                                  href={item.original_file_url}
+                                  download={`${item.product_slug}-order-${selectedOrder.id}-design`}
+                                  className="inline-flex w-full items-center justify-center gap-1.5 rounded-sm bg-ink-950 px-3 py-2.5 font-mono text-micro font-medium uppercase tracking-wider2 text-white transition-colors hover:bg-primary-600"
+                                >
+                                  <Download size={13} aria-hidden="true" />
+                                  Download file
+                                </a>
+                              ) : (
+                                <p className="rounded-sm border border-ink-200 bg-ink-50 px-3 py-2.5 text-center font-mono text-micro text-ink-400">
+                                  No upload
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </section>
               </div>
 
-              {/* Right: State actions panel */}
-              <div className="lg:col-span-5 bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-5 h-fit">
-                {/* Price break */}
-                <div className="border-b pb-4 text-xs font-semibold text-slate-500 space-y-1.5">
-                  <div className="flex justify-between">
-                    <span>Order Subtotal:</span>
-                    <span className="text-slate-800">₹{selectedOrder.subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Shipping charge:</span>
-                    <span className="text-slate-800">{selectedOrder.delivery_charge > 0 ? `₹${selectedOrder.delivery_charge.toFixed(2)}` : 'FREE'}</span>
-                  </div>
-                  <div className="flex justify-between font-black text-slate-900 border-t pt-2 mt-1 text-sm">
-                    <span>Paid Amount:</span>
-                    <span>₹{selectedOrder.total_amount.toFixed(2)}</span>
-                  </div>
-                </div>
+              {/* Right: actions */}
+              <div className="space-y-6 lg:col-span-5">
+                <div className="rounded-sm border border-ink-200 bg-ink-50 p-4">
+                  <dl className="divide-y divide-ink-200">
+                    <SpecRow label="Subtotal" value={`₹${selectedOrder.subtotal.toFixed(2)}`} />
+                    <SpecRow
+                      label="Delivery"
+                      value={
+                        selectedOrder.delivery_charge > 0 ? (
+                          `₹${selectedOrder.delivery_charge.toFixed(2)}`
+                        ) : (
+                          <span className="text-emerald-700">Free</span>
+                        )
+                      }
+                    />
+                    <SpecRow
+                      label="Paid"
+                      value={`₹${selectedOrder.total_amount.toFixed(2)}`}
+                      strong
+                      className="pb-2 pt-3"
+                    />
+                  </dl>
 
-                {/* Payments */}
-                <div className="space-y-1 text-xs">
-                  <span className="font-bold text-slate-700 block">Transaction Reference</span>
-                  <div className="bg-white border rounded-xl p-3 text-[10px] space-y-1">
-                    <div>
-                      <span className="text-slate-400 font-semibold uppercase pr-1.5">Status:</span>
-                      <span className={`font-extrabold ${selectedOrder.payment_status === 'PAID' ? 'text-emerald-600' : 'text-red-500'}`}>{selectedOrder.payment_status}</span>
-                    </div>
+                  <div className="mt-4 border-t border-ink-200 pt-4">
+                    <span className="label-caps">Transaction</span>
+                    <p className="mt-2 flex items-center gap-2 text-body-s">
+                      <span className="label-caps">Status</span>
+                      <Badge tone={selectedOrder.payment_status === 'PAID' ? 'success' : 'warning'}>
+                        {selectedOrder.payment_status}
+                      </Badge>
+                    </p>
                     {selectedOrder.payment_id && (
-                      <div>
-                        <span className="text-slate-400 font-semibold uppercase pr-1.5">Txn ID:</span>
-                        <span className="font-mono text-slate-700">{selectedOrder.payment_id}</span>
-                      </div>
+                      <p className="mt-2 flex items-baseline gap-2">
+                        <span className="label-caps">Txn</span>
+                        <span className="truncate font-mono text-micro text-ink-600">
+                          {selectedOrder.payment_id}
+                        </span>
+                      </p>
                     )}
                   </div>
                 </div>
 
-                {/* Change status control */}
-                <div className="space-y-3">
-                  <span className="font-bold text-slate-700 text-xs block">Update Printing Status</span>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px]">
+                <section>
+                  <h3 className="label-caps mb-3">Move to status</h3>
+                  <div className="grid grid-cols-2 gap-2">
                     {[
-                      { status: 'PAID', color: 'bg-indigo-600 text-white' },
-                      { status: 'CONFIRMED', color: 'bg-blue-600 text-white' },
-                      { status: 'PRINTING', color: 'bg-purple-600 text-white' },
-                      { status: 'READY', color: 'bg-amber-600 text-white' },
-                      { status: 'OUT_FOR_DELIVERY', color: 'bg-cyan-600 text-white' },
-                      { status: 'DELIVERED', color: 'bg-emerald-600 text-white' },
-                      { status: 'CANCELLED', color: 'bg-red-600 text-white' }
-                    ].map(st => (
-                      <button
-                        key={st.status}
-                        disabled={isUpdatingStatus || selectedOrder.order_status === st.status}
-                        onClick={() => handleUpdateOrderStatus(selectedOrder.id, st.status as OrderStatus)}
-                        className={`p-2.5 rounded-xl font-bold uppercase transition-all shadow-sm ${
-                          selectedOrder.order_status === st.status
-                            ? 'bg-slate-200 text-slate-400 border border-slate-350 cursor-not-allowed'
-                            : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
-                        }`}
-                      >
-                        {st.status.replace(/_/g, ' ')}
-                      </button>
-                    ))}
+                      'PAID',
+                      'CONFIRMED',
+                      'PRINTING',
+                      'READY',
+                      'OUT_FOR_DELIVERY',
+                      'DELIVERED',
+                      'CANCELLED',
+                    ].map(status => {
+                      const current = selectedOrder.order_status === status;
+                      return (
+                        <button
+                          key={status}
+                          type="button"
+                          disabled={isUpdatingStatus || current}
+                          onClick={() => handleUpdateOrderStatus(selectedOrder.id, status as OrderStatus)}
+                          className={
+                            current
+                              ? 'cursor-default rounded-sm border border-ink-200 bg-ink-100 px-2.5 py-2.5 font-mono text-micro font-medium uppercase tracking-wider2 text-ink-400'
+                              : status === 'CANCELLED'
+                              ? 'rounded-sm border border-ink-200 bg-white px-2.5 py-2.5 font-mono text-micro font-medium uppercase tracking-wider2 text-ink-700 transition-colors hover:border-red-400 hover:bg-red-50 hover:text-red-700'
+                              : 'rounded-sm border border-ink-200 bg-white px-2.5 py-2.5 font-mono text-micro font-medium uppercase tracking-wider2 text-ink-700 transition-colors hover:border-ink-950 hover:bg-ink-950 hover:text-white'
+                          }
+                        >
+                          {status.replace(/_/g, ' ')}
+                        </button>
+                      );
+                    })}
                   </div>
-                </div>
+                </section>
 
-                {/* Status updates log note */}
-                <div className="space-y-1.5">
-                  <span className="font-bold text-slate-700 text-xs block">Press Notification Note (Sent to customer)</span>
+                <section>
+                  <h3 className="label-caps mb-2.5">Notification to customer</h3>
                   <textarea
                     rows={3}
                     value={statusUpdateNote}
                     onChange={e => setStatusUpdateNote(e.target.value)}
-                    placeholder="e.g. Plates loaded, ready for shipping courier..."
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none"
+                    placeholder="e.g. Plates loaded, wrapping for dispatch…"
+                    aria-label="Status notification note"
                   />
-                  <span className="block text-[9px] text-slate-400 font-semibold leading-normal">
-                    This message will be appended to the order timeline history and logged on customer WhatsApp notifications.
-                  </span>
-                </div>
+                  <p className="mt-2 text-body-s leading-relaxed text-ink-400">
+                    Sent to the customer on WhatsApp with this status update and recorded on the order
+                    timeline.
+                  </p>
+                </section>
               </div>
             </div>
           </div>

@@ -1,61 +1,148 @@
 import React from 'react';
 import Link from 'next/link';
 import { Product } from '../types';
-import { Settings } from 'lucide-react';
+import { ArrowRight, Truck, Tag, Sparkles } from 'lucide-react';
+import { dealUnit } from '../lib/catalog';
+import type { Deal } from '../lib/catalog';
+import { Ribbon } from './ui/press';
+import { cn } from '@/lib/utils';
 
+/**
+ * Product card.
+ *
+ * Leads with the picture, the starting price and the deepest real discount,
+ * because that is what someone browsing a print shop actually scans for. The
+ * whole card is one link target — clicking anywhere but the button gets you
+ * to the configurator, which is where the order is actually configured.
+ *
+ * Badges are rationed: one ribbon on the photograph (the deal, or the
+ * bestseller mark when there is no deal), one line of small print under the
+ * price. A card that shouts three times gets read zero times.
+ */
 interface ProductCardProps {
   product: Product;
+  className?: string;
+  /** Compact variant for dense strips; drops the description. */
+  compact?: boolean;
+  /** Deepest quantity-tier discount for this product, if it has one. */
+  deal?: Deal;
+  /** Marks the line as one of the shop's bestsellers. */
+  bestseller?: boolean;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  className,
+  compact,
+  deal,
+  bestseller,
+}) => {
+  const perSqft = product.slug === 'flex-banners';
+  const href = `/customize/${product.slug}`;
+  const hasDeal = Boolean(deal && deal.pct > 0);
+
   return (
-    <div className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full hover:-translate-y-1">
-      {/* Product Image Cover */}
-      <div className="relative aspect-[4/3] bg-slate-100 overflow-hidden">
-        <img
-          src={product.image_url}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
-        />
-        <div className="absolute top-3 left-3">
-          <span className="bg-white/90 backdrop-blur-sm text-[10px] font-bold text-slate-800 px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm border border-slate-100">
-            {product.category}
-          </span>
+    <article
+      className={cn(
+        'group relative flex h-full flex-col overflow-hidden rounded-xl border border-ink-200 bg-white',
+        'shadow-card transition-all duration-200 ease-press',
+        'hover:-translate-y-0.5 hover:border-ink-300 hover:shadow-card-hover',
+        className,
+      )}
+    >
+      <Link href={href} className="flex h-full flex-col focus-visible:outline-none">
+        {/* Image: square, uncropped-feeling, fills the card top */}
+        <div className="relative aspect-square overflow-hidden bg-ink-50">
+          <img
+            src={product.image_url}
+            alt={product.name}
+            className="h-full w-full object-cover transition-transform duration-500 ease-press group-hover:scale-105"
+            loading="lazy"
+            decoding="async"
+          />
+          {product.category && (
+            <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 font-mono text-micro uppercase tracking-wider2 text-ink-700 shadow-sm backdrop-blur-sm">
+              {product.category}
+            </span>
+          )}
+
+          {/* The one ribbon on the picture: the deal if there is one, the
+              bestseller mark otherwise. */}
+          {hasDeal && deal ? (
+            <Ribbon
+              tone="accent"
+              icon={<Tag size={11} aria-hidden="true" />}
+              className="absolute right-3 top-3"
+            >
+              Save {deal.pct}%
+            </Ribbon>
+          ) : bestseller ? (
+            <Ribbon
+              tone="ink"
+              icon={<Sparkles size={11} aria-hidden="true" />}
+              className="absolute right-3 top-3"
+            >
+              Bestseller
+            </Ribbon>
+          ) : null}
         </div>
-      </div>
 
-      {/* Info Content */}
-      <div className="p-5 flex flex-col flex-grow">
-        <h3 className="font-bold text-slate-900 text-lg leading-tight group-hover:text-primary-700 transition-colors">
-          {product.name}
-        </h3>
-        
-        <p className="text-slate-500 text-xs mt-2 leading-relaxed flex-grow">
-          {product.description}
-        </p>
+        <div className="flex flex-1 flex-col p-4 sm:p-5">
+          {/* Bestseller mark also sits in the body when the ribbon is taken
+              up by a deal, so the two never fight for the same corner. */}
+          {bestseller && hasDeal && (
+            <span className="mb-2 inline-flex w-fit items-center gap-1 rounded-full bg-primary-50 px-2.5 py-1 font-mono text-micro font-semibold uppercase tracking-wider2 text-primary-700 ring-1 ring-inset ring-primary-200">
+              <Sparkles size={11} aria-hidden="true" />
+              Bestseller
+            </span>
+          )}
 
-        {/* Pricing & CTA */}
-        <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
-              Starting from
-            </span>
-            <span className="text-xl font-extrabold text-slate-900">
-              ₹{product.base_price}
-              {product.slug === 'flex-banners' && <span className="text-xs font-semibold text-slate-500"> / sqft</span>}
-            </span>
+          <h3 className="font-display text-title font-bold leading-tight text-ink-950 transition-colors group-hover:text-primary-600">
+            {product.name}
+          </h3>
+
+          {!compact && (
+            <p className="mt-2 line-clamp-2 flex-1 text-body-s leading-relaxed text-ink-500">
+              {product.description}
+            </p>
+          )}
+
+          {/* Price rail — the number that decides whether anyone looks twice */}
+          <div className="mt-4 border-t border-ink-100 pt-4">
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <span className="label-caps block">Starts at</span>
+                <span className="tnum mt-0.5 block font-display text-title-l font-extrabold leading-none text-ink-950">
+                  ₹{product.base_price}
+                  {perSqft && (
+                    <span className="font-mono text-body-s font-medium text-ink-500">/sqft</span>
+                  )}
+                </span>
+              </div>
+
+              <span className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-primary-500 px-3.5 font-mono text-micro font-semibold uppercase tracking-wider2 text-white transition-colors group-hover:bg-primary-600">
+                Configure
+                <ArrowRight
+                  size={13}
+                  className="transition-transform duration-200 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </span>
+            </div>
+
+            {hasDeal && deal ? (
+              <p className="mt-2.5 font-mono text-micro uppercase tracking-wider2 text-primary-700">
+                {deal.pct}% off at {deal.minQty}+ {dealUnit(product.slug)}
+              </p>
+            ) : (
+              <p className="mt-2.5 flex items-center gap-1.5 font-mono text-micro uppercase tracking-wider2 text-ink-500">
+                <Truck size={12} aria-hidden="true" />
+                Free counter pickup
+              </p>
+            )}
           </div>
-
-          <Link
-            href={`/customize/${product.slug}`}
-            className="flex items-center gap-1.5 bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all"
-          >
-            <Settings size={14} className="animate-spin-slow" />
-            Customize
-          </Link>
         </div>
-      </div>
-    </div>
+      </Link>
+    </article>
   );
 };

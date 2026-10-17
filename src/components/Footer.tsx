@@ -1,101 +1,191 @@
 import React from 'react';
 import Link from 'next/link';
-import { Mail, Phone, MapPin, Printer, ShieldCheck } from 'lucide-react';
+import { ButtonLink, ColourStrip, RegistrationMark } from './ui/press';
+import { SITE } from '../lib/site';
+import { CATEGORIES, categoryHref } from '../lib/catalog';
+import { Mail, Phone, MapPin, ShieldCheck, ArrowUpRight } from 'lucide-react';
+
+const CATALOG_LINKS = [
+  { href: '/catalog', label: 'Full catalog' },
+  { href: '/customize/business-cards', label: 'Business cards' },
+  { href: '/customize/flex-banners', label: 'Flex & banner signage' },
+  { href: '/customize/t-shirts', label: 'Custom apparel' },
+  { href: '/customize/flyers', label: 'Flyers & posters' },
+  { href: '/customize/custom-print', label: 'Any other job' },
+];
 
 export const Footer: React.FC = () => {
+  const year = new Date().getFullYear();
+
   return (
-    <footer className="bg-slate-900 text-slate-300 border-t border-slate-800">
-      <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand Info */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-white font-extrabold text-lg">
-              <div className="bg-primary-600 text-white p-1 rounded-md">
-                <Printer size={16} />
-              </div>
-              <span>Print Vatika</span>
+    <footer className="mt-auto bg-ink-950 text-ink-300">
+      <ColourStrip />
+
+      <div className="mx-auto max-w-sheet px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid gap-10 md:grid-cols-12">
+          {/* Brand */}
+          <div className="md:col-span-4 lg:col-span-5">
+            <div className="flex items-center gap-2.5">
+              <img
+                src="/images/logo-mark.png"
+                alt=""
+                width={192}
+                height={192}
+                className="h-9 w-9 flex-none rounded-lg ring-1 ring-white/15"
+              />
+              <span className="font-display text-title font-extrabold tracking-tightest text-white">
+                Print<span className="text-primary-400"> Vatika</span>
+              </span>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              New Delhi's premier commercial printing press. Premium business cards, flex banners, customized t-shirts, flyers, stickers, and specialty printing delivered right to your doorstep.
+
+            {/* The mark's own tagline, set in the site's type rather than
+                shipped inside the image so it stays legible at footer size. */}
+            <p className="mt-4 font-mono text-micro uppercase tracking-wider2 text-primary-400">
+              We print, you impress
             </p>
-            <div className="flex items-center gap-1.5 text-xs text-slate-400">
-              <ShieldCheck size={14} className="text-emerald-500" />
-              <span>Razorpay Verified Safe Payments</span>
+
+            <p className="mt-5 max-w-sm text-body-s leading-relaxed text-ink-400">
+              A commercial press on Himmat Singh Marg, minutes from Saket Metro. Offset and
+              digital printing for businesses across Delhi NCR — proofed before it ships.
+            </p>
+
+            <div className="mt-6 flex items-center gap-2 text-body-s text-ink-300">
+              <ShieldCheck size={15} className="text-emerald-400" aria-hidden="true" />
+              Payments verified server-side via Razorpay
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-sm font-bold text-white tracking-wider uppercase mb-4">Services</h3>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <Link href="/catalog" className="hover:text-white transition-colors">
-                  Product Catalog
-                </Link>
-              </li>
-              <li>
-                <Link href="/customize/business-cards" className="hover:text-white transition-colors">
-                  Business Cards
-                </Link>
-              </li>
-              <li>
-                <Link href="/customize/t-shirts" className="hover:text-white transition-colors">
-                  Custom Apparel
-                </Link>
-              </li>
-              <li>
-                <Link href="/customize/flex-banners" className="hover:text-white transition-colors">
-                  Flex & Banner Signage
-                </Link>
-              </li>
+          {/* Catalog */}
+          <div className="md:col-span-4 lg:col-span-3">
+            <h3 className="label-caps flex items-center gap-2 text-ink-400">
+              <RegistrationMark className="text-primary-500" />
+              What we print
+            </h3>
+            <ul className="mt-4 space-y-2.5">
+              {CATALOG_LINKS.map(l => (
+                <li key={l.href}>
+                  <Link
+                    href={l.href}
+                    className="text-body-s text-ink-300 transition-colors hover:text-white"
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            <h3 className="label-caps mt-8 text-ink-400">Shop by category</h3>
+            <ul className="mt-4 space-y-2.5">
+              {CATEGORIES.map(c => (
+                <li key={c.key}>
+                  <Link
+                    href={categoryHref(c)}
+                    className="text-body-s text-ink-300 transition-colors hover:text-white"
+                  >
+                    {c.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Business Hours */}
-          <div>
-            <h3 className="text-sm font-bold text-white tracking-wider uppercase mb-4">Press Hours</h3>
-            <ul className="space-y-2 text-xs text-slate-400">
-              <li>Monday - Saturday: 9:00 AM - 8:00 PM</li>
-              <li>Sunday: <span className="text-amber-500 font-semibold">Closed</span></li>
-              <li className="pt-2 text-[10px] text-slate-500">Online orders accepted 24/7</li>
+          {/* Hours */}
+          <div className="md:col-span-4 lg:col-span-2">
+            <h3 className="label-caps text-ink-400">Counter hours</h3>
+            <ul className="mt-4 space-y-2.5">
+              {SITE.hours.map(h => (
+                <li key={h.days} className="text-body-s">
+                  <span className="block text-ink-400">{h.days}</span>
+                  <span className="text-ink-200">{h.time}</span>
+                </li>
+              ))}
             </ul>
+            <p className="mt-4 border-t border-ink-800 pt-4 font-mono text-micro uppercase tracking-wider2 text-ink-400">
+              Online orders 24/7
+            </p>
           </div>
 
-          {/* Contact Details */}
-          <div>
-            <h3 className="text-sm font-bold text-white tracking-wider uppercase mb-4">Contact Us</h3>
-            <ul className="space-y-3 text-xs">
-              <li className="flex items-start gap-2">
-                <MapPin size={16} className="text-primary-400 shrink-0 mt-0.5" />
-                <span className="text-slate-400 leading-tight">
-                  F-298, Himmat Singh Marg, Near Saket Metro, Lado Sarai, New Delhi - 110030
-                </span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Phone size={16} className="text-primary-400 shrink-0" />
-                <a href="tel:09811427517" className="text-slate-400 font-semibold hover:text-white transition-colors">
-                  +91 98114 27517
+          {/* Contact */}
+          <div className="md:col-span-12 lg:col-span-2">
+            <h3 className="label-caps text-ink-400">Reach the press</h3>
+            <ul className="mt-4 space-y-4">
+              <li className="flex gap-2.5">
+                <MapPin size={15} className="mt-0.5 flex-none text-primary-400" aria-hidden="true" />
+                <a
+                  href={SITE.mapLink}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="text-body-s leading-relaxed text-ink-300 transition-colors hover:text-white"
+                >
+                  {SITE.street}
+                  <br />
+                  {SITE.city} {SITE.pincode}
                 </a>
               </li>
-              <li className="flex items-center gap-2">
-                <Mail size={16} className="text-primary-400 shrink-0" />
-                <a href="mailto:orders@printvatika.com" className="text-slate-400 hover:text-white transition-colors">
-                  orders@printvatika.com
+              <li className="flex gap-2.5">
+                <Phone size={15} className="mt-0.5 flex-none text-primary-400" aria-hidden="true" />
+                <a
+                  href={`tel:${SITE.phoneRaw}`}
+                  className="tnum text-body-s text-ink-300 transition-colors hover:text-white"
+                >
+                  {SITE.phoneDisplay}
+                </a>
+              </li>
+              <li className="flex gap-2.5">
+                <Mail size={15} className="mt-0.5 flex-none text-primary-400" aria-hidden="true" />
+                <a
+                  href={`mailto:${SITE.email}`}
+                  className="text-body-s text-ink-300 transition-colors hover:text-white"
+                >
+                  {SITE.email}
                 </a>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-slate-800 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p>© {new Date().getFullYear()} Print Vatika. All rights reserved.</p>
-          <div className="flex space-x-6 text-[11px]">
-            <a href="/privacy.html" className="hover:text-slate-300 transition-colors">Privacy Policy</a>
-            <a href="/terms.html" className="hover:text-slate-300 transition-colors">Terms of Service</a>
-            <Link href="/admin/dashboard" className="hover:text-slate-300 font-medium transition-colors">
-              Admin Portal
+        {/* Call to action strip */}
+        <div className="mt-12 flex flex-col gap-4 border-t border-ink-800 pt-8 sm:flex-row sm:items-center sm:justify-between">
+          <p className="max-w-md font-display text-lead-l font-bold leading-tight text-white">
+            Have artwork ready? Upload it and see the proof before you pay.
+          </p>
+          <ButtonLink
+            href="/customize/custom-print"
+            variant="solid"
+            size="lg"
+            className="shrink-0"
+          >
+            Upload artwork
+            <ArrowUpRight size={16} aria-hidden="true" />
+          </ButtonLink>
+        </div>
+      </div>
+
+      <div className="border-t border-ink-800">
+        <div className="mx-auto flex max-w-sheet flex-col gap-3 px-4 py-5 text-body-s text-ink-400 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+          <p>
+            © {year} {SITE.name}. All rights reserved.
+          </p>
+          <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Legal">
+            <Link href="/catalog" className="transition-colors hover:text-ink-200">
+              Catalog
             </Link>
-          </div>
+            <Link href="/track" className="transition-colors hover:text-ink-200">
+              Track order
+            </Link>
+            <Link
+              href={`mailto:${SITE.email}`}
+              className="transition-colors hover:text-ink-200"
+            >
+              Enquiries
+            </Link>
+            <Link
+              href="/admin/dashboard"
+              className="font-mono text-micro uppercase tracking-wider2 text-ink-400 transition-colors hover:text-ink-200"
+            >
+              Staff login
+            </Link>
+          </nav>
         </div>
       </div>
     </footer>

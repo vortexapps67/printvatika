@@ -54,7 +54,7 @@ function getSeedData() {
       slug: 'business-cards',
       description: 'Premium visiting cards to make a lasting first impression. Single/Double sided on heavy cardstock.',
       category: 'Stationery',
-      image_url: 'https://images.unsplash.com/photo-1589156280159-27698a70f29e?w=500&auto=format&fit=crop&q=80',
+      image_url: '/images/business-cards.jpg',
       base_price: 1.00,
       is_active: true,
     },
@@ -64,7 +64,7 @@ function getSeedData() {
       slug: 't-shirts',
       description: 'High-quality cotton t-shirts with front, back, or double-sided printing. Choose colors & sizes.',
       category: 'Apparel',
-      image_url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500&auto=format&fit=crop&q=80',
+      image_url: '/images/t-shirts.jpg',
       base_price: 249.00,
       is_active: true,
     },
@@ -74,7 +74,7 @@ function getSeedData() {
       slug: 'flex-banners',
       description: 'Weatherproof indoor/outdoor advertising flex banners. Enter custom dimensions and finishes.',
       category: 'Signage',
-      image_url: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=500&auto=format&fit=crop&q=80',
+      image_url: '/images/flex-banners.jpg',
       base_price: 15.00, // per sqft
       is_active: true,
     },
@@ -84,7 +84,7 @@ function getSeedData() {
       slug: 'flyers',
       description: 'Vibrant promotional flyers to spread the word. Perfect for distribution and letterbox drops.',
       category: 'Marketing',
-      image_url: 'https://images.unsplash.com/photo-1606857521015-7f9fcf423740?w=500&auto=format&fit=crop&q=80',
+      image_url: '/images/flyers.jpg',
       base_price: 2.00,
       is_active: true,
     },
@@ -94,7 +94,7 @@ function getSeedData() {
       slug: 'posters',
       description: 'Large high-definition wall posters for events, announcements, or custom decor.',
       category: 'Marketing',
-      image_url: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=500&auto=format&fit=crop&q=80',
+      image_url: '/images/posters.jpg',
       base_price: 49.00,
       is_active: true,
     },
@@ -104,7 +104,7 @@ function getSeedData() {
       slug: 'brochures',
       description: 'Professional folded bi-fold or tri-fold brochures to showcase your brand product catalog.',
       category: 'Marketing',
-      image_url: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&auto=format&fit=crop&q=80',
+      image_url: '/images/brochures.jpg',
       base_price: 8.00,
       is_active: true,
     },
@@ -114,7 +114,7 @@ function getSeedData() {
       slug: 'stickers',
       description: 'Die-cut custom shape circle or square labels. Waterproof vinyl options available.',
       category: 'Stationery',
-      image_url: 'https://images.unsplash.com/photo-1572375995501-4b0894dbe0d7?w=500&auto=format&fit=crop&q=80',
+      image_url: '/images/stickers.svg',
       base_price: 3.00,
       is_active: true,
     },
@@ -124,7 +124,7 @@ function getSeedData() {
       slug: 'custom-print',
       description: 'Have a unique requirement? Upload your files and specify requirements for a custom quotation.',
       category: 'Specialty',
-      image_url: 'https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?w=500&auto=format&fit=crop&q=80',
+      image_url: '/images/custom-print.jpg',
       base_price: 99.00,
       is_active: true,
     }
@@ -478,6 +478,13 @@ export class DbClient {
   static async getPricingRules(slug: string): Promise<PricingRule[]> {
     const db = readLocalDb();
     return db.pricing_rules.filter(r => r.product_slug === slug);
+  }
+
+  /** Every tier, everywhere. The storefront uses this to show each product's
+   *  deepest real discount instead of inventing a "was ₹X" price. */
+  static async getAllPricingRules(): Promise<PricingRule[]> {
+    const db = readLocalDb();
+    return db.pricing_rules;
   }
 
   // Create an Order

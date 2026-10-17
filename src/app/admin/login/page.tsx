@@ -2,12 +2,15 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Printer, ShieldAlert, Loader2, KeyRound } from 'lucide-react';
+import { ShieldAlert, Loader2, KeyRound, TriangleAlert } from 'lucide-react';
+import { Button, ColourStrip, Field, RegistrationMark } from '../../../components/ui/press';
+import { SITE } from '../../../lib/site';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('admin@printerwala.com'); // Autofill defaults for easier evaluation
-  const [password, setPassword] = useState('admin123'); // Autofill defaults for easier evaluation
+  // Autofilled for local evaluation. Clear before any public deploy.
+  const [email, setEmail] = useState('admin@printerwala.com');
+  const [password, setPassword] = useState('admin123');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -20,7 +23,7 @@ export default function AdminLoginPage() {
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
       });
 
       if (!res.ok) {
@@ -37,75 +40,89 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="flex-grow flex items-center justify-center py-20 px-4 sm:px-6 lg:px-8 bg-slate-100/50">
-      <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-md p-8 shadow-xl space-y-6">
-        {/* Header branding */}
-        <div className="text-center space-y-2">
-          <div className="bg-primary-600 text-white p-2.5 rounded-2xl w-fit mx-auto shadow-md">
-            <Printer size={24} />
+    <div className="flex flex-grow items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md rounded-xl border border-ink-200 bg-white shadow-card">
+        <ColourStrip />
+
+        <div className="p-7 sm:p-8">
+          <img
+            src="/images/logo-lockup.webp"
+            alt="Print Vatika"
+            width={520}
+            height={404}
+            className="h-auto w-[190px]"
+          />
+
+          <div className="mt-7 flex items-center gap-2.5">
+            <RegistrationMark className="text-primary-500" />
+            <span className="label-caps">Staff only</span>
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">
-            Press Administration
-          </h1>
-          <p className="text-slate-400 text-xs">
-            Authenticate to manage orders and pricing rates
+
+          <h1 className="mt-4 text-title-l">Press administration</h1>
+          <p className="mt-2 text-body text-ink-500">
+            Manage the order queue, catalog and pricing rules.
           </p>
-        </div>
 
-        {/* Login form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1 text-left">
-            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Admin Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="admin@email.com"
-              required
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            <Field label="Admin email" htmlFor="email" required>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="admin@printvatika.com"
+                autoComplete="username"
+                required
+              />
+            </Field>
 
-          <div className="space-y-1 text-left">
-            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Access Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="Enter password"
-              required
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
-            />
-          </div>
+            <Field label="Access password" htmlFor="password" required>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                required
+              />
+            </Field>
 
-          {error && (
-            <div className="flex gap-2 items-center text-xs text-red-700 bg-red-50 border border-red-200 p-3.5 rounded-xl font-bold">
-              <ShieldAlert size={16} className="shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-xs sm:text-sm"
-          >
-            {isLoading ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <>
-                <KeyRound size={16} />
-                Access Dashboard
-              </>
+            {error && (
+              <div
+                role="alert"
+                className="flex items-center gap-2.5 rounded border border-red-300 bg-red-50 px-3.5 py-2.5 text-body-s font-medium text-red-700"
+              >
+                <ShieldAlert size={15} className="flex-none" aria-hidden="true" />
+                {error}
+              </div>
             )}
-          </button>
-        </form>
 
-        {/* Evaluation Help Notice */}
-        <div className="border-t border-slate-100 pt-4 text-[10px] text-slate-400 text-center leading-relaxed">
-          <p className="font-semibold text-slate-500">Local Sandbox Logins:</p>
-          <p>User: <span className="font-mono text-slate-600">admin@printerwala.com</span></p>
-          <p>Pass: <span className="font-mono text-slate-600">admin123</span></p>
+            <Button type="submit" size="lg" plate disabled={isLoading} className="w-full">
+              {isLoading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+                  Checking
+                </>
+              ) : (
+                <>
+                  <KeyRound size={16} aria-hidden="true" />
+                  Access dashboard
+                </>
+              )}
+            </Button>
+          </form>
+
+          {/* Sandbox credentials notice — remove before any public deploy */}
+          <div className="mt-7 flex items-start gap-2.5 border border-amber-300 bg-amber-50 p-3.5">
+            <TriangleAlert size={15} className="mt-0.5 flex-none text-amber-700" aria-hidden="true" />
+            <div className="text-body-s leading-relaxed text-amber-900">
+              <p className="font-semibold">Local sandbox credentials</p>
+              <p className="tnum mt-1 font-mono text-micro">
+                admin@printerwala.com / admin123
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

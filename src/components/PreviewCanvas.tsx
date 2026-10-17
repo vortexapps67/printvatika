@@ -542,104 +542,120 @@ export const PreviewCanvas: React.FC<PreviewCanvasProps> = ({
     });
   };
 
-  return (
-    <div className="flex flex-col items-center bg-slate-50 border border-slate-200 rounded-2xl p-6 w-full max-w-lg shadow-sm">
-      {/* Design Toolbar Card side toggle */}
+return (
+    <div className="w-full max-w-lg rounded-xl border border-ink-200 bg-white shadow-card">
+      {/* Side toggle, shown only for double-sided products */}
       {selectedOptions.sides === 'double' && (
-        <div className="flex items-center space-x-2 bg-slate-200 rounded-lg p-1 mb-4">
-          <button
-            type="button"
-            className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${cardSide === 'front' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600'}`}
-            onClick={() => {
-              setCardSide('front');
-              setConfig(prev => ({ ...prev, side: 'front' }));
-            }}
-          >
-            Front Side
-          </button>
-          <button
-            type="button"
-            className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${cardSide === 'back' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600'}`}
-            onClick={() => {
-              setCardSide('back');
-              setConfig(prev => ({ ...prev, side: 'back' }));
-            }}
-          >
-            Back Side
-          </button>
+        <div className="flex border-b border-ink-200 p-1">
+          {(['front', 'back'] as const).map(side => {
+            const active = cardSide === side;
+            return (
+              <button
+                key={side}
+                type="button"
+                onClick={() => {
+                  setCardSide(side);
+                  setConfig(prev => ({ ...prev, side }));
+                }}
+                aria-pressed={active}
+                className={
+                  active
+                    ? 'flex-1 rounded-sm bg-ink-950 px-3 py-2 font-mono text-micro font-medium uppercase tracking-wider2 text-white transition-colors'
+                    : 'flex-1 rounded-sm px-3 py-2 font-mono text-micro font-medium uppercase tracking-wider2 text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-950'
+                }
+              >
+                {side === 'front' ? 'Front' : 'Back'}
+              </button>
+            );
+          })}
         </div>
       )}
 
       {/* Canvas workspace */}
-      <div className="relative border border-slate-300 bg-slate-200 rounded-xl overflow-hidden cursor-move">
-        <canvas
-          ref={canvasRef}
-          width={400}
-          height={380}
-          onMouseDown={handleStartDrag}
-          onMouseMove={handleDrag}
-          onMouseUp={handleStopDrag}
-          onMouseLeave={handleStopDrag}
-          onTouchStart={handleStartDrag}
-          onTouchMove={handleDrag}
-          onTouchEnd={handleStopDrag}
-          className="block touch-none"
-        />
+      <div className="relative overflow-hidden border-b border-ink-200 bg-ink-100 p-4">
+        <div className="mx-auto w-fit">
+          <canvas
+            ref={canvasRef}
+            width={400}
+            height={380}
+            onMouseDown={handleStartDrag}
+            onMouseMove={handleDrag}
+            onMouseUp={handleStopDrag}
+            onMouseLeave={handleStopDrag}
+            onTouchStart={handleStartDrag}
+            onTouchMove={handleDrag}
+            onTouchEnd={handleStopDrag}
+            className={`block touch-none ${imageSrc ? 'cursor-move' : ''}`}
+          />
+        </div>
+
         {imageSrc && (
-          <span className="absolute bottom-2 left-2 bg-slate-900/70 backdrop-blur-md px-2 py-0.5 text-[10px] text-white rounded font-medium">
-            Drag design directly to reposition
+          <span className="pointer-events-none absolute bottom-6 left-6 rounded-sm bg-ink-950/85 px-2 py-1 font-mono text-micro text-white">
+            Drag to reposition
+          </span>
+        )}
+
+        {!imageSrc && (
+          <span className="pointer-events-none absolute inset-x-0 bottom-6 text-center font-mono text-micro uppercase tracking-wider2 text-ink-400">
+            Upload artwork to start placing it
           </span>
         )}
       </div>
 
-      {/* Control Sliders */}
+      {/* Controls */}
       {imageSrc && (
-        <div className="w-full mt-5 space-y-4">
-          {/* Scale Control */}
+        <div className="space-y-5 p-5">
           <div>
-            <div className="flex justify-between text-xs font-semibold text-slate-600 mb-1">
-              <span>Zoom Design</span>
-              <span>{Math.round(config.scale * 200)}%</span>
+            <div className="mb-2 flex items-baseline justify-between">
+              <label htmlFor="zoom" className="label-caps">
+                Zoom
+              </label>
+              <span className="tnum font-mono text-body-s font-medium text-ink-800">
+                {Math.round(config.scale * 200)}%
+              </span>
             </div>
             <input
+              id="zoom"
               type="range"
               min="0.1"
               max="2.0"
               step="0.02"
               value={config.scale}
               onChange={e => setConfig(prev => ({ ...prev, scale: parseFloat(e.target.value) }))}
-              className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
             />
           </div>
 
-          {/* Rotate Control */}
           <div>
-            <div className="flex justify-between text-xs font-semibold text-slate-600 mb-1">
-              <span>Rotate Design</span>
-              <span>{config.rotation}°</span>
+            <div className="mb-2 flex items-baseline justify-between">
+              <label htmlFor="rotate" className="label-caps">
+                Rotation
+              </label>
+              <span className="tnum font-mono text-body-s font-medium text-ink-800">
+                {config.rotation}°
+              </span>
             </div>
             <input
+              id="rotate"
               type="range"
               min="-180"
               max="180"
               step="1"
               value={config.rotation}
               onChange={e => setConfig(prev => ({ ...prev, rotation: parseInt(e.target.value) }))}
-              className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
             />
           </div>
 
-          <div className="flex justify-between items-center pt-2">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-ink-100 pt-4">
             <button
               type="button"
               onClick={handleReset}
-              className="text-xs text-primary-600 hover:text-primary-700 font-semibold flex items-center gap-1"
+              className="font-mono text-micro font-medium uppercase tracking-wider2 text-primary-600 transition-colors hover:text-primary-700"
             >
-              Reset Placement
+              Reset placement
             </button>
-            <span className="text-[10px] text-red-500 font-medium flex items-center gap-1">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-              Red line represents print safety bleed line
+            <span className="flex items-center gap-1.5 font-mono text-micro uppercase tracking-wider2 text-ink-400">
+              <span className="inline-block h-2 w-2 flex-none bg-red-500" aria-hidden="true" />
+              Red line = safety margin
             </span>
           </div>
         </div>

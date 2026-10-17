@@ -1,42 +1,57 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import { Outfit, Playfair_Display } from 'next/font/google';
+import { Fraunces, Manrope, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '../context/CartContext';
 import { Navbar } from '../components/Navbar';
+import { AnnouncementBar } from '../components/AnnouncementBar';
 import { Footer } from '../components/Footer';
+import { SITE } from '../lib/site';
 
-// Premium high-end fonts
-const outfit = Outfit({
+/* Display: Fraunces — soft-contrast variable serif. Optical sizing stays on
+   so headlines tighten up as they grow. */
+const fraunces = Fraunces({
   subsets: ['latin'],
-  variable: '--font-outfit',
-  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  variable: '--font-display',
   display: 'swap',
 });
 
-const playfair = Playfair_Display({
+/* Body: Manrope — geometric sans, holds small print and long copy. */
+const manrope = Manrope({
   subsets: ['latin'],
-  variable: '--font-playfair',
-  weight: ['400', '600', '700', '800', '900'],
+  variable: '--font-sans',
   display: 'swap',
 });
+
+/* Specs and data: JetBrains Mono — every measurement, price and order ref. */
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+});
+
+/* Describes public/og.png. Kept here so the alt text matches the artwork. */
+const OG_ALT =
+  'Print Vatika — commercial printing press near Saket Metro, New Delhi. 300 DPI, offset and digital, 24-48 hour dispatch, free store pickup.';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://printvatika.vercel.app'),
   title: {
-    default: 'Print Vatika | Commercial Printing Press & Custom Print Shop',
-    template: '%s | Print Vatika'
+    default: 'Print Vatika | Commercial Printing Press, Saket Metro New Delhi',
+    template: '%s | Print Vatika',
   },
-  description: 'Order premium business cards, flex banners, custom t-shirts, flyers, brochures, and stickers online. Professional digital & offset printing press near Saket Metro, New Delhi. Fast turnaround and Porter delivery.',
+  description:
+    'Commercial printing press near Saket Metro, New Delhi. Order business cards, flex banners, custom t-shirts, flyers, brochures and stickers with live proofs. 300 DPI offset and digital printing, 24-48 hour dispatch, free store pickup.',
   keywords: [
     'printing press Delhi',
-    'business cards printing',
-    'visiting card printer',
-    'flex banner printing Saket',
+    'printing press Saket Metro',
+    'business cards printing Delhi',
+    'visiting card printer Lado Sarai',
+    'flex banner printing New Delhi',
     'custom t shirt printing New Delhi',
     'flyer brochure printing press',
-    'commercial offset printer',
-    'Print Vatika'
+    'commercial offset printer Delhi',
+    'Print Vatika',
   ],
   authors: [{ name: 'Print Vatika' }],
   creator: 'Print Vatika',
@@ -57,22 +72,16 @@ export const metadata: Metadata = {
     locale: 'en_IN',
     url: 'https://printvatika.vercel.app',
     siteName: 'Print Vatika',
-    title: 'Print Vatika | Commercial Printing Press & Custom Print Shop',
-    description: 'Configure and order premium Business Cards, Banners, T-Shirts, Flyers, and Custom Prints online. High-quality offset & digital print services at wholesale rates.',
-    images: [
-      {
-        url: '/imgs/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Print Vatika - Commercial Printing Press',
-      },
-    ],
+    title: 'Print Vatika | Commercial Printing Press, New Delhi',
+    description:
+      'Configure and order business cards, flex banners, t-shirts, flyers and custom prints. Live 2D proofs, 300 DPI quality, 24-48 hour dispatch.',
+    images: [{ url: '/og.png', width: 1200, height: 630, alt: OG_ALT }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Print Vatika | Premium Commercial Printing Press',
-    description: 'Order custom business cards, t-shirts, banners, and flyers online with instant proofs.',
-    images: ['/imgs/og-image.jpg'],
+    title: 'Print Vatika | Commercial Printing Press, New Delhi',
+    description: 'Order custom business cards, banners, t-shirts and flyers with instant proofs.',
+    images: ['/og.png'],
   },
   alternates: {
     canonical: 'https://printvatika.vercel.app',
@@ -83,52 +92,56 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'PrintShop',
   name: 'Print Vatika',
-  image: 'https://printvatika.vercel.app/imgs/og-image.jpg',
   url: 'https://printvatika.vercel.app',
-  telephone: '+919811427517',
+  telephone: SITE.phoneRaw,
+  email: SITE.email,
   priceRange: '₹₹',
+  currenciesAccepted: 'INR',
+  paymentAccepted: 'UPI, Credit Card, Debit Card, Net Banking, Cash',
   address: {
     '@type': 'PostalAddress',
-    streetAddress: 'F-298, Himmat Singh Marg, Near Saket Metro, Lado Sarai',
-    addressLocality: 'New Delhi',
-    addressRegion: 'Delhi',
-    postalCode: '110030',
-    addressCountry: 'IN'
+    streetAddress: SITE.street,
+    addressLocality: SITE.city,
+    addressRegion: SITE.region,
+    postalCode: SITE.pincode,
+    addressCountry: 'IN',
   },
   geo: {
     '@type': 'GeoCoordinates',
     latitude: 28.5244,
-    longitude: 77.1955
+    longitude: 77.1955,
   },
+  areaServed: [
+    { '@type': 'City', name: 'New Delhi' },
+    { '@type': 'AdministrativeArea', name: 'Delhi NCR' },
+  ],
   openingHoursSpecification: [
     {
       '@type': 'OpeningHoursSpecification',
       dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
       opens: '09:00',
-      closes: '20:00'
-    }
+      closes: '20:00',
+    },
   ],
-  currenciesAccepted: 'INR',
-  paymentAccepted: 'UPI, Credit Card, Debit Card, Net Banking, Cash'
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${outfit.variable} ${playfair.variable}`}>
+    <html lang="en-IN" className={`${fraunces.variable} ${manrope.variable} ${jetbrainsMono.variable}`}>
       <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>
-      <body className="font-sans antialiased text-slate-800 bg-slate-50 min-h-screen flex flex-col">
+      <body className="flex min-h-screen flex-col">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-ink-950 focus:px-4 focus:py-2 focus:font-mono focus:text-label focus:text-white"
+        >
+          Skip to content
+        </a>
         <CartProvider>
+          <AnnouncementBar />
           <Navbar />
-          <main className="flex-grow flex flex-col">
+          <main id="main" className="flex-grow">
             {children}
           </main>
           <Footer />
