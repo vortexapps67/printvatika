@@ -4,7 +4,7 @@ export interface PriceBreakdown {
   basePrice: number;
   dimensionsAreaSqFt?: number;
   optionsTotal: number;
-  optionsDetails: Array<{ name: string; value: string; label: string; cost: number }>;
+  optionsDetails: Array<{ name: string; key: string; value: string; label: string; cost: number }>;
   unitPrice: number;
   quantity: number;
   rawSubtotal: number;
@@ -48,20 +48,22 @@ export function calculatePricing(
         const mod = Number(choice.price_modifier) || 0;
         
         if (isDimensionProduct && opt.name === 'material') {
-          // For Flex, material is per-square-foot cost modifier
+          // For banners, material is a per-square-foot cost modifier
           const cost = mod * sqft;
           optionsTotal += cost;
           optionsDetails.push({
             name: opt.display_name,
+            key: opt.name,
             value: selectedVal,
             label: choice.label,
             cost: cost
           });
         } else {
-          // Normal products option modifier
+          // Everything else is a flat add-on to the job (e.g. grommets, folding)
           optionsTotal += mod;
           optionsDetails.push({
             name: opt.display_name,
+            key: opt.name,
             value: selectedVal,
             label: choice.label,
             cost: mod
@@ -85,12 +87,12 @@ export function calculatePricing(
   if (isDimensionProduct) {
     // Total flat cost = (base_price * sqft + material * sqft) * quantity + flat finishing
     const flatFinishing = optionsDetails
-      .filter(d => d.name === 'Grommets / Finishing')
+      .filter(d => d.key === 'finishing')
       .reduce((sum, d) => sum + d.cost, 0);
     
     // We already added flatFinishing inside optionDetails/optionsTotal, let's separate it
     const materialCost = optionsDetails
-      .filter(d => d.name === 'Flex Material')
+      .filter(d => d.key === 'material')
       .reduce((sum, d) => sum + d.cost, 0);
 
     const baseAndMaterial = (basePrice * sqft) + materialCost;
@@ -126,7 +128,7 @@ export function calculatePricing(
   let subtotal = 0;
   if (isDimensionProduct) {
     const flatFinishing = optionsDetails
-      .filter(d => d.name === 'Grommets / Finishing')
+      .filter(d => d.key === 'finishing')
       .reduce((sum, d) => sum + d.cost, 0);
     const discountable = rawSubtotal - flatFinishing;
     subtotal = (discountable * discountFactor) + flatFinishing;
