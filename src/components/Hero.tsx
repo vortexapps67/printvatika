@@ -135,7 +135,7 @@ export function Hero({ products = [] }: { products?: Product[] }) {
     <section aria-label="Featured offers">
       {/* ---- Banner carousel ---- */}
       <div
-        className="relative h-[430px] overflow-hidden bg-ink-950 sm:h-[470px] lg:h-[540px]"
+        className="relative h-[430px] overflow-hidden bg-gradient-to-b from-ink-50 to-white sm:h-[470px] lg:h-[540px]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocusCapture={() => setPaused(true)}
@@ -160,45 +160,42 @@ export function Hero({ products = [] }: { products?: Product[] }) {
                 loading={i === 0 ? 'eager' : 'lazy'}
                 decoding="async"
               />
-              {/* Scrim: horizontal on wide screens so the copy column reads,
-                  vertical on phones where the copy sits under the picture. */}
+              {/* Scrim: light overlay so text stays readable */}
               <div
                 aria-hidden="true"
-                className="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/85 to-ink-950/30"
+                className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/70 to-transparent"
               />
               <div
                 aria-hidden="true"
-                className="absolute inset-0 bg-gradient-to-t from-ink-950/90 via-ink-950/30 to-transparent sm:via-transparent"
+                className="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-transparent sm:via-transparent"
               />
 
               <div className="absolute inset-0">
                 <div className="mx-auto flex h-full max-w-sheet flex-col justify-center px-4 pb-16 pt-8 sm:px-6 sm:pb-20 lg:px-8">
-                  <p className="font-mono text-micro uppercase tracking-wider2 text-primary-300">
+                  <p className="font-mono text-micro uppercase tracking-wider2 text-primary-600">
                     {s.eyebrow}
                   </p>
 
-                  {/* First slide carries the page's h1; the rest are h2 so the
-                      document still has exactly one top-level heading. */}
                   {i === 0 ? (
-                    <h1 className="mt-4 max-w-2xl font-display text-display-s font-black leading-[0.98] tracking-tightest text-white sm:text-display lg:text-display-l">
+                    <h1 className="mt-4 max-w-2xl font-display text-display-s font-black leading-[0.98] tracking-tightest text-ink-900 sm:text-display lg:text-display-l">
                       {s.title}
                     </h1>
                   ) : (
-                    <h2 className="mt-4 max-w-2xl font-display text-display-s font-black leading-[0.98] tracking-tightest text-white sm:text-display lg:text-display-l">
+                    <h2 className="mt-4 max-w-2xl font-display text-display-s font-black leading-[0.98] tracking-tightest text-ink-900 sm:text-display lg:text-display-l">
                       {s.title}
                     </h2>
                   )}
 
-                  <p className="mt-4 hidden max-w-xl text-body-l leading-relaxed text-ink-300 sm:block">
+                  <p className="mt-4 hidden max-w-xl text-body-l leading-relaxed text-ink-600 sm:block">
                     {s.body}
                   </p>
 
                   <div className="mt-6 flex flex-wrap items-center gap-3">
-                    <span className="flex items-baseline gap-2 rounded-lg border border-white/20 bg-white/10 px-3.5 py-2 backdrop-blur-sm">
-                      <span className="font-mono text-micro uppercase tracking-wider2 text-ink-300">
+                    <span className="flex items-baseline gap-2 rounded-lg border border-ink-200 bg-white/90 px-3.5 py-2 backdrop-blur-sm shadow-card">
+                      <span className="font-mono text-micro uppercase tracking-wider2 text-ink-500">
                         {s.chip.label}
                       </span>
-                      <span className="tnum font-display text-title font-extrabold leading-none text-white">
+                      <span className="tnum font-display text-title font-extrabold leading-none text-ink-900">
                         {s.chip.value}
                       </span>
                     </span>
@@ -217,7 +214,7 @@ export function Hero({ products = [] }: { products?: Product[] }) {
                       <Link
                         href={s.href2}
                         tabIndex={isActive ? undefined : -1}
-                        className="inline-flex h-12 items-center gap-2 rounded-lg border border-white/30 bg-white/10 px-6 font-mono text-body-s font-semibold uppercase tracking-wider2 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+                        className="inline-flex h-12 items-center gap-2 rounded-lg border border-ink-300 bg-white/90 px-6 font-mono text-body-s font-semibold uppercase tracking-wider2 text-ink-900 backdrop-blur-sm transition-colors hover:bg-white"
                       >
                         {s.cta2}
                       </Link>
@@ -234,7 +231,7 @@ export function Hero({ products = [] }: { products?: Product[] }) {
           type="button"
           onClick={() => go(index - 1)}
           aria-label="Previous banner"
-          className="absolute left-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-ink-950/50 text-white backdrop-blur-sm transition-colors hover:bg-ink-950/80 sm:flex lg:left-6"
+          className="absolute left-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-ink-200 bg-white/90 text-ink-700 backdrop-blur-sm transition-colors hover:bg-white sm:flex lg:left-6"
         >
           <ArrowLeft size={18} aria-hidden="true" />
         </button>
@@ -242,7 +239,7 @@ export function Hero({ products = [] }: { products?: Product[] }) {
           type="button"
           onClick={() => go(index + 1)}
           aria-label="Next banner"
-          className="absolute right-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-ink-950/50 text-white backdrop-blur-sm transition-colors hover:bg-ink-950/80 sm:flex lg:right-6"
+          className="absolute right-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-ink-200 bg-white/90 text-ink-700 backdrop-blur-sm transition-colors hover:bg-white sm:flex lg:right-6"
         >
           <ArrowRight size={18} aria-hidden="true" />
         </button>
@@ -260,12 +257,12 @@ export function Hero({ products = [] }: { products?: Product[] }) {
                   aria-current={i === index}
                   className={cn(
                     'h-1.5 rounded-full transition-all duration-300',
-                    i === index ? 'w-8 bg-primary-500' : 'w-4 bg-white/40 hover:bg-white/70',
+                    i === index ? 'w-8 bg-primary-500' : 'w-4 bg-ink-300 hover:bg-ink-500',
                   )}
                 />
               ))}
             </div>
-            <span className="tnum font-mono text-micro uppercase tracking-wider2 text-white/70">
+            <span className="tnum font-mono text-micro uppercase tracking-wider2 text-ink-500">
               {String(index + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}
             </span>
           </div>
