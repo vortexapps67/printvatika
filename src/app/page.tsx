@@ -153,7 +153,7 @@ export default async function HomePage() {
   return (
     <>
       {/* ---- Storefront hero: rotating banners, then search ---- */}
-      <Hero />
+      <Hero products={products} />
 
       {/* ---- Promise strip: what the press guarantees ---- */}
       <section aria-label="What the press guarantees" className="border-b border-ink-200 bg-white">

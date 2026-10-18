@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Product } from '../types';
 import { ArrowRight, Truck, Tag, Sparkles } from 'lucide-react';
-import { dealUnit } from '../lib/catalog';
+import { dealUnit, money, unitQuote } from '../lib/catalog';
 import type { Deal } from '../lib/catalog';
 import { Ribbon } from './ui/press';
 import { cn } from '@/lib/utils';
@@ -37,9 +37,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   deal,
   bestseller,
 }) => {
-  const perSqft = product.slug === 'flex-banners';
   const href = `/customize/${product.slug}`;
   const hasDeal = Boolean(deal && deal.pct > 0);
+
+  /* Quoted the way the shop sells it — cheapest configuration, in the shop's
+     own unit ("₹299 / 100 pcs", "₹15/sqft") — so the number on the card is one
+     the configurator will honour. */
+  const quote = unitQuote(product);
 
   return (
     <article
@@ -111,11 +115,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <div className="mt-4 border-t border-ink-100 pt-4">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <span className="label-caps block">Starts at</span>
+                <span className="label-caps block">{quote.isQuote ? 'Priced on request' : 'Starts at'}</span>
                 <span className="tnum mt-0.5 block font-display text-title-l font-extrabold leading-none text-ink-950">
-                  ₹{product.base_price}
-                  {perSqft && (
-                    <span className="font-mono text-body-s font-medium text-ink-500">/sqft</span>
+                  {quote.isQuote ? (
+                    'Custom quote'
+                  ) : (
+                    <>
+                      {money(quote.amount)}
+                      {quote.isArea && (
+                        <span className="font-mono text-body-s font-medium text-ink-500">/sqft</span>
+                      )}
+                      {quote.unitLabel && (
+                        <span className="font-mono text-body-s font-medium text-ink-500"> {quote.unitLabel}</span>
+                      )}
+                    </>
                   )}
                 </span>
               </div>

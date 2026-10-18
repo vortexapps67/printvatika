@@ -107,8 +107,7 @@ export interface Deal {
   minQty: number;
 }
 
-/** Deepest tier discount per product slug, e.g. `{ 'business-cards': { pct: 30, minQty: 1000 } }`. */
-export function dealsBySlug(rules: PricingRule[]): Record<string, Deal> {
+/** Deepest tier discount per product slug, e.g. `{ 'business-cards': { pct: 30, minQty: 1000 } }`. */export function dealsBySlug(rules: PricingRule[]): Record<string, Deal> {
   const out: Record<string, Deal> = {};
   for (const rule of rules) {
     const pct = Math.round((1 - rule.tier_discount_factor) * 100);
@@ -125,4 +124,47 @@ export function dealsBySlug(rules: PricingRule[]): Record<string, Deal> {
  *  rest by the piece. */
 export function dealUnit(slug: string): string {
   return slug === 'flex-banners' ? 'sq ft' : 'pcs';
+}
+
+/* ---- The quoted unit price -------------------------------------------------
+   The shop stores prices the way it sells them ({ base_price: 299,
+   base_unit: '/ 100 pcs' }) while this app works per piece, so the price on a
+   card has to be rebuilt rather than printed straight from the row. Everything
+   a customer sees comes from here, which means the hero, the card grid and the
+   configurator can never quote three different numbers for the same job. */
+
+export interface UnitQuote {
+  /** Money for one quoted unit — ₹299 for "/ 100 pcs", ₹15 for a square foot. */
+  amount: number;
+  /** Pieces in that unit (1 for single pieces and for per-square-foot pricing). */
+  qty: number;
+  /** The per-piece price, for a "₹2.99 a card" style line. */
+  perPiece: number;
+  /** True when the product is sold by area rather than by piece. */
+  isArea: boolean;
+  /** True when the shop prices this by hand instead of from the catalogue. */
+  isQuote: boolean;
+  /** The shop's own unit, e.g. "/ 100 pcs". Absent for single pieces. */
+  unitLabel?: string;
+}
+
+/** The shop's price for one unit of a product, at its cheapest configuration. */
+export function unitQuote(product: Product): UnitQuote {
+  const perPiece = product.from_price ?? product.base_price;
+  const qty = product.base_qty && product.base_qty > 1 ? product.base_qty : 1;
+  return {
+    amount: Math.round(perPiece * qty),
+    qty,
+    perPiece,
+    isArea: /sq\.?\s*ft/i.test(product.base_unit ?? ''),
+    // A base price of 0 means "quoted by hand", which is how the shop lists
+    // bespoke jobs — never a free product.
+    isQuote: !(perPiece > 0),
+    unitLabel: qty > 1 ? product.base_unit : undefined,
+  };
+}
+
+/** Money the way the shop writes it: ₹299, ₹2.99, ₹1,226. */
+export function money(value: number): string {
+  return '₹' + Number(value).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 }

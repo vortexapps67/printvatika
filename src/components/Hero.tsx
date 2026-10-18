@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Search, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Button } from './ui/press';
-import { CATEGORIES, categoryHref } from '../lib/catalog';
+import { CATEGORIES, categoryHref, money, unitQuote } from '../lib/catalog';
+import type { Product } from '../types';
 import { cn } from '@/lib/utils';
 
 /**
@@ -33,62 +34,84 @@ interface Slide {
   cta2?: string;
 }
 
-/* Every price here is the product's real base price from the catalog, so a
-   banner can never promise a number the configurator does not honour. */
-const SLIDES: Slide[] = [
-  {
-    image: '/images/banner-signage.jpg',
-    alt: 'A printed flex banner mounted on a shop front',
-    eyebrow: 'Signage · priced by the foot',
-    title: 'Flex banners from ₹15 a sq ft.',
-    body: 'Enter the exact feet, pick the finish and the eyelets, and watch the price update. Weatherproof star flex, dispatched in 24–48 hours.',
-    chip: { label: 'Starting at', value: '₹15/sqft' },
-    href: '/catalog?category=Signage',
-    cta: 'Shop signage',
-    href2: '/customize/flex-banners',
-    cta2: 'Upload artwork',
-  },
-  {
-    image: '/images/banner-cards.jpg',
-    alt: 'Stack of printed business cards on a desk',
-    eyebrow: 'Stationery · proofed first',
-    title: 'Business cards from ₹1 a card.',
-    body: '300–400 GSM stock, matte through velvet lamination. Line your artwork up against the real trim size, approve that exact file, then pay.',
-    chip: { label: 'Starting at', value: '₹1/card' },
-    href: '/customize/business-cards',
-    cta: 'Design your card',
-    href2: '/catalog?category=Stationery',
-    cta2: 'All stationery',
-  },
-  {
-    image: '/images/banner-tshirts.jpg',
-    alt: 'Custom printed cotton t-shirts',
-    eyebrow: 'Apparel · printed in-house',
-    title: 'Custom t-shirts from ₹249.',
-    body: 'Cotton tees screen printed at the counter — front, back or both, in the colour and size you pick. Ten or ten thousand.',
-    chip: { label: 'Starting at', value: '₹249/tee' },
-    href: '/customize/t-shirts',
-    cta: 'Print a tee',
-    href2: '/catalog?category=Apparel',
-    cta2: 'All apparel',
-  },
-  {
-    image: '/images/banner-posters.jpg',
-    alt: 'Large format colour posters printed on photo paper',
-    eyebrow: 'Marketing · event ready',
-    title: 'Posters from ₹49, flyers from ₹2.',
-    body: 'A3 to A1 on matte, gloss or waterproof synthetic. The collateral for a launch, a sale or an event, cut and ready to hand out.',
-    chip: { label: 'Starting at', value: '₹49/poster' },
-    href: '/catalog?category=Marketing',
-    cta: 'Shop marketing',
-    href2: '/customize/custom-print',
-    cta2: 'Quote a custom job',
-  },
-];
+/** One slide's price line, written the way the shop writes it. */
+function quoted(product: Product | undefined, fallback: string, unitWord: string) {
+  if (!product) return { title: fallback, chip: fallback };
+  const quote = unitQuote(product);
+  const value = money(quote.amount);
+  if (quote.isArea) return { title: `${value} a sq ft`, chip: `${value}/sqft` };
+  if (quote.qty > 1) return { title: `${value} for ${quote.qty}`, chip: `${value} / ${quote.qty} pcs` };
+  return { title: value, chip: `${value}/${unitWord}` };
+}
+
+/* The copy on these banners is fixed; the money is not. Every figure is read
+   back out of the catalogue the configurator prices from, so a banner can never
+   promise a number the shop will not honour — which is exactly how the old
+   static build ended up advertising business cards at ₹1 and flyers at ₹2. */
+function slidesFor(products: Product[]): Slide[] {
+  const bySlug = new Map(products.map(p => [p.slug, p]));
+  const signage = quoted(bySlug.get('flex-banners'), '₹15 a sq ft', 'sqft');
+  const cards = quoted(bySlug.get('business-cards'), '₹299 for 100', 'card');
+  const tees = quoted(bySlug.get('t-shirts'), '₹249', 'tee');
+  const posters = quoted(bySlug.get('posters'), '₹49', 'poster');
+  const flyers = quoted(bySlug.get('flyers'), '₹199 for 500', 'flyer');
+
+  return [
+    {
+      image: '/images/banner-signage.jpg',
+      alt: 'A printed flex banner mounted on a shop front',
+      eyebrow: 'Signage · priced by the foot',
+      title: `Flex banners from ${signage.title}.`,
+      body: 'Enter the exact feet, pick the finish and the eyelets, and watch the price update. Weatherproof star flex, dispatched in 24–48 hours.',
+      chip: { label: 'Starting at', value: signage.chip },
+      href: '/catalog?category=Signage',
+      cta: 'Shop signage',
+      href2: '/customize/flex-banners',
+      cta2: 'Upload artwork',
+    },
+    {
+      image: '/images/banner-cards.jpg',
+      alt: 'Stack of printed business cards on a desk',
+      eyebrow: 'Stationery · proofed first',
+      title: `Business cards from ${cards.title}.`,
+      body: '300–400 GSM stock, matte through velvet lamination. Line your artwork up against the real trim size, approve that exact file, then pay.',
+      chip: { label: 'Starting at', value: cards.chip },
+      href: '/customize/business-cards',
+      cta: 'Design your card',
+      href2: '/catalog?category=Stationery',
+      cta2: 'All stationery',
+    },
+    {
+      image: '/images/banner-tshirts.jpg',
+      alt: 'Custom printed cotton t-shirts',
+      eyebrow: 'Apparel · printed in-house',
+      title: `Custom t-shirts from ${tees.title}.`,
+      body: 'Cotton tees screen printed at the counter — front, back or both, in the colour and size you pick. Ten or ten thousand.',
+      chip: { label: 'Starting at', value: tees.chip },
+      href: '/customize/t-shirts',
+      cta: 'Print a tee',
+      href2: '/catalog?category=Apparel',
+      cta2: 'All apparel',
+    },
+    {
+      image: '/images/banner-posters.jpg',
+      alt: 'Large format colour posters printed on photo paper',
+      eyebrow: 'Marketing · event ready',
+      title: `Posters from ${posters.title}, flyers from ${flyers.title}.`,
+      body: 'A3 to A1 on matte, gloss or waterproof synthetic. The collateral for a launch, a sale or an event, cut and ready to hand out.',
+      chip: { label: 'Starting at', value: posters.chip },
+      href: '/catalog?category=Marketing',
+      cta: 'Shop marketing',
+      href2: '/customize/custom-print',
+      cta2: 'Quote a custom job',
+    },
+  ];
+}
 
 const ROTATE_MS = 6000;
 
-export function Hero() {
+export function Hero({ products = [] }: { products?: Product[] }) {
+  const slides = slidesFor(products);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -99,11 +122,14 @@ export function Hero() {
 
   useEffect(() => {
     if (paused || reduceMotion) return;
-    const id = window.setInterval(() => setIndex(i => (i + 1) % SLIDES.length), ROTATE_MS);
+    const id = window.setInterval(() => setIndex(i => (i + 1) % slides.length), ROTATE_MS);
     return () => window.clearInterval(id);
-  }, [paused, reduceMotion]);
+  }, [paused, reduceMotion, slides.length]);
 
-  const go = (next: number) => setIndex((next + SLIDES.length) % SLIDES.length);
+  const go = (next: number) => {
+    const count = slides.length || 1;
+    setIndex(((next % count) + count) % count);
+  };
 
   return (
     <section aria-label="Featured offers">
@@ -115,7 +141,7 @@ export function Hero() {
         onFocusCapture={() => setPaused(true)}
         onBlurCapture={() => setPaused(false)}
       >
-        {SLIDES.map((s, i) => {
+        {slides.map((s, i) => {
           const isActive = i === index;
           return (
             <div
@@ -225,7 +251,7 @@ export function Hero() {
         <div className="absolute inset-x-0 bottom-0">
           <div className="mx-auto flex max-w-sheet items-center justify-between gap-4 px-4 pb-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-2">
-              {SLIDES.map((s, i) => (
+              {slides.map((s, i) => (
                 <button
                   key={s.image}
                   type="button"
@@ -240,7 +266,7 @@ export function Hero() {
               ))}
             </div>
             <span className="tnum font-mono text-micro uppercase tracking-wider2 text-white/70">
-              {String(index + 1).padStart(2, '0')} / {String(SLIDES.length).padStart(2, '0')}
+              {String(index + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}
             </span>
           </div>
         </div>

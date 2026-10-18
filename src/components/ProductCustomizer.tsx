@@ -83,7 +83,8 @@ export const ProductCustomizer: React.FC<ProductCustomizerProps> = ({
       'stickers': 100,
       'custom-print': 1
     };
-    setQuantity(defaultQtys[product.slug] || 100);
+    // The shop's own suggested run size wins when the database provides one.
+    setQuantity(product.default_qty ?? defaultQtys[product.slug] ?? 100);
   }, [options, product]);
 
   // Sync pricing calculations whenever options change
@@ -200,16 +201,35 @@ export const ProductCustomizer: React.FC<ProductCustomizerProps> = ({
     router.push('/cart');
   };
 
-  // Helper lists of standard tier choices
-  const quantityTiers: Record<string, number[]> = {
+  /* Quantity tiers and their discounts come from the shop's own pricing rules
+     (i.e. the live database), so the picker can never offer a quantity the
+     press has not actually priced. The static map is only a fallback for a
+     local JSON database with no rules loaded. */
+  const fallbackTiers: Record<string, number[]> = {
     'business-cards': [100, 250, 500, 1000],
-    't-shirts': [1, 5, 10, 50, 100],
+    't-shirts': [1, 5, 10, 25, 50, 100],
     'flex-banners': [1, 2, 5, 10],
     'flyers': [100, 500, 1000, 5000],
-    'posters': [1, 5, 10, 50, 100],
-    'brochures': [100, 250, 500, 1000],
+    'posters': [1, 5, 10, 50],
+    'brochures': [50, 100, 500, 1000],
     'stickers': [50, 100, 250, 500, 1000]
   };
+
+  const tierDiscount = new Map<number, number>();
+  pricingRules
+    .filter(r => r.option_key !== 'sqft' && r.tier_min_qty > 0)
+    .forEach(r => {
+      const pct = Math.round((1 - r.tier_discount_factor) * 100);
+      if (pct > (tierDiscount.get(r.tier_min_qty) ?? 0)) tierDiscount.set(r.tier_min_qty, pct);
+    });
+
+  const ruleTiers = Array.from(tierDiscount.keys()).sort((a, b) => a - b);
+  const tiers = ruleTiers.length ? ruleTiers : fallbackTiers[product.slug] ?? [];
+
+  /* A base price of zero is the shop's way of saying "we quote this by hand"
+     (bespoke printing), so the cost sheet shows an honest placeholder instead
+     of a row of ₹0.00 totals that read like a free job. */
+  const isQuoteProduct = !((priceBreakdown?.basePrice ?? product.base_price) > 0);
 
 return (
     <div className="space-y-6">
@@ -284,7 +304,7 @@ return (
                             >
                               {delta === 0
                                 ? 'Included'
-                                : `${delta > 0 ? '+' : '−'} ₹${Math.abs(delta)}`}
+                                : `${delta > 0 ? '+' : '−'} ₹${Math.abs(delta).toFixed(2)}`}
                             </span>
                           </button>
                         );
@@ -376,10 +396,11 @@ return (
                   </span>
                 </div>
 
-                {quantityTiers[product.slug] && (
+                {tiers.length > 0 && (
                   <div className="flex flex-wrap gap-2">
-                    {quantityTiers[product.slug].map(qty => {
+                    {tiers.map(qty => {
                       const active = quantity === qty;
+                      const pct = tierDiscount.get(qty) ?? 0;
                       return (
                         <button
                           key={qty}
@@ -388,11 +409,20 @@ return (
                           aria-pressed={active}
                           className={
                             active
-                              ? 'tnum rounded-sm bg-ink-950 px-4 py-2.5 font-mono text-label font-medium text-white transition-colors'
-                              : 'tnum rounded-sm border border-ink-200 bg-white px-4 py-2.5 font-mono text-label font-medium text-ink-600 transition-colors hover:border-ink-950 hover:text-ink-950'
+                              ? 'tnum rounded-sm bg-ink-950 px-4 py-2 font-mono text-label font-medium text-white transition-colors'
+                              : 'tnum rounded-sm border border-ink-200 bg-white px-4 py-2 font-mono text-label font-medium text-ink-600 transition-colors hover:border-ink-950 hover:text-ink-950'
                           }
                         >
-                          {qty}
+                          <span className="block">{qty}</span>
+                          {pct > 0 && (
+                            <span
+                              className={`block text-micro font-semibold ${
+                                active ? 'text-white/80' : 'text-primary-600'
+                              }`}
+                            >
+                              save {pct}%
+                            </span>
+                          )}
                         </button>
                       );
                     })}
@@ -518,51 +548,71 @@ return (
               <div className="border-t border-ink-200 bg-ink-50 p-5 sm:p-6">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <h3 className="label-caps">Cost sheet</h3>
-                  <Badge tone="accent">Price rules applied</Badge>
+                  <Badge tone="accent">{isQuoteProduct ? 'Priced by hand' : 'Price rules applied'}</Badge>
                 </div>
 
-                <dl className="divide-y divide-ink-200 border-y border-ink-200">
-                  <SpecRow
-                    label="Base unit price"
-                    value={`₹${priceBreakdown.basePrice.toFixed(2)}${
-                      product.slug === 'flex-banners' ? ' / sq ft' : ''
-                    }`}
-                  />
+                {isQuoteProduct ? (
+                  <>
+                    <dl className="divide-y divide-ink-200 border-y border-ink-200">
+                      <SpecRow label="Pricing" value="Custom quote" />
+                      <SpecRow
+                        label={`Quantity · ${quantity} ${quantity === 1 ? 'unit' : 'units'}`}
+                        value="—"
+                      />
+                    </dl>
+                    <p className="mt-4 text-body-s leading-relaxed text-ink-500">
+                      Bespoke work is priced by hand. Send the job across and we will quote it
+                      before anything is printed.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <dl className="divide-y divide-ink-200 border-y border-ink-200">
+                      <SpecRow
+                        label="Base unit price"
+                        value={`₹${priceBreakdown.basePrice.toFixed(2)}${
+                          product.slug === 'flex-banners' ? ' / sq ft' : ''
+                        }`}
+                      />
 
-                  {!!priceBreakdown.dimensionsAreaSqFt && (
-                    <SpecRow
-                      label="Print area"
-                      value={`${dimensions.width}′ × ${dimensions.height}′ = ${priceBreakdown.dimensionsAreaSqFt} sq ft`}
-                    />
-                  )}
+                      {!!priceBreakdown.dimensionsAreaSqFt && (
+                        <SpecRow
+                          label="Print area"
+                          value={`${dimensions.width}′ × ${dimensions.height}′ = ${priceBreakdown.dimensionsAreaSqFt} sq ft`}
+                        />
+                      )}
 
-                  {priceBreakdown.optionsDetails.map((opt, i) => (
-                    <SpecRow key={i} label={`${opt.name} · ${opt.label}`} value={`₹${opt.cost.toFixed(2)}`} />
-                  ))}
+                      {priceBreakdown.optionsDetails.map((opt, i) => (
+                        <SpecRow key={i} label={`${opt.name} · ${opt.label}`} value={`₹${opt.cost.toFixed(2)}`} />
+                      ))}
 
-                  <SpecRow label="Unit subtotal" value={`₹${priceBreakdown.unitPrice.toFixed(2)}`} />
-                  <SpecRow
-                    label={`Quantity · ${priceBreakdown.quantity} units`}
-                    value={`₹${priceBreakdown.rawSubtotal.toFixed(2)}`}
-                  />
+                      <SpecRow label="Unit subtotal" value={`₹${priceBreakdown.unitPrice.toFixed(2)}`} />
+                      <SpecRow
+                        label={`Quantity · ${priceBreakdown.quantity} units`}
+                        value={`₹${priceBreakdown.rawSubtotal.toFixed(2)}`}
+                      />
 
-                  {priceBreakdown.discountPercentage > 0 && (
-                    <SpecRow
-                      label={`Bulk tier · ${priceBreakdown.discountPercentage}% off`}
-                      value={
-                        <span className="text-emerald-700">
-                          − ₹{(priceBreakdown.rawSubtotal - priceBreakdown.subtotal).toFixed(2)}
-                        </span>
-                      }
-                    />
-                  )}
-                </dl>
+                      {priceBreakdown.discountPercentage > 0 && (
+                        <SpecRow
+                          label={`Bulk tier · ${priceBreakdown.discountPercentage}% off`}
+                          value={
+                            <span className="text-emerald-700">
+                              − ₹{(priceBreakdown.rawSubtotal - priceBreakdown.subtotal).toFixed(2)}
+                            </span>
+                          }
+                        />
+                      )}
+                    </dl>
+                  </>
+                )}
 
                 <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <span className="label-caps">Subtotal · excl. delivery</span>
+                    <span className="label-caps">
+                      {isQuoteProduct ? 'Total' : 'Subtotal · excl. delivery'}
+                    </span>
                     <span className="tnum mt-1.5 block font-display text-display-s font-black tracking-tightest text-ink-950">
-                      ₹{priceBreakdown.subtotal.toFixed(2)}
+                      {isQuoteProduct ? 'To be quoted' : `₹${priceBreakdown.subtotal.toFixed(2)}`}
                     </span>
                   </div>
 
