@@ -1,87 +1,97 @@
 import React from 'react';
 import Link from 'next/link';
-import { ButtonLink, ColourStrip, RegistrationMark } from './ui/press';
 import { SITE } from '../lib/site';
 import { CATEGORIES, categoryHref } from '../lib/catalog';
-import { Mail, Phone, MapPin, ShieldCheck, ArrowUpRight } from 'lucide-react';
+import { Mail, Phone, MapPin, ShieldCheck, ArrowUpRight, Truck } from 'lucide-react';
 
 const CATALOG_LINKS = [
-  { href: '/catalog', label: 'Full catalog' },
+  { href: '/catalog', label: 'All products' },
   { href: '/customize/business-cards', label: 'Business cards' },
-  { href: '/customize/flex-banners', label: 'Flex & banner signage' },
+  { href: '/customize/flex-banners', label: 'Flex & banners' },
   { href: '/customize/t-shirts', label: 'Custom apparel' },
   { href: '/customize/flyers', label: 'Flyers & posters' },
-  { href: '/customize/custom-print', label: 'Any other job' },
+  { href: '/customize/custom-print', label: 'Custom jobs' },
 ];
 
 export const Footer: React.FC = () => {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-auto bg-ink-950 text-ink-300">
-      <ColourStrip />
+    <footer className="mt-auto border-t border-ink-200 bg-white text-ink-700">
+      {/* Newsletter / CTA strip */}
+      <div className="border-b border-ink-200 bg-ink-50">
+        <div className="mx-auto flex max-w-sheet flex-col items-start justify-between gap-4 px-4 py-8 sm:flex-row sm:items-center sm:px-6 lg:px-8">
+          <div>
+            <h3 className="text-title font-bold text-ink-900">Have artwork ready?</h3>
+            <p className="mt-1 text-body-s text-ink-500">
+              Upload it and see the proof before you pay. Free counter pickup.
+            </p>
+          </div>
+          <Link
+            href="/customize/custom-print"
+            className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary-500 px-6 text-body-s font-semibold text-white transition-colors hover:bg-primary-600"
+          >
+            Upload artwork
+            <ArrowUpRight size={15} aria-hidden="true" />
+          </Link>
+        </div>
+      </div>
 
-      <div className="mx-auto max-w-sheet px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid gap-10 md:grid-cols-12">
+      <div className="mx-auto max-w-sheet px-4 py-12 sm:px-6 lg:px-8">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
           {/* Brand */}
-          <div className="md:col-span-4 lg:col-span-5">
+          <div className="lg:col-span-2">
             <div className="flex items-center gap-2.5">
               <img
                 src="/images/logo-mark.png"
                 alt=""
                 width={192}
                 height={192}
-                className="h-9 w-9 flex-none rounded-lg ring-1 ring-white/15"
+                className="h-10 w-10 flex-none rounded-lg"
               />
-              <span className="font-display text-title font-extrabold tracking-tightest text-white">
-                Print<span className="text-primary-400"> Vatika</span>
+              <span className="text-title font-extrabold tracking-tight text-ink-900">
+                Print<span className="text-primary-600"> Vatika</span>
               </span>
             </div>
-
-            {/* The mark's own tagline, set in the site's type rather than
-                shipped inside the image so it stays legible at footer size. */}
-            <p className="mt-4 font-mono text-micro uppercase tracking-wider2 text-primary-400">
-              We print, you impress
+            <p className="mt-4 max-w-sm text-body-s leading-relaxed text-ink-500">
+              Commercial printing press on Himmat Singh Marg, minutes from Saket Metro. Offset and digital printing for businesses across Delhi NCR — proofed before it ships.
             </p>
-
-            <p className="mt-5 max-w-sm text-body-s leading-relaxed text-ink-400">
-              A commercial press on Himmat Singh Marg, minutes from Saket Metro. Offset and
-              digital printing for businesses across Delhi NCR — proofed before it ships.
-            </p>
-
-            <div className="mt-6 flex items-center gap-2 text-body-s text-ink-300">
-              <ShieldCheck size={15} className="text-emerald-400" aria-hidden="true" />
+            <div className="mt-5 flex items-center gap-2 text-body-s text-ink-500">
+              <ShieldCheck size={15} className="text-primary-600" aria-hidden="true" />
               Payments verified server-side via Razorpay
+            </div>
+            <div className="mt-5 flex items-center gap-3">
+              <a
+                href={`tel:${SITE.phoneRaw}`}
+                className="inline-flex h-10 items-center gap-2 rounded-lg border border-ink-200 px-4 text-body-s font-medium text-ink-700 transition-colors hover:border-primary-500 hover:text-primary-600"
+              >
+                <Phone size={14} aria-hidden="true" />
+                {SITE.phoneDisplay}
+              </a>
             </div>
           </div>
 
-          {/* Catalog */}
-          <div className="md:col-span-4 lg:col-span-3">
-            <h3 className="label-caps flex items-center gap-2 text-ink-400">
-              <RegistrationMark className="text-primary-500" />
-              What we print
-            </h3>
+          {/* What we print */}
+          <div>
+            <h3 className="text-body-s font-bold uppercase tracking-wider text-ink-900">What we print</h3>
             <ul className="mt-4 space-y-2.5">
               {CATALOG_LINKS.map(l => (
                 <li key={l.href}>
-                  <Link
-                    href={l.href}
-                    className="text-body-s text-ink-300 transition-colors hover:text-white"
-                  >
+                  <Link href={l.href} className="text-body-s text-ink-500 transition-colors hover:text-primary-600">
                     {l.label}
                   </Link>
                 </li>
               ))}
             </ul>
+          </div>
 
-            <h3 className="label-caps mt-8 text-ink-400">Shop by category</h3>
+          {/* Categories */}
+          <div>
+            <h3 className="text-body-s font-bold uppercase tracking-wider text-ink-900">Shop by category</h3>
             <ul className="mt-4 space-y-2.5">
               {CATEGORIES.map(c => (
                 <li key={c.key}>
-                  <Link
-                    href={categoryHref(c)}
-                    className="text-body-s text-ink-300 transition-colors hover:text-white"
-                  >
+                  <Link href={categoryHref(c)} className="text-body-s text-ink-500 transition-colors hover:text-primary-600">
                     {c.name}
                   </Link>
                 </li>
@@ -89,102 +99,48 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Hours */}
-          <div className="md:col-span-4 lg:col-span-2">
-            <h3 className="label-caps text-ink-400">Counter hours</h3>
-            <ul className="mt-4 space-y-2.5">
-              {SITE.hours.map(h => (
-                <li key={h.days} className="text-body-s">
-                  <span className="block text-ink-400">{h.days}</span>
-                  <span className="text-ink-200">{h.time}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-4 border-t border-ink-800 pt-4 font-mono text-micro uppercase tracking-wider2 text-ink-400">
-              Online orders 24/7
-            </p>
-          </div>
-
           {/* Contact */}
-          <div className="md:col-span-12 lg:col-span-2">
-            <h3 className="label-caps text-ink-400">Reach the press</h3>
-            <ul className="mt-4 space-y-4">
+          <div>
+            <h3 className="text-body-s font-bold uppercase tracking-wider text-ink-900">Reach us</h3>
+            <ul className="mt-4 space-y-3">
               <li className="flex gap-2.5">
-                <MapPin size={15} className="mt-0.5 flex-none text-primary-400" aria-hidden="true" />
-                <a
-                  href={SITE.mapLink}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="text-body-s leading-relaxed text-ink-300 transition-colors hover:text-white"
-                >
-                  {SITE.street}
-                  <br />
-                  {SITE.city} {SITE.pincode}
+                <MapPin size={15} className="mt-0.5 flex-none text-primary-600" aria-hidden="true" />
+                <a href={SITE.mapLink} target="_blank" rel="noreferrer noopener" className="text-body-s leading-relaxed text-ink-500 transition-colors hover:text-primary-600">
+                  {SITE.street}, {SITE.city} {SITE.pincode}
                 </a>
               </li>
               <li className="flex gap-2.5">
-                <Phone size={15} className="mt-0.5 flex-none text-primary-400" aria-hidden="true" />
-                <a
-                  href={`tel:${SITE.phoneRaw}`}
-                  className="tnum text-body-s text-ink-300 transition-colors hover:text-white"
-                >
-                  {SITE.phoneDisplay}
-                </a>
-              </li>
-              <li className="flex gap-2.5">
-                <Mail size={15} className="mt-0.5 flex-none text-primary-400" aria-hidden="true" />
-                <a
-                  href={`mailto:${SITE.email}`}
-                  className="text-body-s text-ink-300 transition-colors hover:text-white"
-                >
+                <Mail size={15} className="mt-0.5 flex-none text-primary-600" aria-hidden="true" />
+                <a href={`mailto:${SITE.email}`} className="text-body-s text-ink-500 transition-colors hover:text-primary-600">
                   {SITE.email}
                 </a>
               </li>
+              <li className="flex gap-2.5">
+                <Truck size={15} className="mt-0.5 flex-none text-primary-600" aria-hidden="true" />
+                <span className="text-body-s text-ink-500">Flat ₹{SITE.deliveryCharge} delivery · Free pickup</span>
+              </li>
             </ul>
+            <div className="mt-5">
+              <p className="text-micro font-semibold uppercase tracking-wider text-ink-400">Counter hours</p>
+              <ul className="mt-2 space-y-1">
+                {SITE.hours.map(h => (
+                  <li key={h.days} className="text-body-s text-ink-500">
+                    {h.days}: {h.time}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 
-        {/* Call to action strip */}
-        <div className="mt-12 flex flex-col gap-4 border-t border-ink-800 pt-8 sm:flex-row sm:items-center sm:justify-between">
-          <p className="max-w-md font-display text-lead-l font-bold leading-tight text-white">
-            Have artwork ready? Upload it and see the proof before you pay.
-          </p>
-          <ButtonLink
-            href="/customize/custom-print"
-            variant="solid"
-            size="lg"
-            className="shrink-0"
-          >
-            Upload artwork
-            <ArrowUpRight size={16} aria-hidden="true" />
-          </ButtonLink>
-        </div>
-      </div>
-
-      <div className="border-t border-ink-800">
-        <div className="mx-auto flex max-w-sheet flex-col gap-3 px-4 py-5 text-body-s text-ink-400 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-          <p>
-            © {year} {SITE.name}. All rights reserved.
-          </p>
+        {/* Bottom bar */}
+        <div className="mt-10 flex flex-col gap-3 border-t border-ink-200 pt-6 text-body-s text-ink-400 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {year} {SITE.name}. All rights reserved.</p>
           <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Legal">
-            <Link href="/catalog" className="transition-colors hover:text-ink-200">
-              Catalog
-            </Link>
-            <Link href="/track" className="transition-colors hover:text-ink-200">
-              Track order
-            </Link>
-            <Link
-              href={`mailto:${SITE.email}`}
-              className="transition-colors hover:text-ink-200"
-            >
-              Enquiries
-            </Link>
-            <Link
-              href="/admin/dashboard"
-              className="font-mono text-micro uppercase tracking-wider2 text-ink-400 transition-colors hover:text-ink-200"
-            >
-              Staff login
-            </Link>
+            <Link href="/catalog" className="transition-colors hover:text-ink-700">Catalog</Link>
+            <Link href="/track" className="transition-colors hover:text-ink-700">Track order</Link>
+            <Link href={`mailto:${SITE.email}`} className="transition-colors hover:text-ink-700">Enquiries</Link>
+            <Link href="/admin/dashboard" className="transition-colors hover:text-ink-700">Staff login</Link>
           </nav>
         </div>
       </div>

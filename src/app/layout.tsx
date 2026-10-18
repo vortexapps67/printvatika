@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import { Fraunces, Manrope, JetBrains_Mono } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '../context/CartContext';
 import { Navbar } from '../components/Navbar';
@@ -8,19 +8,12 @@ import { AnnouncementBar } from '../components/AnnouncementBar';
 import { Footer } from '../components/Footer';
 import { SITE } from '../lib/site';
 
-/* Display: Fraunces — soft-contrast variable serif. Optical sizing stays on
-   so headlines tighten up as they grow. */
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  variable: '--font-display',
-  display: 'swap',
-});
-
-/* Body: Manrope — geometric sans, holds small print and long copy. */
-const manrope = Manrope({
+/* Body + display: Inter — clean, modern e-commerce sans. */
+const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
+  weight: ['400', '500', '600', '700', '800', '900'],
 });
 
 /* Specs and data: JetBrains Mono — every measurement, price and order ref. */
@@ -127,7 +120,7 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-IN" className={`${fraunces.variable} ${manrope.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en-IN" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>
