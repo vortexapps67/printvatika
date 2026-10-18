@@ -124,9 +124,20 @@ INSERT INTO settings (key, value, label) VALUES
   ('address',        'F-298, Himmat Singh Marg, Near Saket Metro, Lado Sarai, New Delhi – 110030', 'Shop Address'),
   ('hours_weekday',  'Mon–Sat: 9 AM – 8 PM',                                     'Weekday Hours'),
   ('hours_weekend',  'Sunday: 10 AM – 5 PM',                                     'Weekend Hours'),
-  ('gst_number',     '07AAAAA0000A1Z5',                                           'GST Number'),
-  ('admin_password', 'vatika2026',                                                'Admin Password')
+  ('gst_number',     '07AAAAA0000A1Z5',                                           'GST Number')
 ON CONFLICT (key) DO NOTHING;
+
+-- The admin password is deliberately not in this file: the file is public, so it
+-- must not carry the shop's password. Set it once, in the Supabase SQL editor,
+-- before the first admin login:
+--
+--   INSERT INTO settings (key, value, label)
+--   VALUES ('admin_password', 'choose-a-password', 'Admin Password')
+--   ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+--
+-- After that, change it from the admin panel (Settings). Until one is set, both
+-- the site's admin login and the storefront's refuse every password — including
+-- a blank one — rather than opening the dashboard.
 
 -- ═══════════════════════════════════════════════════════════════
 -- REALTIME (enable for orders table)

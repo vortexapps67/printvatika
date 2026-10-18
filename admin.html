@@ -509,7 +509,10 @@
 async function doLogin() {
   await loadSettings();
   const pw = document.getElementById('login-pw').value;
-  if (pw === SETTINGS.admin_password) {
+  // The password must have come from the settings table. An empty value means
+  // settings did not load (or none is set), which must not open the dashboard.
+  const expected = String(SETTINGS.admin_password || '');
+  if (expected && pw === expected) {
     sessionStorage.setItem('pv_admin', '1');
     document.getElementById('admin-login').style.display    = 'none';
     document.getElementById('admin-dashboard').style.display = 'flex';

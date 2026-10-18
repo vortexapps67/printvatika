@@ -27,7 +27,11 @@ window.loadSettings = async function () {
     address:       'F-298, Himmat Singh Marg, Near Saket Metro, Lado Sarai, New Delhi – 110030',
     hours_weekday: 'Mon–Sat: 9 AM – 8 PM',
     hours_weekend: 'Sunday: 10 AM – 5 PM',
-    admin_password:'vatika2026',
+    // Intentionally empty. The admin password is *not* kept in this file: it
+    // lives in the settings table and is changed from the admin panel. Leaving
+    // it blank here means a settings outage cannot hand anyone the dashboard —
+    // see the guard in admin.html's doLogin().
+    admin_password: '',
   };
   Object.entries(defaults).forEach(([k, v]) => { if (!SETTINGS[k]) SETTINGS[k] = v; });
 };
