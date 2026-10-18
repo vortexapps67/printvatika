@@ -88,6 +88,7 @@ export interface Order {
   payment_status: PaymentStatus;
   order_status: OrderStatus;
   payment_id?: string;
+  user_id?: string;
   notes?: string;
   created_at: string;
   updated_at: string;

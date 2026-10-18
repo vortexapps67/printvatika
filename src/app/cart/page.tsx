@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
+import { getBrowserSupabase } from '../../lib/supabaseBrowser';
 import { Badge, Button, ButtonLink, ColourStrip, EmptyState, Field, Panel, PanelHead, SpecRow } from '../../components/ui/press';
 import { SITE } from '../../lib/site';
 import { payable } from '../../lib/catalog';
@@ -46,40 +48,24 @@ export default function CartPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  // User Authentication State
-  const [currentUser, setCurrentUser] = useState<{ id: string; email: string; name?: string } | null>(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  // Customer auth (Supabase). Replaces the old localStorage scrape.
+  const { user: authUser } = useAuth();
+  const currentUser = authUser
+    ? {
+        id: authUser.id,
+        email: authUser.email || '',
+        name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || '',
+      }
+    : null;
 
   useEffect(() => {
-    try {
-      if (typeof window !== 'undefined') {
-        const keys = Object.keys(localStorage);
-        const authKey = keys.find(k => k.startsWith('sb-') && k.endsWith('-auth-token')) || 'vatika_user';
-        if (authKey) {
-          const raw = localStorage.getItem(authKey);
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            const user = parsed.user || parsed;
-            if (user && (user.id || user.email)) {
-              setCurrentUser({
-                id: user.id || 'user_' + Date.now(),
-                email: user.email || '',
-                name: user.user_metadata?.full_name || user.name || user.email?.split('@')[0] || '',
-              });
-              if (user.email && !checkoutDetails.customerEmail) {
-                updateCheckoutDetails({ customerEmail: user.email });
-              }
-              if (user.user_metadata?.full_name && !checkoutDetails.customerName) {
-                updateCheckoutDetails({ customerName: user.user_metadata.full_name });
-              }
-            }
-          }
-        }
-      }
-    } catch (err) {
-      console.warn('Could not read user auth state', err);
+    if (authUser?.email && !checkoutDetails.customerEmail) {
+      updateCheckoutDetails({ customerEmail: authUser.email });
     }
-  }, []);
+    if (authUser?.user_metadata?.full_name && !checkoutDetails.customerName) {
+      updateCheckoutDetails({ customerName: authUser.user_metadata.full_name });
+    }
+  }, [authUser, checkoutDetails.customerEmail, checkoutDetails.customerName, updateCheckoutDetails]);
 
   // Payment simulator modal state
   const [showSimulator, setShowSimulator] = useState(false);
@@ -245,8 +231,6 @@ export default function CartPage() {
     /* Guest checkout. A signed-in session is used when one exists (pre-filling
        the form above), but it is no longer a requirement — this app has no
        sign-in screen, so requiring one blocked every order. */
-    if (showAuthModal && currentUser) setShowAuthModal(false);
-
     setIsLoading(true);
 
     try {
@@ -254,12 +238,15 @@ export default function CartPage() {
          pastes an offer and goes straight to paying still gets it. */
       const appliedCoupon = coupon ?? (couponInput.trim() ? await applyCoupon() : null);
 
+      const { data: sessionData } = await getBrowserSupabase().auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
       // 1. Submit cart specifications and buyer data to API to create PENDING order
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(currentUser ? { Authorization: `Bearer ${currentUser.id}` } : {}),
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify({
           ...(currentUser ? { userId: currentUser.id, userToken: currentUser.id } : {}),
@@ -961,44 +948,6 @@ export default function CartPage() {
                   </Button>
                 </div>
               )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ---- Sign-in required ---- */}
-      {showAuthModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/70 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="auth-title"
-        >
-          <div className="animate-fade-rise w-full max-w-md rounded-xl border border-ink-200 bg-white shadow-card">
-            <ColourStrip />
-            <div className="p-6 text-center sm:p-8">
-              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded border border-ink-200 bg-ink-50 text-ink-500">
-                <Lock size={20} aria-hidden="true" />
-              </span>
-              <h2 id="auth-title" className="mt-5 text-title">
-                Sign in to place this order
-              </h2>
-              <p className="mx-auto mt-3 max-w-sm text-body leading-relaxed text-ink-500">
-                An account keeps the artwork you uploaded and the proof the press works from, so a
-                reprint never starts from scratch.
-              </p>
-              <div className="mt-7 space-y-2.5">
-                <a
-                  href="/login.html?returnTo=cart.html"
-                  className="flex w-full items-center justify-center gap-2 rounded bg-primary-500 px-6 py-3.5 font-mono text-label font-medium uppercase tracking-wider2 text-white transition-colors hover:bg-primary-600"
-                >
-                  Sign in or create an account
-                  <ArrowRight size={15} aria-hidden="true" />
-                </a>
-                <Button variant="ghost" size="lg" className="w-full" onClick={() => setShowAuthModal(false)}>
-                  Back to cart
-                </Button>
-              </div>
             </div>
           </div>
         </div>

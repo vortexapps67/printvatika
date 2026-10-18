@@ -50,7 +50,26 @@ export async function POST(req: NextRequest) {
        against abuse. To require accounts again, reinstate a token check here
        after adding the sign-in pages. */
 
-    // 3. Mandatory Fields Validation
+    /* If the customer is signed in, link the order to their account. The
+       Authorization header is verified against Supabase Auth so a request
+       cannot claim someone else's account by editing the body. */
+    let resolvedUserId: string | undefined;
+    const authHeader = req.headers.get('authorization');
+    const token = authHeader?.replace(/^Bearer\s+/i, '').trim();
+    if (token) {
+      try {
+        const { createClient } = await import('@supabase/supabase-js');
+        const sb = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+        const { data } = await sb.auth.getUser(token);
+        if (data?.user?.id) resolvedUserId = data.user.id;
+      } catch {
+        /* Ignore — fall back to the body value (or none). */
+      }
+    }
+    if (!resolvedUserId && typeof body.userId === 'string') resolvedUserId = body.userId;
     const {
       customerName,
       customerEmail,
@@ -175,7 +194,8 @@ export async function POST(req: NextRequest) {
       total_amount: totalAmount,
       payment_status: 'PENDING' as const,
       order_status: 'PAYMENT_PENDING' as const,
-      notes: noteParts.filter(Boolean).join(' ') || undefined
+      notes: noteParts.filter(Boolean).join(' ') || undefined,
+      user_id: resolvedUserId,
     };
 
     // 8. Save to database

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { ButtonLink, ColourStrip } from './ui/press';
 import { CATEGORIES, categoryHref } from '../lib/catalog';
 import { SITE } from '../lib/site';
@@ -24,6 +25,7 @@ const UTILITY_LINKS = [{ href: '/track', label: 'Track Order' }] as const;
 
 export const Navbar: React.FC = () => {
   const { cart } = useCart();
+  const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -146,6 +148,18 @@ export const Navbar: React.FC = () => {
               <Phone size={14} aria-hidden="true" />
               {SITE.phoneDisplay}
             </a>
+
+            <Link
+              href={user ? '/account' : '/login'}
+              className={cn(
+                'rounded-lg px-3 py-2 font-mono text-label font-medium uppercase tracking-wider2 transition-colors',
+                pathname?.startsWith('/account') || pathname?.startsWith('/login')
+                  ? 'bg-primary-50 text-primary-700'
+                  : 'text-ink-600 hover:bg-ink-100 hover:text-ink-950',
+              )}
+            >
+              {user ? 'My account' : 'Login'}
+            </Link>
 
             <Link
               href="/cart"

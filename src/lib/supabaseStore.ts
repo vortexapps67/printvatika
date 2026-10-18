@@ -174,7 +174,7 @@ export const supabaseStore = {
       payment: orderInput.payment_status === 'PAID' ? 'PAID' : 'PENDING',
       status: orderInput.order_status,
       utr: orderInput.payment_id ?? null,
-      user_id: null,
+      user_id: orderInput.user_id ?? null,
     };
 
     const { error } = await supabase.from('orders').insert(row);

@@ -23,7 +23,7 @@ export function AnnouncementBar() {
           <Link href="/track" className="font-medium transition-colors hover:text-white/80">
             Track Order
           </Link>
-          <Link href="/admin/dashboard" className="font-medium transition-colors hover:text-white/80">
+          <Link href="/login" className="font-medium transition-colors hover:text-white/80">
             Login / Signup
           </Link>
         </div>
