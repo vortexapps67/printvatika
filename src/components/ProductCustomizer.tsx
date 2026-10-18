@@ -6,6 +6,7 @@ import { Product, ProductOption, PricingRule, DesignConfig } from '../types';
 import { useCart } from '../context/CartContext';
 import { PreviewCanvas } from './PreviewCanvas';
 import { calculatePricing, PriceBreakdown } from '../lib/priceCalculator';
+import { payable } from '../lib/catalog';
 import { validateUploadedFile, FileValidationResult } from '../lib/fileValidation';
 import {
   Info,
@@ -612,7 +613,7 @@ return (
                       {isQuoteProduct ? 'Total' : 'Subtotal · excl. delivery'}
                     </span>
                     <span className="tnum mt-1.5 block font-display text-display-s font-black tracking-tightest text-ink-950">
-                      {isQuoteProduct ? 'To be quoted' : `₹${priceBreakdown.subtotal.toFixed(2)}`}
+                      {isQuoteProduct ? 'To be quoted' : `₹${payable(priceBreakdown.subtotal)}`}
                     </span>
                   </div>
 

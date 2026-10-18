@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '../../context/CartContext';
 import { Badge, Button, ButtonLink, ColourStrip, EmptyState, Field, Panel, PanelHead, SpecRow } from '../../components/ui/press';
 import { SITE } from '../../lib/site';
+import { payable } from '../../lib/catalog';
 import {
   ShoppingBag,
   Trash2,
@@ -40,7 +41,6 @@ export default function CartPage() {
     updateCheckoutDetails,
     cartSubtotal,
     deliveryCharge,
-    cartTotal,
   } = useCart();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -95,6 +95,112 @@ export default function CartPage() {
   const allowTestPayment = process.env.NODE_ENV !== 'production';
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
+  /* The discount code. Only the code the customer already has is ever sent to be
+     checked, and the order route checks it again against the price it works out
+     itself before any money comes off — so this is display, not authority. */
+  const [couponInput, setCouponInput] = useState('');
+  const [coupon, setCoupon] = useState<{
+    code: string;
+    discount: number;
+    deliveryWaived: boolean;
+  } | null>(null);
+  const [couponChecking, setCouponChecking] = useState(false);
+  const [couponMessage, setCouponMessage] = useState('');
+  const [couponFailed, setCouponFailed] = useState(false);
+
+  const discount = coupon?.discount ?? 0;
+  const payableDelivery = coupon?.deliveryWaived ? 0 : deliveryCharge;
+
+  /* Billed the way the press bills — whole rupees — so the total on screen is the
+     total in its order book, and the amount the gateway charges. A bespoke job
+     (nothing but quote-only lines) has no courier charge either: the quote covers
+     the whole job. */
+  const goodsTotal = payable(cartSubtotal);
+  const deliveryAmount = goodsTotal > 0 ? payable(payableDelivery) : 0;
+  const discountAmount = payable(discount);
+  const amountDue = Math.max(0, goodsTotal + deliveryAmount - discountAmount);
+
+  /** Ask the shop's own settings whether this code may be used, and for how much. */
+  const applyCoupon = async (): Promise<{ code: string; discount: number; deliveryWaived: boolean } | null> => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return null;
+
+    setCouponChecking(true);
+    setCouponFailed(false);
+    try {
+      const res = await fetch(`/api/coupons?code=${encodeURIComponent(code)}&subtotal=${cartSubtotal}`);
+      const data = await res.json();
+      if (data.valid) {
+        const applied = {
+          code: String(data.code),
+          discount: Number(data.discount) || 0,
+          deliveryWaived: Boolean(data.deliveryWaived),
+        };
+        setCoupon(applied);
+        setCouponMessage(String(data.reason || ''));
+        setCouponInput(applied.code);
+        return applied;
+      }
+      setCoupon(null);
+      setCouponMessage(String(data.reason || 'That code cannot be used on this order.'));
+      setCouponFailed(true);
+      return null;
+    } catch {
+      setCoupon(null);
+      setCouponMessage('We could not check that code just now.');
+      setCouponFailed(true);
+      return null;
+    } finally {
+      setCouponChecking(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setCoupon(null);
+    setCouponInput('');
+    setCouponMessage('');
+    setCouponFailed(false);
+  };
+
+  /* A code is tied to an order value, so changing the basket means checking it
+     again rather than quietly over-discounting. The check waits for the basket
+     to settle, so holding the + button down is one check, not forty — and a
+     limiter answer is not read as a verdict on the code, because a hurried
+     customer must not lose their discount for being quick. */
+  useEffect(() => {
+    if (!coupon) return;
+    let cancelled = false;
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/coupons?code=${encodeURIComponent(coupon.code)}&subtotal=${cartSubtotal}`);
+        if (cancelled || res.status === 429) return;
+        const data = await res.json();
+        if (cancelled) return;
+        if (data.valid) {
+          setCoupon({
+            code: String(data.code),
+            discount: Number(data.discount) || 0,
+            deliveryWaived: Boolean(data.deliveryWaived),
+          });
+          setCouponMessage(String(data.reason || ''));
+        } else {
+          setCoupon(null);
+          setCouponMessage(String(data.reason || 'That code no longer applies.'));
+          setCouponFailed(true);
+        }
+      } catch {
+        /* Leave the code as it stands; the order route decides for real. */
+      }
+    }, 600);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartSubtotal]);
+
   // Form input validation
   const validateForm = () => {
     const errors: Record<string, string> = {};
@@ -144,6 +250,10 @@ export default function CartPage() {
     setIsLoading(true);
 
     try {
+      /* A code typed but never applied is tried once here, so a customer who
+         pastes an offer and goes straight to paying still gets it. */
+      const appliedCoupon = coupon ?? (couponInput.trim() ? await applyCoupon() : null);
+
       // 1. Submit cart specifications and buyer data to API to create PENDING order
       const response = await fetch('/api/orders', {
         method: 'POST',
@@ -161,17 +271,16 @@ export default function CartPage() {
           deliveryCity: checkoutDetails.deliveryCity,
           deliveryState: checkoutDetails.deliveryState,
           deliveryPincode: checkoutDetails.deliveryPincode,
-          deliveryCharge,
-          subtotal: cartSubtotal,
-          totalAmount: cartTotal,
+          couponCode: appliedCoupon?.code,
           notes: checkoutDetails.notes,
+          /* No prices are sent. The order route works out the subtotal, the
+             courier charge and the discount from the catalogue and the shop's
+             own codes, so an edited request cannot set its own total. */
           items: cart.map(item => ({
             product_slug: item.product.slug,
             product_name: item.product.name,
             quantity: item.quantity,
             selected_options: item.selected_options,
-            unit_price: item.unit_price,
-            total_price: item.total_price,
             dimensions: item.dimensions,
             original_file: item.original_file,
             preview_base64: item.preview_base64,
@@ -188,9 +297,12 @@ export default function CartPage() {
       setSimulatedOrder(orderData);
 
       // 2. Take payment: live gateway, test gateway, or pay at the counter.
-      if (isRazorpayConfigured) {
+      /* The gateway only opens when the server actually created a gateway order.
+         A bespoke job that comes to nothing has none, and a failing gateway
+         falls back to paying at the counter rather than stranding the order. */
+      if (isRazorpayConfigured && orderData.razorpay_order_id) {
         initializeLiveRazorpay(orderData);
-      } else if (allowTestPayment) {
+      } else if (allowTestPayment && Number(orderData.total_amount) > 0) {
         setShowSimulator(true);
       } else {
         /* No gateway is configured, so nothing may be marked paid. The order is
@@ -412,7 +524,7 @@ export default function CartPage() {
                         ₹{item.unit_price.toFixed(2)} each
                       </span>
                       <span className="tnum mt-0.5 block font-display text-title font-extrabold text-ink-950">
-                        ₹{item.total_price.toFixed(2)}
+                        ₹{payable(item.total_price)}
                       </span>
                     </div>
                   </div>
@@ -605,16 +717,73 @@ export default function CartPage() {
                     />
                   </Field>
 
+                  {/* Discount code — the shop's own codes, read from its settings. */}
+                  <Field
+                    label="Discount code"
+                    htmlFor="coupon"
+                    hint="Got a code from the counter or a WhatsApp offer?"
+                  >
+                    <div className="flex gap-2">
+                      <input
+                        id="coupon"
+                        type="text"
+                        value={couponInput}
+                        onChange={e => setCouponInput(e.target.value.toUpperCase())}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            void applyCoupon();
+                          }
+                        }}
+                        placeholder="VATIKA50"
+                        className="font-mono uppercase"
+                        disabled={!!coupon}
+                        autoComplete="off"
+                      />
+                      {coupon ? (
+                        <Button type="button" variant="ghost" onClick={removeCoupon} className="shrink-0">
+                          Remove
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="ink"
+                          onClick={() => void applyCoupon()}
+                          disabled={couponChecking || !couponInput.trim()}
+                          className="shrink-0"
+                        >
+                          {couponChecking ? 'Checking' : 'Apply'}
+                        </Button>
+                      )}
+                    </div>
+                  </Field>
+
+                  {couponMessage && (
+                    <p
+                      className={`-mt-2 text-body-s leading-relaxed ${
+                        couponFailed ? 'text-red-600' : 'text-emerald-700'
+                      }`}
+                    >
+                      {couponMessage}
+                    </p>
+                  )}
+
                   {/* Totals */}
                   <dl className="divide-y divide-ink-200 border-y border-ink-200 py-1">
-                    <SpecRow label="Subtotal" value={`₹${cartSubtotal.toFixed(2)}`} />
+                    <SpecRow label="Subtotal" value={`₹${goodsTotal}`} />
                     <SpecRow
                       label={isPickup ? 'Store pickup' : 'Delivery'}
                       value={
-                        deliveryCharge > 0 ? `₹${deliveryCharge.toFixed(2)}` : <span className="text-emerald-700">Free</span>
+                        deliveryAmount > 0 ? `₹${deliveryAmount}` : <span className="text-emerald-700">Free</span>
                       }
                     />
-                    <SpecRow label="Total payable" value={`₹${cartTotal.toFixed(2)}`} strong className="pb-3 pt-3" />
+                    {discountAmount > 0 && (
+                      <SpecRow
+                        label={`Discount · ${coupon?.code}`}
+                        value={<span className="text-emerald-700">− ₹{discountAmount}</span>}
+                      />
+                    )}
+                    <SpecRow label="Total payable" value={`₹${amountDue}`} strong className="pb-3 pt-3" />
                   </dl>
 
                   <Button type="submit" size="lg" plate disabled={isLoading} className="w-full">
@@ -654,20 +823,36 @@ export default function CartPage() {
             <ColourStrip />
             <div className="space-y-5 p-6">
               <div>
-                <Badge tone="warning">Payment pending</Badge>
+                <Badge tone="warning">
+                  {Number(simulatedOrder.total_amount) > 0 ? 'Payment pending' : 'Quote requested'}
+                </Badge>
                 <h2 id="pay-title" className="mt-3 text-title">
                   Order <span className="font-mono">{simulatedOrder.id}</span> is saved
                 </h2>
                 <p className="mt-2 text-body-s leading-relaxed text-ink-600">
-                  Online card payment is not switched on yet, so nothing has been charged. We have your
-                  job and will confirm it with you on {SITE.phoneDisplay} — pay by UPI or at the counter.
+                  {Number(simulatedOrder.total_amount) > 0 ? (
+                    <>
+                      Online card payment is not switched on yet, so nothing has been charged. We have
+                      your job and will confirm it with you on {SITE.phoneDisplay} — pay by UPI or at the
+                      counter.
+                    </>
+                  ) : (
+                    <>
+                      Nothing is charged for a bespoke job: we price it by hand. We have the details and
+                      will call you on {SITE.phoneDisplay} with a quote before anything goes on press.
+                    </>
+                  )}
                 </p>
               </div>
 
               <div className="rounded border border-ink-200 bg-ink-50 py-5 text-center">
-                <span className="label-caps">Amount due</span>
+                <span className="label-caps">
+                  {Number(simulatedOrder.total_amount) > 0 ? 'Amount due' : 'Pricing'}
+                </span>
                 <span className="tnum mt-2 block font-display text-display-s font-black tracking-tightest text-ink-950">
-                  ₹{Number(simulatedOrder.total_amount).toFixed(2)}
+                  {Number(simulatedOrder.total_amount) > 0
+                    ? `₹${payable(simulatedOrder.total_amount)}`
+                    : 'To be quoted'}
                 </span>
               </div>
 
@@ -727,7 +912,7 @@ export default function CartPage() {
               <div className="rounded border border-ink-200 bg-ink-50 py-5 text-center">
                 <span className="label-caps">Amount due</span>
                 <span className="tnum mt-2 block font-display text-display-s font-black tracking-tightest text-ink-950">
-                  ₹{simulatedOrder.total_amount.toFixed(2)}
+                  ₹{payable(simulatedOrder.total_amount)}
                 </span>
               </div>
 

@@ -13,6 +13,7 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import {
+  Coupon,
   Order,
   OrderItem,
   OrderStatus,
@@ -28,6 +29,7 @@ import {
   composeAddress,
   localItemsToLegacy,
   optionsToLegacy,
+  parseCoupons,
   perPieceToBasePrice,
   rowToOptions,
   rowToOrder,
@@ -72,13 +74,32 @@ function fail(what: string, error: { message?: string } | null): never {
   throw new Error(`Supabase ${what} failed: ${error?.message ?? 'unknown error'}`);
 }
 
+/** Run one read, retrying a couple of times.
+ *
+ *  PostgREST occasionally answers a request in a fresh process with a transient
+ *  auth complaint ("JWT issued at future" while the clocks settle). A storefront
+ *  that fails a customer's checkout on that would lose the sale for no reason,
+ *  so a read is given two more chances before it is called a failure. */
+async function read<T>(
+  what: string,
+  run: () => PromiseLike<{ data: T; error: { message?: string } | null }>
+): Promise<T> {
+  let last: { message?: string } | null = null;
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const { data, error } = await run();
+    if (!error) return data;
+    last = error;
+    if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, 150 * attempt));
+  }
+
+  fail(what, last);
+}
+
 async function productRow(slug: string): Promise<ProductRow | null> {
-  const { data, error } = await getSupabase()
-    .from('products')
-    .select('*')
-    .eq('slug', slug)
-    .maybeSingle();
-  if (error) fail(`lookup of product "${slug}"`, error);
+  const data = await read('lookup of product "' + slug + '"', () =>
+    getSupabase().from('products').select('*').eq('slug', slug).maybeSingle()
+  );
   return (data as ProductRow) ?? null;
 }
 
@@ -86,13 +107,14 @@ export const supabaseStore = {
   /* ── Catalogue ─────────────────────────────────────────────────────────── */
 
   async getProducts(): Promise<Product[]> {
-    const { data, error } = await getSupabase()
-      .from('products')
-      .select('*')
-      .eq('active', true)
-      .order('sort_order', { ascending: true })
-      .order('name', { ascending: true });
-    if (error) fail('product list', error);
+    const data = await read('product list', () =>
+      getSupabase()
+        .from('products')
+        .select('*')
+        .eq('active', true)
+        .order('sort_order', { ascending: true })
+        .order('name', { ascending: true })
+    );
     return ((data ?? []) as ProductRow[]).map(rowToProduct);
   },
 
@@ -112,11 +134,12 @@ export const supabaseStore = {
   },
 
   async getAllPricingRules(): Promise<PricingRule[]> {
-    const { data, error } = await getSupabase()
-      .from('products')
-      .select('id, slug, name, base_unit, quantities, qty_discounts')
-      .eq('active', true);
-    if (error) fail('pricing tier list', error);
+    const data = await read('pricing tier list', () =>
+      getSupabase()
+        .from('products')
+        .select('id, slug, name, base_unit, quantities, qty_discounts')
+        .eq('active', true)
+    );
     return ((data ?? []) as ProductRow[]).flatMap(rowToPricingRules);
   },
 
@@ -173,8 +196,9 @@ export const supabaseStore = {
     const id = String(orderId).replace(/^#/, '').trim().toUpperCase();
     if (!id) return null;
 
-    const { data, error } = await supabase.from('orders').select('*').eq('id', id).maybeSingle();
-    if (error) fail(`lookup of order ${id}`, error);
+    const data = await read(`lookup of order ${id}`, () =>
+      supabase.from('orders').select('*').eq('id', id).maybeSingle()
+    );
     if (!data) return null;
 
     const { data: history } = await supabase
@@ -209,8 +233,7 @@ export const supabaseStore = {
       }
     }
 
-    const { data, error } = await query;
-    if (error) fail('order list', error);
+    const data = await read('order list', () => query);
     const rows = (data ?? []) as OrderRow[];
     if (!rows.length) return [];
 
@@ -278,12 +301,9 @@ export const supabaseStore = {
 
   /** The shop runs a single shared admin password, stored in `settings`. */
   async authenticateAdmin(_email: string, passwordHash: string): Promise<boolean> {
-    const { data, error } = await getSupabase()
-      .from('settings')
-      .select('value')
-      .eq('key', 'admin_password')
-      .maybeSingle();
-    if (error) fail('admin login check', error);
+    const data = await read('admin login check', () =>
+      getSupabase().from('settings').select('value').eq('key', 'admin_password').maybeSingle()
+    );
 
     const expected = String((data as { value?: string } | null)?.value ?? '');
     return Boolean(expected) && expected === String(passwordHash ?? '');
@@ -367,5 +387,16 @@ export const supabaseStore = {
       .eq('slug', slug);
     if (error) fail(`activation toggle for ${slug}`, error);
     return true;
+  },
+
+  /* ── Shop settings ─────────────────────────────────────────────────────── */
+
+  /** The discount codes the shop maintains in `settings.discount_coupons`. */
+  async getCoupons(): Promise<Coupon[]> {
+    const data = await read('coupon lookup', () =>
+      getSupabase().from('settings').select('value').eq('key', 'discount_coupons').maybeSingle()
+    );
+
+    return parseCoupons((data as { value?: string } | null)?.value);
   },
 };

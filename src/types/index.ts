@@ -59,6 +59,19 @@ export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED';
 
 export type FulfillmentType = 'pickup' | 'delivery';
 
+/** A discount code from the shop's settings table. */
+export interface Coupon {
+  code: string;
+  /** `flat` takes money off, `delivery` waives the courier charge. */
+  type: 'flat' | 'delivery';
+  /** Rupees off for `flat`; the delivery charge covered for `delivery`. */
+  value: number;
+  label?: string;
+  /** Minimum order subtotal, in rupees, before the code unlocks. */
+  minOrder?: number;
+  active: boolean;
+}
+
 export interface Order {
   id: string; // Unique order ID (e.g. PV-1048)
   customer_name: string;

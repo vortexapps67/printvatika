@@ -168,3 +168,14 @@ export function unitQuote(product: Product): UnitQuote {
 export function money(value: number): string {
   return '₹' + Number(value).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 }
+
+/** Order money, to the rupee.
+ *
+ *  The press bills in whole rupees and its order records are kept that way, so
+ *  every figure the checkout shows is put through here. Rounding at the end —
+ *  rather than nowhere — is what stops a screen total of ₹687.70 becoming a
+ *  recorded (and charged) ₹688. Per-unit prices stay exact: a card is ₹2.99 and
+ *  the breakdown on the product page still adds up the way it always did. */
+export function payable(value: number): number {
+  return Math.round(Number(value) || 0);
+}

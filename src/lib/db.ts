@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { Product, ProductOption, PricingRule, Order, OrderItem, OrderStatus, PaymentStatus, OrderStatusHistory } from '../types';
+import { Coupon, Product, ProductOption, PricingRule, Order, OrderItem, OrderStatus, PaymentStatus, OrderStatusHistory } from '../types';
 import { supabaseConfigured, supabaseStore } from './supabaseStore';
 
 // Path for local file fallback database
@@ -668,6 +668,13 @@ class LocalDb {
     return admin.passwordHash === passwordHash;
   }
 
+  /* The local JSON file has no `settings` table, so it has no discount codes
+     either. Offline runs simply accept none — the live codes come from the shop's
+     own settings row. */
+  static async getCoupons(): Promise<Coupon[]> {
+    return [];
+  }
+
   // Admin updates
   static async updateProductPrice(slug: string, basePrice: number): Promise<boolean> {
     const db = readLocalDb();
@@ -821,5 +828,10 @@ export class DbClient {
     return supabaseConfigured()
       ? supabaseStore.toggleProductActive(slug)
       : LocalDb.toggleProductActive(slug);
+  }
+
+  /** Discount codes from the shop's settings. */
+  static async getCoupons(): Promise<Coupon[]> {
+    return supabaseConfigured() ? supabaseStore.getCoupons() : LocalDb.getCoupons();
   }
 }

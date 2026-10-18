@@ -9,6 +9,7 @@
     "lint": "next lint",
     "verify:pricing": "node scripts/verify-pricing.mjs",
     "verify:db": "node scripts/verify-db-parity.mjs --orders",
+    "verify:checkout": "node scripts/verify-checkout.mjs",
     "db:fix-images": "node scripts/db-fix-images.mjs --write"
   },
   "dependencies": {

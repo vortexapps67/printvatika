@@ -22,6 +22,7 @@
    ───────────────────────────────────────────────────────────────────────────── */
 
 import {
+  Coupon,
   Product,
   ProductOption,
   PricingRule,
@@ -383,4 +384,45 @@ export function nextOrderSerial(existingIds: string[]): number {
     if (m) max = Math.max(max, Number(m[1]));
   }
   return max + 1;
+}
+
+/* ---- Discount codes -------------------------------------------------------
+   The shop keeps its codes in the settings table under `discount_coupons`, as a
+   JSON string, and edits them in its own admin. Nothing here is invented: a code
+   that is not in that row does not exist, and switching one off in the admin
+   switches it off everywhere. */
+
+interface CouponRow {
+  code?: unknown;
+  type?: unknown;
+  value?: unknown;
+  label?: unknown;
+  minOrder?: unknown;
+  active?: unknown;
+}
+
+/** Settings value (string or already-parsed JSON) -> usable codes. */
+export function parseCoupons(raw: unknown): Coupon[] {
+  let list: unknown = raw;
+  if (typeof raw === 'string') {
+    if (!raw.trim()) return [];
+    try {
+      list = JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  }
+  if (!Array.isArray(list)) return [];
+
+  return (list as CouponRow[])
+    .filter((c) => c && typeof c === 'object' && typeof c.code === 'string' && c.code.trim() !== '')
+    .map((c) => ({
+      code: String(c.code).trim().toUpperCase(),
+      // A code that takes money off is the safe default; only 'delivery' is special.
+      type: (String(c.type).toLowerCase() === 'delivery' ? 'delivery' : 'flat') as Coupon['type'],
+      value: Number(c.value) || 0,
+      label: typeof c.label === 'string' && c.label.trim() ? c.label.trim() : undefined,
+      minOrder: Number(c.minOrder) || 0,
+      active: c.active !== false,
+    }));
 }

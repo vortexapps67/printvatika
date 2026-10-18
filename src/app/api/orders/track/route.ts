@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DbClient } from '../../../../lib/db';
 
+/* Reads a live order, so it is never prerendered. */
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
