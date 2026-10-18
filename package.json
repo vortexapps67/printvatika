@@ -6,15 +6,19 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "verify:pricing": "node scripts/verify-pricing.mjs",
+    "verify:db": "node scripts/verify-db-parity.mjs --orders",
+    "db:fix-images": "node scripts/db-fix-images.mjs --write"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
     "clsx": "^2.1.0",
     "lucide-react": "^0.368.0",
     "next": "^14.2.3",
+    "razorpay": "^2.9.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "razorpay": "^2.9.2",
     "tailwind-merge": "^2.2.2"
   },
   "devDependencies": {

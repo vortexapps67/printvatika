@@ -7,8 +7,17 @@ export interface Product {
   description: string;
   category: string;
   image_url: string;
+  /** Price for one piece (or one square foot for banners). */
   base_price: number;
   is_active: boolean;
+  /** The shop's quoted unit, e.g. "/ 100 pcs". Comes from the live database. */
+  base_unit?: string;
+  /** Pieces included in one quoted price, e.g. 100 for "/ 100 pcs". */
+  base_qty?: number;
+  /** Lowest price per piece across every option combination (the "from" price). */
+  from_price?: number;
+  /** The run size the shop suggests first, e.g. 100 for business cards. */
+  default_qty?: number;
 }
 
 export interface OptionChoice {
@@ -85,6 +94,10 @@ export interface OrderItem {
   original_file_url?: string;
   preview_file_url?: string;
   design_config?: DesignConfig;
+  /** Banner jobs carry their width/height so the press sees the finished size. */
+  dimensions?: { width: number; height: number };
+  /** Name of the artwork file the customer uploaded (the file itself is never stored). */
+  selected_artwork_label?: string;
 }
 
 export interface DesignConfig {

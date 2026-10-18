@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" width="900" height="900" role="img" aria-label="Sheet of die-cut printed labels and stickers">
+  <defs>
+    <linearGradient id="stock" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F4F4F5"/>
+    </linearGradient>
+    <filter id="lift" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0B0B0C" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <rect width="900" height="900" fill="url(#stock)"/>
+  <g stroke="#E8E9EB" stroke-width="2">
+    <path d="M0 150H900M0 300H900M0 450H900M0 600H900M0 750H900"/>
+    <path d="M150 0V900M300 0V900M450 0V900M600 0V900M750 0V900"/>
+  </g>
+
+  <!-- Circle label: brand turquoise -->
+  <g filter="url(#lift)">
+    <circle cx="300" cy="275" r="135" fill="#FFFFFF" stroke="#0B7C8A" stroke-width="14"/>
+    <circle cx="300" cy="275" r="98" fill="#ECFCFD"/>
+    <text x="300" y="298" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-size="76" font-weight="700" fill="#0B7C8A">PV</text>
+  </g>
+
+  <!-- Rounded rectangle label: bright turquoise -->
+  <g filter="url(#lift)">
+    <rect x="500" y="170" width="300" height="210" rx="34" fill="#FFFFFF" stroke="#35CBD8" stroke-width="14"/>
+    <rect x="536" y="222" width="228" height="20" rx="10" fill="#0B0B0C"/>
+    <rect x="536" y="262" width="160" height="20" rx="10" fill="#B0B4BA"/>
+    <rect x="536" y="318" width="112" height="26" rx="13" fill="#35CBD8"/>
+  </g>
+
+  <!-- Square label: press yellow -->
+  <g filter="url(#lift)">
+    <rect x="140" y="500" width="260" height="260" rx="26" fill="#FFB81C"/>
+    <circle cx="270" cy="600" r="46" fill="#0B0B0C"/>
+    <rect x="196" y="672" width="148" height="18" rx="9" fill="#0B0B0C" opacity="0.75"/>
+    <rect x="222" y="704" width="96" height="18" rx="9" fill="#0B0B0C" opacity="0.45"/>
+  </g>
+
+  <!-- Circular seals, die-cut edge suggested by the white ring -->
+  <g filter="url(#lift)">
+    <circle cx="520" cy="560" r="96" fill="#FFFFFF" stroke="#0B0B0C" stroke-width="12"/>
+    <path d="M520 496l18 38 42 6-30 30 7 42-37-20-37 20 7-42-30-30 42-6z" fill="#0B7C8A"/>
+  </g>
+
+  <g filter="url(#lift)">
+    <circle cx="702" cy="700" r="76" fill="#FFFFFF" stroke="#35CBD8" stroke-width="12"/>
+    <text x="702" y="716" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-size="48" font-weight="700" fill="#0B7C8A">300</text>
+    <text x="702" y="754" text-anchor="middle" font-family="Manrope, Helvetica, Arial, sans-serif" font-size="24" font-weight="600" fill="#63676F">GSM</text>
+  </g>
+
+  <!-- Cut line markers -->
+  <g stroke="#B0B4BA" stroke-width="3" stroke-dasharray="12 12" fill="none">
+    <circle cx="300" cy="275" r="150"/>
+    <rect x="486" y="156" width="328" height="238" rx="42"/>
+  </g>
+</svg>

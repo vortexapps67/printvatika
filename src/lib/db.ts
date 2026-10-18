@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Product, ProductOption, PricingRule, Order, OrderItem, OrderStatus, PaymentStatus, OrderStatusHistory } from '../types';
+import { supabaseConfigured, supabaseStore } from './supabaseStore';
 
 // Path for local file fallback database
 const DATA_DIR = path.join(process.cwd(), '.data');
@@ -457,8 +458,8 @@ function getSeedData() {
   };
 }
 
-// Database client abstraction class
-export class DbClient {
+// Local JSON-file implementation. Used when no Supabase project is configured.
+class LocalDb {
   static async getProducts(): Promise<Product[]> {
     const db = readLocalDb();
     return db.products.filter(p => p.is_active);
@@ -715,5 +716,110 @@ export class DbClient {
     db.products[idx].is_active = !db.products[idx].is_active;
     writeLocalDb(db);
     return true;
+  }
+}
+
+/* ── Storage dispatch ─────────────────────────────────────────────────────────
+   The live shop runs on Supabase, so that is the default everywhere. When no
+   project is configured - a fresh clone, or CI - the local JSON file above
+   keeps every route working, so development never needs real keys. */
+
+export class DbClient {
+  static async getProducts(): Promise<Product[]> {
+    return supabaseConfigured() ? supabaseStore.getProducts() : LocalDb.getProducts();
+  }
+
+  static async getProductBySlug(slug: string): Promise<Product | null> {
+    return supabaseConfigured() ? supabaseStore.getProductBySlug(slug) : LocalDb.getProductBySlug(slug);
+  }
+
+  static async getProductOptions(slug: string): Promise<ProductOption[]> {
+    return supabaseConfigured() ? supabaseStore.getProductOptions(slug) : LocalDb.getProductOptions(slug);
+  }
+
+  static async getPricingRules(slug: string): Promise<PricingRule[]> {
+    return supabaseConfigured() ? supabaseStore.getPricingRules(slug) : LocalDb.getPricingRules(slug);
+  }
+
+  static async getAllPricingRules(): Promise<PricingRule[]> {
+    return supabaseConfigured() ? supabaseStore.getAllPricingRules() : LocalDb.getAllPricingRules();
+  }
+
+  static async createOrder(
+    orderInput: Omit<Order, 'created_at' | 'updated_at' | 'status_history' | 'items'>,
+    itemsInput: Array<Omit<OrderItem, 'id' | 'order_id'>>
+  ): Promise<Order> {
+    return supabaseConfigured()
+      ? supabaseStore.createOrder(orderInput, itemsInput)
+      : LocalDb.createOrder(orderInput, itemsInput);
+  }
+
+  static async getOrderById(orderId: string): Promise<Order | null> {
+    return supabaseConfigured() ? supabaseStore.getOrderById(orderId) : LocalDb.getOrderById(orderId);
+  }
+
+  static async getOrderByIdAndPhone(orderId: string, phone: string): Promise<Order | null> {
+    return supabaseConfigured()
+      ? supabaseStore.getOrderByIdAndPhone(orderId, phone)
+      : LocalDb.getOrderByIdAndPhone(orderId, phone);
+  }
+
+  static async getOrders(filters?: {
+    status?: OrderStatus;
+    search?: string;
+    date?: string;
+  }): Promise<Order[]> {
+    return supabaseConfigured() ? supabaseStore.getOrders(filters) : LocalDb.getOrders(filters);
+  }
+
+  static async updateOrderStatus(
+    orderId: string,
+    status: OrderStatus,
+    paymentStatus?: PaymentStatus,
+    notes?: string
+  ): Promise<Order | null> {
+    return supabaseConfigured()
+      ? supabaseStore.updateOrderStatus(orderId, status, paymentStatus, notes)
+      : LocalDb.updateOrderStatus(orderId, status, paymentStatus, notes);
+  }
+
+  static async setOrderPaid(orderId: string, paymentId: string): Promise<Order | null> {
+    return supabaseConfigured() ? supabaseStore.setOrderPaid(orderId, paymentId) : LocalDb.setOrderPaid(orderId, paymentId);
+  }
+
+  static async authenticateAdmin(email: string, passwordHash: string): Promise<boolean> {
+    return supabaseConfigured()
+      ? supabaseStore.authenticateAdmin(email, passwordHash)
+      : LocalDb.authenticateAdmin(email, passwordHash);
+  }
+
+  static async updateProductPrice(slug: string, basePrice: number): Promise<boolean> {
+    return supabaseConfigured()
+      ? supabaseStore.updateProductPrice(slug, basePrice)
+      : LocalDb.updateProductPrice(slug, basePrice);
+  }
+
+  static async updateProductOptions(slug: string, options: ProductOption[]): Promise<boolean> {
+    return supabaseConfigured()
+      ? supabaseStore.updateProductOptions(slug, options)
+      : LocalDb.updateProductOptions(slug, options);
+  }
+
+  static async updatePricingRules(slug: string, rules: PricingRule[]): Promise<boolean> {
+    return supabaseConfigured()
+      ? supabaseStore.updatePricingRules(slug, rules)
+      : LocalDb.updatePricingRules(slug, rules);
+  }
+
+  static async addProduct(product: Product, options: ProductOption[]): Promise<boolean> {
+    return supabaseConfigured()
+      ? supabaseStore.addProduct(product, options)
+      : LocalDb.addProduct(product, options);
+  }
+
+  static async toggleProductActive(slug: string): Promise<boolean> {
+    return supabaseConfigured()
+      ? supabaseStore.toggleProductActive(slug)
+      : LocalDb.toggleProductActive(slug);
   }
 }
