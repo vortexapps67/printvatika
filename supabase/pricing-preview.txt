@@ -1,0 +1,15 @@
+
+Intended pricing (base price per base unit -> per piece).
+This is what the new storefront will charge. The legacy site multiplied
+the base price by the piece count instead (100x too much on cards etc).
+
+  product           base      unit         per pc    qty: total after bulk discount
+  --------------------------------------------------------------------------------------------
+  Business Cards    299       / 100 pcs    ₹2.99     100=₹299.00  250=₹687.70  500=₹1225.90  1000=₹2152.80
+  Custom T-Shirts   249       / piece      ₹249.00   1=₹249.00  5=₹1245.00  10=₹2490.00  25=₹5913.75  50=₹10956.00  100=₹19920.00
+  Flex Banners      15        / sq.ft      ₹15.00    1=₹15.00  2=₹30.00  5=₹75.00  10=₹150.00
+  Flyers & Pamphlets199       / 500 pcs    ₹0.40     100=₹39.80  500=₹199.00  1000=₹350.24  5000=₹1432.80
+  Posters           49        / piece      ₹49.00    1=₹49.00  5=₹245.00  10=₹441.00  50=₹1911.00
+  Brochures         8         / piece      ₹8.00     50=₹400.00  100=₹800.00  500=₹3400.00  1000=₹6000.00
+  Stickers & Labels 199       / 100 pcs    ₹1.99     50=₹99.50  100=₹199.00  250=₹447.75  500=₹815.90  1000=₹1432.80
+  Custom Printing   quote     / quote      -         custom quote

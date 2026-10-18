@@ -21,6 +21,14 @@ window.showToast = function (msg, type = 'success') {
 };
 
 // ── PRICE CALCULATOR ──────────────────────────────────────────
+// Base prices are quoted per base unit ("/ 100 pcs", "/ 500 pcs", "/ piece",
+// "/ sq.ft"), so they must be divided by that unit before billing the
+// quantity the customer picked. 299 / 100 pcs @ 250 pcs -> 2.99 x 250.
+window.baseQtyOf = function (baseUnit) {
+  const m = String(baseUnit || '').match(/(\d[\d,]*)\s*(pcs|pieces|pc|units|nos?)\b/i);
+  return m ? (Number(m[1].replace(/,/g, '')) || 1) : 1;
+};
+
 window.calcPrice = function (product, options, qty, dims) {
   if (!product || product.basePrice === 0) return { unit: 0, subtotal: 0, discount: 0, discPct: 0, total: 0 };
 
@@ -32,7 +40,8 @@ window.calcPrice = function (product, options, qty, dims) {
     }
   });
 
-  const unit = product.basePrice + optMod;
+  const baseQty = window.baseQtyOf(product.baseUnit);
+  const unit = (product.basePrice + optMod) / baseQty;
   let subtotal;
 
   if (product.slug === 'flex-banners') {
