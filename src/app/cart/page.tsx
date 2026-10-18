@@ -26,6 +26,7 @@ import {
   FileCheck2,
   Minus,
   Plus,
+  MessageCircle,
 } from 'lucide-react';
 
 export default function CartPage() {
@@ -82,7 +83,16 @@ export default function CartPage() {
 
   // Payment simulator modal state
   const [showSimulator, setShowSimulator] = useState(false);
+  const [showPaymentNotice, setShowPaymentNotice] = useState(false);
   const [simulatedOrder, setSimulatedOrder] = useState<any>(null);
+
+  /* A key only counts as configured when it is a real one — .env ships
+     placeholders (rzp_test_YOUR_PUBLIC_KEY_ID) that must not switch the live
+     gateway on — and the card-free test gateway is available in development
+     only, so it can never take live orders. */
+  const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+  const isRazorpayConfigured = !!razorpayKey && !/YOUR_|placeholder|example/i.test(razorpayKey);
+  const allowTestPayment = process.env.NODE_ENV !== 'production';
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   // Form input validation
@@ -126,11 +136,10 @@ export default function CartPage() {
     e.preventDefault();
     if (!validateForm()) return;
 
-    // Must be signed in to place an order
-    if (!currentUser) {
-      setShowAuthModal(true);
-      return;
-    }
+    /* Guest checkout. A signed-in session is used when one exists (pre-filling
+       the form above), but it is no longer a requirement — this app has no
+       sign-in screen, so requiring one blocked every order. */
+    if (showAuthModal && currentUser) setShowAuthModal(false);
 
     setIsLoading(true);
 
@@ -140,11 +149,10 @@ export default function CartPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${currentUser.id}`,
+          ...(currentUser ? { Authorization: `Bearer ${currentUser.id}` } : {}),
         },
         body: JSON.stringify({
-          userId: currentUser.id,
-          userToken: currentUser.id,
+          ...(currentUser ? { userId: currentUser.id, userToken: currentUser.id } : {}),
           customerName: checkoutDetails.customerName,
           customerEmail: checkoutDetails.customerEmail,
           customerPhone: checkoutDetails.customerPhone,
@@ -164,6 +172,7 @@ export default function CartPage() {
             selected_options: item.selected_options,
             unit_price: item.unit_price,
             total_price: item.total_price,
+            dimensions: item.dimensions,
             original_file: item.original_file,
             preview_base64: item.preview_base64,
             design_config: item.design_config,
@@ -178,13 +187,17 @@ export default function CartPage() {
       const orderData = await response.json();
       setSimulatedOrder(orderData);
 
-      // 2. Open payment window (either Razorpay SDK or Simulator fallback)
-      const isRazorpayConfigured = !!process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-
+      // 2. Take payment: live gateway, test gateway, or pay at the counter.
       if (isRazorpayConfigured) {
         initializeLiveRazorpay(orderData);
-      } else {
+      } else if (allowTestPayment) {
         setShowSimulator(true);
+      } else {
+        /* No gateway is configured, so nothing may be marked paid. The order is
+           already saved as PAYMENT_PENDING; the shop collects by UPI or at the
+           counter, exactly as it does today. */
+        clearCart();
+        setShowPaymentNotice(true);
       }
     } catch (error) {
       console.error(error);
@@ -620,7 +633,7 @@ export default function CartPage() {
 
                   <p className="flex items-center justify-center gap-2 text-center font-mono text-micro uppercase tracking-wider2 text-ink-400">
                     <ShieldCheck size={13} className="text-emerald-600" aria-hidden="true" />
-                    UPI, cards and net banking
+                    {isRazorpayConfigured ? 'UPI, cards and net banking' : 'Pay by UPI or at the counter'}
                   </p>
                 </form>
               </div>
@@ -629,7 +642,68 @@ export default function CartPage() {
         </div>
       )}
 
-      {/* ---- Payment simulator ---- */}
+      {/* ---- No gateway switched on: the order waits for payment ---- */}
+      {showPaymentNotice && simulatedOrder && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/70 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="pay-title"
+        >
+          <div className="animate-fade-rise w-full max-w-md rounded-xl border border-ink-200 bg-white shadow-card">
+            <ColourStrip />
+            <div className="space-y-5 p-6">
+              <div>
+                <Badge tone="warning">Payment pending</Badge>
+                <h2 id="pay-title" className="mt-3 text-title">
+                  Order <span className="font-mono">{simulatedOrder.id}</span> is saved
+                </h2>
+                <p className="mt-2 text-body-s leading-relaxed text-ink-600">
+                  Online card payment is not switched on yet, so nothing has been charged. We have your
+                  job and will confirm it with you on {SITE.phoneDisplay} — pay by UPI or at the counter.
+                </p>
+              </div>
+
+              <div className="rounded border border-ink-200 bg-ink-50 py-5 text-center">
+                <span className="label-caps">Amount due</span>
+                <span className="tnum mt-2 block font-display text-display-s font-black tracking-tightest text-ink-950">
+                  ₹{Number(simulatedOrder.total_amount).toFixed(2)}
+                </span>
+              </div>
+
+              <div className="space-y-2.5">
+                <Button
+                  variant="ink"
+                  size="lg"
+                  className="w-full"
+                  onClick={() => {
+                    const text = encodeURIComponent(
+                      `Order ${simulatedOrder.id} — here is my payment reference: `
+                    );
+                    window.open(`https://wa.me/${SITE.phoneRaw.replace(/\D/g, '')}?text=${text}`, '_blank');
+                  }}
+                >
+                  <MessageCircle size={16} aria-hidden="true" />
+                  Send the payment reference
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  className="w-full"
+                  onClick={() => {
+                    setShowPaymentNotice(false);
+                    router.push(`/track?id=${simulatedOrder.id}&phone=${checkoutDetails.customerPhone}`);
+                  }}
+                >
+                  Track this order instead
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ---- Payment simulator (development only) ---- */}
       {showSimulator && simulatedOrder && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/70 p-4"

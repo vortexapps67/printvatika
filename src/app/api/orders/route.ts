@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { DbClient } from '../../../lib/db';
 import { Order, OrderItem } from '../../../types';
 import { checkRateLimit } from '../../../lib/rateLimit';
+import { nextOrderSerial } from '../../../lib/supabaseMap';
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,17 +29,13 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    // 2. Authentication Gate: Must be signed in to place an order
-    const authHeader = req.headers.get('authorization');
-    const userToken = authHeader?.replace(/^Bearer\s+/i, '') || body.userToken || body.userId;
+    /* 2. Guest checkout. The previous build rejected every order that did not
+       carry a signed-in session, but this app has no customer sign-in screen,
+       so that gate made it impossible to buy anything. Name, phone and email
+       are still mandatory (validated below) and the rate limiter above guards
+       against abuse. To require accounts again, reinstate a token check here
+       after adding the sign-in pages. */
 
-    if (!userToken) {
-      return NextResponse.json(
-        { error: 'Authentication required: You must be signed in to place an order.' },
-        { status: 401 }
-      );
-    }
-    
     // 3. Mandatory Fields Validation
     const {
       customerName,
@@ -60,11 +57,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing mandatory checkout fields.' }, { status: 400 });
     }
 
-    // 4. Determine unique serial Order ID e.g. #PV-1001
+    // 4. Next unique serial, e.g. PV-1009 — same id shape as the orders
+    //    already sitting in the shop's database (PV-1001 …).
     const allOrders = await DbClient.getOrders();
-    const count = allOrders.length;
-    const orderSerial = 1001 + count;
-    const orderId = `#PV-${orderSerial}`;
+    const orderSerial = nextOrderSerial(allOrders.map(o => o.id));
+    const orderId = `PV-${orderSerial}`;
 
     // 5. Construct Order input schema
     const orderInput = {
@@ -93,9 +90,11 @@ export async function POST(req: NextRequest) {
       selected_options: item.selected_options || {},
       unit_price: Number(item.unit_price),
       total_price: Number(item.total_price),
-      original_file_url: item.original_file?.base64 || undefined,
-      preview_file_url: item.preview_base64 || undefined,
-      design_config: item.design_config || undefined
+      original_file_url: item.original_file_url || item.original_file?.base64 || undefined,
+      preview_file_url: item.preview_file_url || item.preview_base64 || undefined,
+      design_config: item.design_config || undefined,
+      dimensions: item.dimensions || undefined,
+      selected_artwork_label: item.original_file?.name || item.selected_artwork_label || undefined
     }));
 
     // 7. Save to database

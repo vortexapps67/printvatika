@@ -39,7 +39,20 @@ export async function POST(req: NextRequest) {
     let isPaymentValid = false;
     let transactionId = '';
 
-    const isRazorpayConfigured = !!process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID && !!process.env.RAZORPAY_KEY_SECRET;
+    /* A key only counts as configured when it is a real one: the .env template
+       ships placeholders (rzp_test_YOUR_PUBLIC_KEY_ID, YOUR_SECRET_KEY_HERE)
+       and those must not switch the live path on. */
+    const isReal = (value?: string) => Boolean(value) && !/YOUR_|placeholder|example/i.test(value as string);
+
+    const isRazorpayConfigured =
+      isReal(process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID) && isReal(process.env.RAZORPAY_KEY_SECRET);
+
+    /* Testing without a gateway is opt-in and can never be on in production:
+       with no signature there is no proof that money moved, so an order must
+       never be marked paid. PAYMENTS_TEST_MODE is set only on a developer
+       machine. */
+    const allowUnsignedTest =
+      process.env.PAYMENTS_TEST_MODE === 'true' && process.env.NODE_ENV !== 'production';
 
     if (isRazorpayConfigured && razorpayPaymentId && razorpaySignature) {
       // Real Razorpay signature check
@@ -54,17 +67,19 @@ export async function POST(req: NextRequest) {
         isPaymentValid = true;
         transactionId = razorpayPaymentId;
       }
-    } else {
-      // Sandbox Simulator verification
-      if (status === 'PAID' || paymentId) {
-        isPaymentValid = true;
-        transactionId = paymentId || `pay_sim_${Date.now()}`;
-      }
+    } else if (allowUnsignedTest && (status === 'PAID' || paymentId)) {
+      // Local development only.
+      isPaymentValid = true;
+      transactionId = paymentId || `pay_test_${Date.now()}`;
     }
 
     if (!isPaymentValid) {
-      // Mark payment failed in the DB
-      await DbClient.updateOrderStatus(orderId, 'PAYMENT_PENDING', 'FAILED', 'Payment verification failed.');
+      /* A stray or unsigned request is not a payment failure. Only record one
+         when a real gateway rejected a signature, so nobody can knock a genuine
+         pending order back to FAILED. */
+      if (isRazorpayConfigured && (razorpayPaymentId || razorpaySignature)) {
+        await DbClient.updateOrderStatus(orderId, 'PAYMENT_PENDING', 'FAILED', 'Payment verification failed.');
+      }
       return NextResponse.json({ error: 'Invalid signature / Failed transaction.' }, { status: 400 });
     }
 
