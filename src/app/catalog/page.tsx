@@ -36,9 +36,9 @@ export default async function CatalogPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl border border-ink-200 bg-white px-5 py-3.5 shadow-card">
+          <div className="flex items-center gap-3 rounded-2xl border border-ink-200/80 bg-white px-5 py-3.5 shadow-card">
             <PackageSearch size={18} className="text-primary-500" aria-hidden="true" />
-            <span className="tnum font-display text-title-l font-extrabold leading-none text-ink-950">
+            <span className="tnum font-display text-title-l font-bold leading-none text-ink-950">
               {products.length}
             </span>
             <span className="font-mono text-micro uppercase tracking-wider2 text-ink-500">
@@ -60,7 +60,7 @@ export default async function CatalogPage() {
         ].map(({ Icon, text }) => (
           <li
             key={text}
-            className="flex items-center gap-2.5 rounded-xl border border-ink-200 bg-white px-4 py-3 shadow-card"
+            className="flex items-center gap-2.5 rounded-xl border border-ink-200/80 bg-white px-4 py-3 shadow-card"
           >
             <Icon size={16} className="flex-none text-primary-500" aria-hidden="true" />
             <span className="font-mono text-micro uppercase tracking-wider2 text-ink-600">

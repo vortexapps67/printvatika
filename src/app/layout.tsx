@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import { Fraunces, Outfit, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '../context/CartContext';
 import { AuthProvider } from '../context/AuthContext';
@@ -9,19 +9,34 @@ import { AnnouncementBar } from '../components/AnnouncementBar';
 import { Footer } from '../components/Footer';
 import { SITE } from '../lib/site';
 
-/* Body + display: Inter — clean, modern e-commerce sans. */
-const inter = Inter({
+/* Display: Fraunces — warm old-style serif, used for headlines and the big
+   price on a card. Three axes are loaded: optical size (display cuts tighten
+   as they scale), SOFT (warmer, rounder terminals on the big headlines) and
+   WONK (the hand-set look on the hero line). */
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+  /* Variable font: omit `weight` so every weight ships, and declare the
+     axes we actually vary — opsz, SOFT and WONK. */
+  axes: ['opsz', 'SOFT', 'WONK'],
+});
+
+/* Body + UI: Outfit — geometric humanist sans, friendlier than Inter and
+   built for interface text. */
+const outfit = Outfit({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
-  weight: ['400', '500', '600', '700', '800', '900'],
+  weight: ['400', '500', '600', '700'],
 });
 
-/* Specs and data: JetBrains Mono — every measurement, price and order ref. */
-const jetbrainsMono = JetBrains_Mono({
+/* Specs and data: IBM Plex Mono — every measurement, price and order ref. */
+const plexMono = IBM_Plex_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
   display: 'swap',
+  weight: ['400', '500', '600'],
 });
 
 /* Describes public/og.png. Kept here so the alt text matches the artwork. */
@@ -121,7 +136,7 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-IN" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en-IN" className={`${fraunces.variable} ${outfit.variable} ${plexMono.variable}`}>
       <head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>
@@ -134,8 +149,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <AuthProvider>
           <CartProvider>
-            <AnnouncementBar />
-            <Navbar />
+            <header>
+              <AnnouncementBar />
+              <Navbar />
+            </header>
             <main id="main" className="flex-grow">
               {children}
             </main>

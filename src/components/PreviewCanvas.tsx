@@ -543,10 +543,10 @@ export const PreviewCanvas: React.FC<PreviewCanvasProps> = ({
   };
 
 return (
-    <div className="w-full max-w-lg rounded-xl border border-ink-200 bg-white shadow-card">
+    <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-ink-200/80 bg-white shadow-card">
       {/* Side toggle, shown only for double-sided products */}
       {selectedOptions.sides === 'double' && (
-        <div className="flex border-b border-ink-200 p-1">
+        <div className="flex gap-1 border-b border-ink-200/80 bg-ink-50 p-1.5">
           {(['front', 'back'] as const).map(side => {
             const active = cardSide === side;
             return (
@@ -560,8 +560,8 @@ return (
                 aria-pressed={active}
                 className={
                   active
-                    ? 'flex-1 rounded-sm bg-ink-950 px-3 py-2 font-mono text-micro font-medium uppercase tracking-wider2 text-white transition-colors'
-                    : 'flex-1 rounded-sm px-3 py-2 font-mono text-micro font-medium uppercase tracking-wider2 text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-950'
+                    ? 'flex-1 rounded-lg bg-white px-3 py-2 font-mono text-micro font-medium uppercase tracking-wider2 text-ink-950 shadow-sm transition-colors'
+                    : 'flex-1 rounded-lg px-3 py-2 font-mono text-micro font-medium uppercase tracking-wider2 text-ink-500 transition-colors hover:bg-white/60 hover:text-ink-950'
                 }
               >
                 {side === 'front' ? 'Front' : 'Back'}
@@ -572,7 +572,7 @@ return (
       )}
 
       {/* Canvas workspace */}
-      <div className="relative overflow-hidden border-b border-ink-200 bg-ink-100 p-4">
+      <div className="relative overflow-hidden border-b border-ink-200/80 bg-ink-50 p-4">
         <div className="mx-auto w-fit">
           <canvas
             ref={canvasRef}
@@ -590,7 +590,7 @@ return (
         </div>
 
         {imageSrc && (
-          <span className="pointer-events-none absolute bottom-6 left-6 rounded-sm bg-ink-950/85 px-2 py-1 font-mono text-micro text-white">
+          <span className="pointer-events-none absolute bottom-6 left-6 rounded-full bg-ink-950/85 px-2.5 py-1 font-mono text-micro text-white backdrop-blur-sm">
             Drag to reposition
           </span>
         )}

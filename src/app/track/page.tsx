@@ -192,7 +192,7 @@ function TrackerContent() {
           {error && (
             <div
               role="alert"
-              className="flex items-center gap-2.5 rounded border border-red-300 bg-red-50 px-3.5 py-2.5 text-body-s font-medium text-red-700"
+              className="flex items-center gap-2.5 rounded-lg border border-red-300 bg-red-50 px-3.5 py-2.5 text-body-s font-medium text-red-700"
             >
               <AlertCircle size={15} className="flex-none" aria-hidden="true" />
               {error}
@@ -232,7 +232,7 @@ function TrackerContent() {
               }
             />
 
-            {/* Progress meter: completed steps in magenta, rest in ink */}
+            {/* Progress meter: stages reached in the brand vermillion, rest in ink */}
             <div className="px-5 pt-4">
               <div className="flex items-center justify-between">
                 <span className="label-caps">Progress</span>
@@ -240,7 +240,7 @@ function TrackerContent() {
                   {completedCount}/{steps.length} stages
                 </span>
               </div>
-              <div className="mt-2 h-1 w-full overflow-hidden rounded-sm bg-ink-200">
+              <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink-200/80">
                 <div
                   className="h-full bg-primary-500 transition-all duration-500 ease-press"
                   style={{ width: `${progress}%` }}
@@ -273,11 +273,11 @@ function TrackerContent() {
                     {/* The node — square, because this is a press sheet */}
                     <span
                       aria-hidden="true"
-                      className={`relative z-10 mt-0.5 flex h-7 w-7 flex-none items-center justify-center rounded-sm border font-mono text-micro font-semibold ${
+                      className={`relative z-10 mt-0.5 flex h-7 w-7 flex-none items-center justify-center rounded-full border font-mono text-micro font-semibold ${
                         state === 'completed'
-                          ? 'border-ink-950 bg-ink-950 text-white'
+                          ? 'border-primary-200 bg-primary-100 text-primary-700'
                           : state === 'active'
-                          ? 'border-primary-600 bg-primary-500 text-white'
+                          ? 'border-primary-600 bg-primary-500 text-white shadow-sm'
                           : 'border-ink-300 bg-white text-ink-400'
                       }`}
                     >
@@ -308,7 +308,7 @@ function TrackerContent() {
                 <ul className="space-y-4">
                   {order.items?.map((item, i) => (
                     <li key={i} className="flex gap-3">
-                      <div className="h-12 w-12 flex-none overflow-hidden rounded-sm border border-ink-200 bg-ink-50">
+                      <div className="h-12 w-12 flex-none overflow-hidden rounded-lg border border-ink-200/80 bg-ink-50">
                         <img
                           src={item.preview_file_url || item.original_file_url}
                           alt={item.product_name}
@@ -326,7 +326,7 @@ function TrackerContent() {
                           {Object.entries(item.selected_options).map(([k, v]) => (
                             <li
                               key={k}
-                              className="rounded-sm border border-ink-200 bg-ink-50 px-1.5 py-0.5 font-mono text-micro text-ink-600"
+                              className="rounded-full border border-ink-200 bg-ink-50 px-2 py-0.5 font-mono text-micro text-ink-600"
                             >
                               <span className="text-ink-400">{k}</span> {v}
                             </li>
@@ -374,7 +374,7 @@ function TrackerContent() {
             </Panel>
 
             {/* Support — real number, not a placeholder */}
-            <div className="flex gap-3 rounded-xl border border-ink-200 bg-white p-4 shadow-card">
+            <div className="flex gap-3 rounded-2xl border border-ink-200/80 bg-white p-4 shadow-card">
               <Phone size={16} className="mt-0.5 flex-none text-primary-500" aria-hidden="true" />
               <p className="text-body-s leading-relaxed text-ink-600">
                 Need to change the specification or cancel? Call the counter on{' '}

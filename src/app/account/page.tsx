@@ -78,7 +78,7 @@ export default function AccountPage() {
 
       {/* Profile card */}
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-ink-200 bg-white p-5 shadow-card">
+        <div className="rounded-2xl border border-ink-200/80 bg-white p-5 shadow-card">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-50 text-primary-600">
               <User size={18} />
@@ -89,12 +89,12 @@ export default function AccountPage() {
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-ink-200 bg-white p-5 shadow-card">
-          <p className="text-display-s font-bold text-ink-900">{orders.length}</p>
+        <div className="rounded-2xl border border-ink-200/80 bg-white p-5 shadow-card">
+          <p className="tnum text-display-s font-bold text-ink-900">{orders.length}</p>
           <p className="text-body-s text-ink-500">Total orders</p>
         </div>
-        <div className="rounded-xl border border-ink-200 bg-white p-5 shadow-card">
-          <p className="text-display-s font-bold text-ink-900">
+        <div className="rounded-2xl border border-ink-200/80 bg-white p-5 shadow-card">
+          <p className="tnum text-display-s font-bold text-ink-900">
             {orders.filter(o => o.order_status === 'DELIVERED').length}
           </p>
           <p className="text-body-s text-ink-500">Delivered</p>
@@ -119,7 +119,7 @@ export default function AccountPage() {
         ) : (
           <div className="mt-6 space-y-4">
             {orders.map(order => (
-              <div key={order.id} className="rounded-xl border border-ink-200 bg-white p-5 shadow-card">
+              <div key={order.id} className="rounded-2xl border border-ink-200/80 bg-white p-5 shadow-card transition-shadow duration-300 ease-press hover:shadow-card-hover">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="font-mono text-body-s font-semibold text-ink-900">{order.id}</p>
@@ -169,7 +169,7 @@ function StatusBadge({ status }: { status: string }) {
   };
   const s = map[status] || { label: status, cls: 'bg-ink-100 text-ink-700', Icon: Clock };
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-micro font-semibold uppercase tracking-wider ${s.cls}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-micro font-semibold uppercase tracking-wider2 ${s.cls}`}>
       <s.Icon size={12} />
       {s.label}
     </span>

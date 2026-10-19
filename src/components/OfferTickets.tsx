@@ -56,19 +56,19 @@ export function OfferTickets() {
         {OFFERS.map(({ Icon, title, body, tag, href, cta }) => (
           <li
             key={title}
-            className="group relative flex flex-col rounded-xl border-2 border-dashed border-primary-200 bg-primary-50/60 p-5 transition-colors duration-200 hover:border-primary-400 hover:bg-primary-50"
+            className="group relative flex flex-col rounded-2xl border-2 border-dashed border-primary-200 bg-primary-50/60 p-5 transition-colors duration-200 hover:border-primary-400 hover:bg-primary-50"
           >
             {/* Perforation notch — the detail that makes a card read as a ticket. */}
             <span
               aria-hidden="true"
-              className="absolute -left-[9px] top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-dashed border-primary-200 bg-white"
+              className="absolute -left-[9px] top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-dashed border-primary-200 bg-ink-50"
             />
             <span
               aria-hidden="true"
-              className="absolute -right-[9px] top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-dashed border-primary-200 bg-white"
+              className="absolute -right-[9px] top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-dashed border-primary-200 bg-ink-50"
             />
 
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-primary-600 shadow-card">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-primary-600 shadow-card">
               <Icon size={19} aria-hidden="true" />
             </span>
 

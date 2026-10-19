@@ -70,7 +70,7 @@ export const Navbar: React.FC = () => {
   const isAllActive = !!onCatalog && activeCategory() === null;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-ink-200 bg-white/95 backdrop-blur-sm">
+    <div className="sticky top-0 z-50 border-b border-ink-200 bg-white/95 backdrop-blur-sm">
       {/* ---- Tier 1: wordmark, search, utilities ---- */}
       <div className="mx-auto max-w-sheet px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center gap-4 lg:gap-6">
@@ -90,10 +90,10 @@ export const Navbar: React.FC = () => {
               className="h-10 w-10 flex-none rounded-lg ring-1 ring-ink-200/80 transition-shadow group-hover:shadow-card"
             />
             <span className="hidden flex-col leading-none sm:flex">
-              <span className="font-display text-body-l font-extrabold tracking-tightest text-ink-950">
+              <span className="font-display text-body-l font-extrabold tracking-tight text-ink-950">
                 Print<span className="text-primary-500"> Vatika</span>
               </span>
-              <span className="mt-0.5 font-mono text-micro uppercase tracking-wider2 text-ink-500">
+              <span className="mt-1 font-mono text-[0.625rem] uppercase tracking-wider2 text-ink-500">
                 Press · Saket Metro
               </span>
             </span>
@@ -131,7 +131,7 @@ export const Navbar: React.FC = () => {
                 key={l.href}
                 href={l.href}
                 className={cn(
-                  'rounded-lg px-3 py-2 font-mono text-label font-medium uppercase tracking-wider2 transition-colors',
+                  'rounded-full px-3.5 py-2 font-mono text-label font-medium uppercase tracking-wider2 transition-colors',
                   pathname?.startsWith(l.href)
                     ? 'bg-primary-50 text-primary-700'
                     : 'text-ink-600 hover:bg-ink-100 hover:text-ink-950',
@@ -143,7 +143,7 @@ export const Navbar: React.FC = () => {
 
             <a
               href={`tel:${SITE.phoneRaw}`}
-              className="hidden items-center gap-2 rounded-lg px-3 py-2 font-mono text-label font-medium tracking-wider2 text-ink-600 transition-colors hover:bg-ink-100 hover:text-ink-950 xl:flex"
+              className="hidden items-center gap-2 rounded-full px-3.5 py-2 font-mono text-label font-medium tracking-wider2 text-ink-600 transition-colors hover:bg-ink-100 hover:text-ink-950 xl:flex"
             >
               <Phone size={14} aria-hidden="true" />
               {SITE.phoneDisplay}
@@ -152,7 +152,7 @@ export const Navbar: React.FC = () => {
             <Link
               href={user ? '/account' : '/login'}
               className={cn(
-                'rounded-lg px-3 py-2 font-mono text-label font-medium uppercase tracking-wider2 transition-colors',
+                'rounded-full px-3.5 py-2 font-mono text-label font-medium uppercase tracking-wider2 transition-colors',
                 pathname?.startsWith('/account') || pathname?.startsWith('/login')
                   ? 'bg-primary-50 text-primary-700'
                   : 'text-ink-600 hover:bg-ink-100 hover:text-ink-950',
@@ -164,7 +164,7 @@ export const Navbar: React.FC = () => {
             <Link
               href="/cart"
               className={cn(
-                'relative ml-1 flex h-11 items-center gap-2 rounded-full px-5 font-mono text-label font-semibold uppercase tracking-wider2 transition-all',
+                'relative ml-1 flex h-11 items-center gap-2 rounded-full px-5 font-mono text-label font-semibold uppercase tracking-wider2 transition-all active:scale-[0.98]',
                 cartCount > 0
                   ? 'bg-primary-500 text-white shadow-card hover:bg-primary-600'
                   : 'border border-ink-300 bg-white text-ink-900 hover:border-ink-950',
@@ -190,7 +190,7 @@ export const Navbar: React.FC = () => {
           <div className="ml-auto flex items-center gap-2 md:hidden">
             <Link
               href="/cart"
-              className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-ink-200 bg-white text-ink-800"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full border border-ink-200 bg-white text-ink-800"
               aria-label={`Cart${cartCount ? `, ${cartCount} items` : ', empty'}`}
             >
               <ShoppingBag size={18} aria-hidden="true" />
@@ -203,7 +203,7 @@ export const Navbar: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsOpen(v => !v)}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-ink-200 bg-white text-ink-800 transition-colors hover:border-ink-950"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-ink-200 bg-white text-ink-800 transition-colors hover:border-ink-950"
               aria-label={isOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isOpen}
             >
@@ -307,7 +307,7 @@ export const Navbar: React.FC = () => {
                   key={l.href}
                   href={l.href}
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center justify-between border-b border-ink-100 py-3.5 font-display text-title font-bold text-ink-900"
+                  className="flex items-center justify-between border-b border-ink-100 py-3.5 font-display text-title font-semibold text-ink-900"
                 >
                   {l.label}
                   <ArrowRight size={16} className="text-ink-300" aria-hidden="true" />
@@ -326,6 +326,6 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
       )}
-    </header>
+    </div>
   );
 };

@@ -166,7 +166,7 @@ function CatalogClientContent({ products, deals, bestsellers }: CatalogClientPro
 
       {/* Active filter chips */}
       {hasFilters && (
-        <div className="flex flex-wrap items-center gap-2.5 rounded-xl border border-primary-200 bg-primary-50 px-4 py-3">
+        <div className="flex flex-wrap items-center gap-2.5 rounded-2xl border border-primary-200/70 bg-primary-50/70 px-4 py-3">
           <span className="label-caps">Filtered by</span>
           {searchQuery.trim() && (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-primary-300 bg-white px-3 py-1.5 font-mono text-micro text-primary-700">
@@ -211,7 +211,7 @@ function CatalogClientContent({ products, deals, bestsellers }: CatalogClientPro
           <ColourStrip />
         </>
       ) : (
-        <div className="rounded-xl border border-ink-200 bg-white shadow-card">
+        <div className="overflow-hidden rounded-2xl border border-ink-200/80 bg-white shadow-card">
           <EmptyState
             icon={<PackageSearch size={22} />}
             title="Nothing matches that"

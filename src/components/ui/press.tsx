@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
    Print Vatika primitives.
 
    Everything visual in the app is composed from these so the system stays
-   consistent: soft cards, magenta for action, mono for data, imagery first.
+   consistent: soft cards, deep vermillion for action, mono for data, imagery first.
    ========================================================================== */
 
 /* ---- Registration mark ---------------------------------------------------
@@ -42,8 +42,8 @@ type ButtonVariant = 'solid' | 'outline' | 'ghost' | 'ink' | 'danger' | 'soft';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 const BUTTON_BASE =
-  'inline-flex items-center justify-center gap-2 rounded-lg font-mono text-label font-semibold uppercase tracking-wider2 ' +
-  'transition-all duration-150 ease-press disabled:pointer-events-none disabled:opacity-40 select-none';
+  'inline-flex items-center justify-center gap-2 rounded-full font-mono text-label font-semibold uppercase tracking-wider2 ' +
+  'transition-all duration-150 ease-press active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 select-none';
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   solid: 'bg-primary-500 text-white shadow-card hover:bg-primary-600 hover:shadow-card-hover active:bg-primary-700',
@@ -131,7 +131,7 @@ const BADGE_TONES: Record<BadgeTone, string> = {
   neutral: 'bg-ink-100 text-ink-700 ring-1 ring-inset ring-ink-200/70',
   accent:
     'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-card ring-1 ring-inset ring-white/20',
-  outline: 'border border-ink-300 bg-white text-ink-600',
+  outline: 'border border-ink-300 bg-white/70 text-ink-600',
   success: 'bg-emerald-50 text-emerald-800 ring-1 ring-inset ring-emerald-200',
   warning: 'bg-amber-50 text-amber-900 ring-1 ring-inset ring-amber-300',
   danger: 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-300',
@@ -216,7 +216,7 @@ export function Panel({
   return (
     <div
       className={cn(
-        'relative rounded-xl border border-ink-200 bg-white shadow-card',
+        'relative rounded-2xl border border-ink-200/80 bg-white shadow-card',
         !flush && 'p-5 sm:p-6',
         className,
       )}
@@ -346,7 +346,7 @@ const STATUS_TONE: Record<string, BadgeTone> = {
   CONFIRMED: 'neutral',
   PRINTING: 'accent',
   READY: 'accent',
-  OUT_FOR_DELIVERY: 'warning',
+  OUT_FOR_DELIVERY: 'neutral',
   DELIVERED: 'success',
   CANCELLED: 'danger',
   REFUNDED: 'danger',
@@ -376,7 +376,7 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center px-6 py-16 text-center">
       {icon && (
-        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 text-primary-500">
+        <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50 text-primary-500">
           {icon}
         </div>
       )}

@@ -346,8 +346,8 @@ export default function CartPage() {
         email: checkoutDetails.customerEmail,
         contact: checkoutDetails.customerPhone,
       },
-      theme: {
-        color: '#0B7C8A',
+        theme: {
+        color: '#C24A24',
       },
     };
 
@@ -438,9 +438,9 @@ export default function CartPage() {
             {cart.map(item => (
               <article
                 key={item.id}
-                className="flex gap-4 rounded-xl border border-ink-200 bg-white p-4 shadow-card sm:gap-5"
+                className="flex gap-4 rounded-2xl border border-ink-200/80 bg-white p-4 shadow-card transition-shadow duration-300 ease-press hover:shadow-card-hover sm:gap-5"
               >
-                <div className="h-20 w-20 flex-none overflow-hidden rounded-sm border border-ink-200 bg-ink-50 sm:h-24 sm:w-24">
+                <div className="h-20 w-20 flex-none overflow-hidden rounded-xl border border-ink-200/80 bg-ink-50 sm:h-24 sm:w-24">
                   <img
                     src={item.preview_base64 || item.product.image_url}
                     alt={item.product.name}
@@ -456,7 +456,7 @@ export default function CartPage() {
                     <button
                       type="button"
                       onClick={() => removeFromCart(item.id)}
-                      className="-mr-1 -mt-1 flex h-7 w-7 flex-none items-center justify-center rounded-sm text-ink-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                      className="-mr-1 -mt-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-ink-400 transition-colors hover:bg-red-50 hover:text-red-600"
                       aria-label={`Remove ${item.product.name} from cart`}
                     >
                       <X size={15} />
@@ -468,7 +468,7 @@ export default function CartPage() {
                     {Object.entries(item.selected_options).map(([key, val]) => (
                       <li
                         key={key}
-                        className="rounded-sm border border-ink-200 bg-ink-50 px-1.5 py-0.5 font-mono text-micro text-ink-600"
+                        className="rounded-full border border-ink-200 bg-ink-50 px-2 py-0.5 font-mono text-micro text-ink-600"
                       >
                         <span className="text-ink-400">{key}</span> {val}
                       </li>
@@ -484,7 +484,7 @@ export default function CartPage() {
 
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-ink-100 pt-3">
                     {/* Quantity stepper */}
-                    <div className="flex items-center rounded-sm border border-ink-200">
+                    <div className="flex items-center rounded-full border border-ink-200 bg-white shadow-sm">
                       <button
                         type="button"
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
@@ -510,7 +510,7 @@ export default function CartPage() {
                       <span className="tnum block font-mono text-micro text-ink-400">
                         ₹{item.unit_price.toFixed(2)} each
                       </span>
-                      <span className="tnum mt-0.5 block font-display text-title font-extrabold text-ink-950">
+                      <span className="tnum mt-0.5 block font-display text-title font-bold tracking-tight text-ink-950">
                         ₹{payable(item.total_price)}
                       </span>
                     </div>
@@ -530,20 +530,20 @@ export default function CartPage() {
 
           {/* ---- Checkout ---- */}
           <div className="lg:col-span-5">
-            <div className="rounded-xl border border-ink-200 bg-white shadow-card lg:sticky lg:top-20">
+            <div className="overflow-hidden rounded-2xl border border-ink-200/80 bg-white shadow-card lg:sticky lg:top-20">
               <PanelHead title="Checkout" hint="Nothing is charged until you approve." />
 
               <div className="space-y-6 p-5 sm:p-6">
                 {/* Auth gate */}
                 {currentUser ? (
-                  <div className="flex items-center justify-between gap-3 rounded border border-emerald-200 bg-emerald-50 px-3.5 py-2.5">
+                  <div className="flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2.5">
                     <p className="min-w-0 text-body-s text-emerald-900">
                       Signed in as <strong className="font-semibold">{currentUser.name || currentUser.email}</strong>
                     </p>
                     <Badge tone="success">Verified</Badge>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between gap-3 rounded border border-ink-200 bg-ink-50 px-3.5 py-3">
+                  <div className="flex items-center justify-between gap-3 rounded-lg border border-ink-200/80 bg-ink-50 px-3.5 py-3">
                     <p className="flex items-start gap-2.5 text-body-s leading-snug text-ink-700">
                       <Lock size={14} className="mt-0.5 flex-none text-ink-400" aria-hidden="true" />
                       <span>
@@ -552,8 +552,8 @@ export default function CartPage() {
                       </span>
                     </p>
                     <a
-                      href="/login.html?returnTo=cart.html"
-                      className="flex-none rounded-sm bg-ink-950 px-3 py-1.5 font-mono text-micro uppercase tracking-wider2 text-white transition-colors hover:bg-ink-800"
+                      href="/login?next=/cart"
+                      className="flex-none rounded-full bg-primary-500 px-3 py-1.5 font-mono text-micro uppercase tracking-wider2 text-white transition-colors hover:bg-primary-600"
                     >
                       Sign in
                     </a>
@@ -615,8 +615,8 @@ export default function CartPage() {
                             aria-pressed={active}
                             className={
                               active
-                                ? 'flex items-center justify-center gap-2 rounded-sm border-2 border-ink-950 bg-ink-950 px-3 py-3 font-mono text-micro font-medium uppercase tracking-wider2 text-white transition-colors'
-                                : 'flex items-center justify-center gap-2 rounded-sm border border-ink-200 bg-white px-3 py-3 font-mono text-micro font-medium uppercase tracking-wider2 text-ink-500 transition-colors hover:border-ink-950 hover:text-ink-950'
+                                ? 'flex items-center justify-center gap-2 rounded-lg border-2 border-primary-500 bg-primary-50 px-3 py-3 font-mono text-micro font-medium uppercase tracking-wider2 text-primary-700 transition-colors'
+                                : 'flex items-center justify-center gap-2 rounded-lg border border-ink-200 bg-white px-3 py-3 font-mono text-micro font-medium uppercase tracking-wider2 text-ink-500 transition-colors hover:border-ink-400 hover:text-ink-950'
                             }
                           >
                             <Icon size={14} aria-hidden="true" />
@@ -628,7 +628,7 @@ export default function CartPage() {
                   </fieldset>
 
                   {isPickup ? (
-                    <div className="rounded border border-ink-200 bg-ink-50 p-4">
+                    <div className="rounded-xl border border-ink-200/80 bg-ink-50 p-4">
                       <p className="label-caps flex items-center gap-2 text-ink-950">
                         <MapPin size={13} className="text-primary-500" aria-hidden="true" />
                         Collect from the counter
@@ -806,7 +806,7 @@ export default function CartPage() {
           aria-modal="true"
           aria-labelledby="pay-title"
         >
-          <div className="animate-fade-rise w-full max-w-md rounded-xl border border-ink-200 bg-white shadow-card">
+          <div className="animate-fade-rise w-full max-w-md overflow-hidden rounded-2xl border border-ink-200/80 bg-white shadow-card-hover">
             <ColourStrip />
             <div className="space-y-5 p-6">
               <div>
@@ -832,11 +832,11 @@ export default function CartPage() {
                 </p>
               </div>
 
-              <div className="rounded border border-ink-200 bg-ink-50 py-5 text-center">
+              <div className="rounded-xl border border-ink-200/80 bg-ink-50 py-5 text-center">
                 <span className="label-caps">
                   {Number(simulatedOrder.total_amount) > 0 ? 'Amount due' : 'Pricing'}
                 </span>
-                <span className="tnum mt-2 block font-display text-display-s font-black tracking-tightest text-ink-950">
+                <span className="tnum mt-2 block font-display text-display-s font-bold tracking-tight text-ink-950">
                   {Number(simulatedOrder.total_amount) > 0
                     ? `₹${payable(simulatedOrder.total_amount)}`
                     : 'To be quoted'}
@@ -883,7 +883,7 @@ export default function CartPage() {
           aria-modal="true"
           aria-labelledby="sim-title"
         >
-          <div className="animate-fade-rise w-full max-w-md rounded-xl border border-ink-200 bg-white shadow-card">
+          <div className="animate-fade-rise w-full max-w-md overflow-hidden rounded-2xl border border-ink-200/80 bg-white shadow-card-hover">
             <ColourStrip />
             <div className="space-y-5 p-6">
               <div>
@@ -896,14 +896,14 @@ export default function CartPage() {
                 </p>
               </div>
 
-              <div className="rounded border border-ink-200 bg-ink-50 py-5 text-center">
+              <div className="rounded-xl border border-ink-200/80 bg-ink-50 py-5 text-center">
                 <span className="label-caps">Amount due</span>
-                <span className="tnum mt-2 block font-display text-display-s font-black tracking-tightest text-ink-950">
+                <span className="tnum mt-2 block font-display text-display-s font-bold tracking-tight text-ink-950">
                   ₹{payable(simulatedOrder.total_amount)}
                 </span>
               </div>
 
-              <div className="flex items-start gap-2.5 rounded border border-ink-200 bg-ink-50 p-3.5">
+              <div className="flex items-start gap-2.5 rounded-lg border border-ink-200/80 bg-ink-50 p-3.5">
                 <Info size={15} className="mt-0.5 flex-none text-ink-400" aria-hidden="true" />
                 <p className="text-body-s leading-relaxed text-ink-600">
                   This gateway verifies the order record and triggers the WhatsApp confirmation. No

@@ -18,9 +18,13 @@
   }
 
   body {
-    @apply bg-white text-ink-800 font-sans text-body antialiased;
-    font-feature-settings: 'kern', 'liga', 'cv05';
+    @apply bg-ink-50 text-ink-800 font-sans text-body antialiased;
+    font-feature-settings: 'kern', 'liga';
     text-rendering: optimizeLegibility;
+    /* Paper grain: a faint fractal-noise tile over the warm cream ground, so
+       large flat areas read as stock rather than as an empty browser page. */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
   }
 
   h1,
@@ -29,7 +33,7 @@
   h4,
   h5,
   h6 {
-    @apply font-sans font-bold text-ink-900;
+    @apply font-display font-bold text-ink-900;
     text-wrap: balance;
   }
 
@@ -91,7 +95,7 @@
   /* Native select chevron, drawn to match the rest of the system. */
   select {
     @apply cursor-pointer appearance-none bg-no-repeat pr-9;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2363676F' stroke-width='1.5' stroke-linecap='square'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23857B69' stroke-width='1.5' stroke-linecap='square'/%3E%3C/svg%3E");
     background-position: right 0.75rem center;
   }
 
@@ -233,11 +237,35 @@
     font-variant-numeric: tabular-nums lining-nums;
   }
 
-  /* Fraunces carries optical sizing; keep it on so banner type tightens as
+  /* Fraunces carries optical sizing; keep it on so display type tightens as
      it scales up instead of staying at text size. */
   .font-display {
     font-optical-sizing: auto;
     font-variant-numeric: lining-nums;
+  }
+
+  /* Fraunces at display sizes: optical size tuned for headlines. The axis
+     range is declared on the font in layout.tsx; this simply lets the
+     browser match the optical size to the rendered size. */
+  h1.font-display,
+  h2.font-display,
+  .font-display.text-display,
+  .font-display.text-display-s,
+  .font-display.text-display-l,
+  .font-display.text-display-xl {
+    font-variation-settings: 'opsz' 72;
+  }
+
+  /* The hero cut: Fraunces pushed to its extremes — maximum optical size,
+     softened terminals, and the WONK axis that re-cuts letters the way a
+     hand-set headline sits slightly off its feet. Fraunces also hides
+     old-press discretionary ligatures behind dlig; they belong at this
+     size and nowhere smaller. One class, used where the page says its
+     one big sentence. */
+  .font-display.wonky {
+    font-variation-settings: 'opsz' 144, 'SOFT' 55, 'WONK' 1;
+    font-feature-settings: 'dlig' 1, 'kern' 1, 'liga' 1;
+    font-weight: 650;
   }
 }
 

@@ -333,15 +333,15 @@ export default async function HomePage() {
           {steps.map((step, i) => (
             <li
               key={step.title}
-              className="flex flex-col rounded-xl border border-ink-200 bg-white p-6 shadow-card transition-shadow duration-200 hover:shadow-card-hover"
+              className="flex flex-col rounded-2xl border border-ink-200/80 bg-white p-6 shadow-card transition-shadow duration-200 hover:shadow-card-hover"
             >
               <div className="flex items-center justify-between">
                 <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-ink-950 text-white">
                   {step.icon}
                 </span>
-                {/* Ghosted step number, held at ink-400 because 22px/900 is
-                    large text and the bare minimum here is 3:1. */}
-                <span className="tnum font-display text-lead-l font-black text-ink-400">
+                {/* Ghosted step number, held at primary-400 (3.6:1 on white) so
+                    it reads as printed ink without shouting. */}
+                <span className="tnum font-display text-lead-l font-bold text-primary-400">
                   0{i + 1}
                 </span>
               </div>
@@ -395,7 +395,7 @@ export default async function HomePage() {
               ].map(f => (
                 <div
                   key={f.title}
-                  className="rounded-xl border border-ink-200 bg-white p-6 shadow-card"
+                  className="rounded-2xl border border-ink-200/80 bg-white p-6 shadow-card"
                 >
                   <Badge tone="outline">{f.tag}</Badge>
                   <h3 className="mt-4 font-display text-title font-bold text-ink-950">
@@ -418,7 +418,7 @@ export default async function HomePage() {
           </div>
           {/* The colour is explicit on purpose: the global h1–h6 rule sets
               ink-950, which would beat the white inherited from the section. */}
-          <h2 className="mt-3 max-w-2xl text-title-l text-white sm:text-display-s">
+          <h2 className="mt-3 max-w-2xl font-display text-title-l font-bold tracking-tight text-white sm:text-display-s">
             What repeat customers say
           </h2>
 
@@ -426,7 +426,7 @@ export default async function HomePage() {
             {reviews.map(r => (
               <figure
                 key={r.name}
-                className="flex flex-col rounded-xl border border-ink-800 bg-ink-900 p-6"
+                className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-6"
               >
                 <div
                   className="flex gap-0.5 text-press-yellow"
@@ -437,11 +437,11 @@ export default async function HomePage() {
                     <Star key={i} size={13} fill="currentColor" aria-hidden="true" />
                   ))}
                 </div>
-                <Quote size={22} className="mt-5 flex-none text-ink-700" aria-hidden="true" />
+                <Quote size={22} className="mt-5 flex-none text-primary-400" aria-hidden="true" />
                 <blockquote className="mt-3 flex-1 text-body leading-relaxed text-ink-300">
                   {r.quote}
                 </blockquote>
-                <figcaption className="mt-6 border-t border-ink-800 pt-4">
+                <figcaption className="mt-6 border-t border-white/10 pt-4">
                   <span className="block font-display text-body font-bold text-white">{r.name}</span>
                   <span className="mt-0.5 block font-mono text-micro uppercase tracking-wider2 text-ink-400">
                     {r.role}

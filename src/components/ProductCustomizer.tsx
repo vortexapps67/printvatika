@@ -291,8 +291,8 @@ return (
                             aria-pressed={active}
                             className={
                               active
-                                ? 'flex flex-col rounded-sm border-2 border-ink-950 bg-ink-50 p-3 text-left transition-colors'
-                                : 'flex flex-col rounded-sm border border-ink-200 bg-white p-3 text-left transition-colors hover:border-ink-400'
+                                ? 'flex flex-col rounded-lg border-2 border-primary-500 bg-primary-50/60 p-3 text-left transition-colors'
+                                : 'flex flex-col rounded-lg border border-ink-200 bg-white p-3 text-left transition-colors hover:border-ink-400'
                             }
                           >
                             <span className="font-display text-body font-bold text-ink-950">
@@ -314,7 +314,7 @@ return (
                   )}
 
                   {opt.type === 'dimensions' && (
-                    <div className="rounded-sm border border-ink-200 bg-ink-50 p-4">
+                    <div className="rounded-xl border border-ink-200 bg-ink-50 p-4">
                       <div className="flex items-end gap-3">
                         <div className="flex-1">
                           <label
@@ -410,8 +410,8 @@ return (
                           aria-pressed={active}
                           className={
                             active
-                              ? 'tnum rounded-sm bg-ink-950 px-4 py-2 font-mono text-label font-medium text-white transition-colors'
-                              : 'tnum rounded-sm border border-ink-200 bg-white px-4 py-2 font-mono text-label font-medium text-ink-600 transition-colors hover:border-ink-950 hover:text-ink-950'
+                              ? 'tnum rounded-full bg-primary-500 px-4 py-2 font-mono text-label font-medium text-white transition-colors'
+                              : 'tnum rounded-full border border-ink-200 bg-white px-4 py-2 font-mono text-label font-medium text-ink-600 transition-colors hover:border-ink-950 hover:text-ink-950'
                           }
                         >
                           <span className="block">{qty}</span>
@@ -458,7 +458,7 @@ return (
                   <h3 className="label-caps mb-3">Artwork</h3>
 
                   {!uploadedFile ? (
-                    <div className="group relative cursor-pointer rounded-sm border-2 border-dashed border-ink-300 bg-ink-50 px-6 py-10 text-center transition-colors hover:border-primary-500 hover:bg-primary-50/40">
+                    <div className="group relative cursor-pointer rounded-2xl border-2 border-dashed border-ink-300 bg-ink-50 px-6 py-10 text-center transition-colors hover:border-primary-500 hover:bg-primary-50/40">
                       <input
                         type="file"
                         accept=".png,.jpg,.jpeg,.pdf,.svg"
@@ -479,9 +479,9 @@ return (
                       </span>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-between gap-4 rounded-sm border border-emerald-300 bg-emerald-50 p-4">
+                    <div className="flex items-center justify-between gap-4 rounded-xl border border-emerald-300 bg-emerald-50 p-4">
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-9 w-9 flex-none items-center justify-center rounded-sm bg-emerald-100 text-emerald-700">
+                        <span className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
                           <FileCheck size={17} aria-hidden="true" />
                         </span>
                         <div className="min-w-0">
@@ -496,7 +496,7 @@ return (
                       <button
                         type="button"
                         onClick={handleRemoveFile}
-                        className="flex h-7 w-7 flex-none items-center justify-center rounded-sm text-ink-500 transition-colors hover:bg-white hover:text-red-600"
+                        className="flex h-7 w-7 flex-none items-center justify-center rounded-full text-ink-500 transition-colors hover:bg-white hover:text-red-600"
                         aria-label="Remove uploaded file"
                       >
                         <X size={15} />
@@ -511,7 +511,7 @@ return (
                         <div
                           key={i}
                           role="alert"
-                          className="flex items-start gap-2.5 rounded-sm border border-red-300 bg-red-50 p-3.5 text-body-s font-medium text-red-700"
+                          className="flex items-start gap-2.5 rounded-lg border border-red-300 bg-red-50 p-3.5 text-body-s font-medium text-red-700"
                         >
                           <X size={15} className="mt-0.5 flex-none" aria-hidden="true" />
                           <span>{err}</span>
@@ -521,7 +521,7 @@ return (
                       {validation.warnings.map((warn, i) => (
                         <div
                           key={i}
-                          className="space-y-3 rounded-sm border border-amber-300 bg-amber-50 p-3.5"
+                          className="space-y-3 rounded-lg border border-amber-300 bg-amber-50 p-3.5"
                         >
                           <div className="flex items-start gap-2.5 text-body-s font-medium text-amber-900">
                             <AlertTriangle size={15} className="mt-0.5 flex-none" aria-hidden="true" />
@@ -612,7 +612,7 @@ return (
                     <span className="label-caps">
                       {isQuoteProduct ? 'Total' : 'Subtotal · excl. delivery'}
                     </span>
-                    <span className="tnum mt-1.5 block font-display text-display-s font-black tracking-tightest text-ink-950">
+                    <span className="tnum mt-1.5 block font-display text-display-s font-bold tracking-tight text-ink-950">
                       {isQuoteProduct ? 'To be quoted' : `₹${payable(priceBreakdown.subtotal)}`}
                     </span>
                   </div>
@@ -627,7 +627,7 @@ return (
           </Panel>
 
           {/* Fulfillment notice */}
-          <p className="mt-4 flex items-start gap-2.5 border border-ink-200 bg-white p-4 text-body-s leading-relaxed text-ink-500">
+          <p className="mt-4 flex items-start gap-2.5 rounded-xl border border-ink-200/80 bg-white p-4 text-body-s leading-relaxed text-ink-500 shadow-card">
             <Info size={15} className="mt-0.5 flex-none text-ink-400" aria-hidden="true" />
             <span>
               Delivery is a flat ₹{SITE.deliveryCharge} anywhere in India, or collect free from the

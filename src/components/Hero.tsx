@@ -177,11 +177,11 @@ export function Hero({ products = [] }: { products?: Product[] }) {
                   </p>
 
                   {i === 0 ? (
-                    <h1 className="mt-4 max-w-2xl font-display text-display-s font-black leading-[0.98] tracking-tightest text-ink-900 sm:text-display lg:text-display-l">
+                    <h1 className="wonky mt-4 max-w-2xl font-display text-display-s leading-[1.02] tracking-tight text-ink-950 sm:text-display lg:text-display-l">
                       {s.title}
                     </h1>
                   ) : (
-                    <h2 className="mt-4 max-w-2xl font-display text-display-s font-black leading-[0.98] tracking-tightest text-ink-900 sm:text-display lg:text-display-l">
+                    <h2 className="mt-4 max-w-2xl font-display text-display-s font-bold leading-[1.02] tracking-tight text-ink-950 sm:text-display lg:text-display-l">
                       {s.title}
                     </h2>
                   )}
@@ -191,11 +191,11 @@ export function Hero({ products = [] }: { products?: Product[] }) {
                   </p>
 
                   <div className="mt-6 flex flex-wrap items-center gap-3">
-                    <span className="flex items-baseline gap-2 rounded-lg border border-ink-200 bg-white/90 px-3.5 py-2 backdrop-blur-sm shadow-card">
+                    <span className="flex items-baseline gap-2 rounded-2xl border border-ink-200 bg-white/90 px-3.5 py-2 backdrop-blur-sm shadow-card">
                       <span className="font-mono text-micro uppercase tracking-wider2 text-ink-500">
                         {s.chip.label}
                       </span>
-                      <span className="tnum font-display text-title font-extrabold leading-none text-ink-900">
+                      <span className="tnum font-display text-title font-bold leading-none text-ink-900">
                         {s.chip.value}
                       </span>
                     </span>
@@ -205,7 +205,7 @@ export function Hero({ products = [] }: { products?: Product[] }) {
                     <Link
                       href={s.href}
                       tabIndex={isActive ? undefined : -1}
-                      className="inline-flex h-12 items-center gap-2 rounded-lg bg-primary-500 px-6 font-mono text-body-s font-semibold uppercase tracking-wider2 text-white shadow-card transition-colors hover:bg-primary-600"
+                      className="inline-flex h-12 items-center gap-2 rounded-full bg-primary-500 px-7 font-mono text-body-s font-semibold uppercase tracking-wider2 text-white shadow-card transition-all hover:bg-primary-600 active:scale-[0.98]"
                     >
                       {s.cta}
                       <ArrowRight size={15} aria-hidden="true" />
@@ -214,7 +214,7 @@ export function Hero({ products = [] }: { products?: Product[] }) {
                       <Link
                         href={s.href2}
                         tabIndex={isActive ? undefined : -1}
-                        className="inline-flex h-12 items-center gap-2 rounded-lg border border-ink-300 bg-white/90 px-6 font-mono text-body-s font-semibold uppercase tracking-wider2 text-ink-900 backdrop-blur-sm transition-colors hover:bg-white"
+                        className="inline-flex h-12 items-center gap-2 rounded-full border border-ink-300 bg-white/90 px-7 font-mono text-body-s font-semibold uppercase tracking-wider2 text-ink-900 backdrop-blur-sm transition-colors hover:bg-white"
                       >
                         {s.cta2}
                       </Link>
@@ -270,7 +270,7 @@ export function Hero({ products = [] }: { products?: Product[] }) {
       </div>
 
       {/* ---- Search row: the way in for anyone who already knows ---- */}
-      <div className="border-b border-ink-200 bg-white">
+      <div className="border-b border-ink-100 bg-white">
         <div className="mx-auto max-w-sheet px-4 py-5 sm:px-6 lg:px-8">
           <form action="/catalog" method="GET" className="flex flex-col gap-2.5 sm:flex-row" role="search">
             <div className="relative flex-1">

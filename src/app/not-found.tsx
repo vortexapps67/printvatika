@@ -22,7 +22,7 @@ export default function NotFound() {
         <span className="label-caps text-ink-500">Misfeed · Sheet 404</span>
       </div>
 
-      <p className="font-display text-display font-black leading-none tracking-tightest text-ink-950 sm:text-display-l">
+      <p className="font-display text-display font-bold leading-none tracking-tight text-ink-950 sm:text-display-l">
         404
       </p>
 
@@ -41,7 +41,7 @@ export default function NotFound() {
           <li key={r.href}>
             <Link
               href={r.href}
-              className="group flex items-center gap-4 rounded-xl border border-ink-200 bg-white px-4 py-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-card-hover hover:border-ink-950 hover:bg-ink-50"
+              className="group flex items-center gap-4 rounded-2xl border border-ink-200/80 bg-white px-4 py-4 shadow-card transition-all duration-300 ease-press hover:-translate-y-0.5 hover:shadow-card-hover hover:border-primary-300 hover:bg-primary-50/40"
             >
               <span className="min-w-0 flex-1">
                 <span className="block font-display text-title font-bold text-ink-950">

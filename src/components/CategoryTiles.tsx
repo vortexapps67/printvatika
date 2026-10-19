@@ -42,7 +42,7 @@ export function CategoryTiles({ products }: CategoryTilesProps) {
         <li key={c.key} className={c.key === 'specialty' ? 'col-span-2 lg:col-span-1' : undefined}>
           <Link
             href={categoryHref(c)}
-            className="group flex h-full flex-col overflow-hidden rounded-xl border border-ink-200 bg-white shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-ink-300 hover:shadow-card-hover"
+            className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200/80 bg-white shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:border-ink-300 hover:shadow-card-hover"
           >
             <div className={`relative aspect-[4/3] overflow-hidden ${WASH[c.wash]}`}>
               {c.cover && (
@@ -50,7 +50,7 @@ export function CategoryTiles({ products }: CategoryTilesProps) {
                   src={c.cover}
                   alt=""
                   aria-hidden="true"
-                  className="h-full w-full object-cover opacity-90 transition-transform duration-700 ease-press group-hover:scale-105"
+                  className="h-full w-full object-cover opacity-95 transition-transform duration-700 ease-press group-hover:scale-105"
                   loading="lazy"
                 />
               )}
@@ -58,7 +58,7 @@ export function CategoryTiles({ products }: CategoryTilesProps) {
 
             <div className="flex flex-1 flex-col p-4">
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-display text-title font-extrabold leading-tight text-ink-950 transition-colors group-hover:text-primary-600">
+                <h3 className="font-display text-title font-bold leading-tight text-ink-950 transition-colors group-hover:text-primary-600">
                   {c.name}
                 </h3>
                 <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-ink-50 text-ink-500 transition-all duration-300 group-hover:bg-primary-500 group-hover:text-white">

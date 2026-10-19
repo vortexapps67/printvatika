@@ -52,7 +52,7 @@ export function PromoBanners() {
           <Link
             key={b.image}
             href={b.href}
-            className={`group relative block overflow-hidden rounded-xl shadow-card transition-shadow duration-300 hover:shadow-card-hover ${
+            className={`group relative block overflow-hidden rounded-2xl shadow-card transition-shadow duration-300 hover:shadow-card-hover ${
               b.featured ? 'sm:col-span-2 lg:col-span-1' : ''
             }`}
           >
@@ -73,11 +73,11 @@ export function PromoBanners() {
                 <span className="font-mono text-micro uppercase tracking-wider2 text-primary-300">
                   {b.eyebrow}
                 </span>
-                <h3 className="mt-1.5 font-display text-title-l font-extrabold leading-tight text-white sm:text-title-l">
+                <h3 className="mt-1.5 font-display text-title-l font-bold leading-tight text-white sm:text-title-l">
                   {b.title}
                 </h3>
                 <p className="mt-1.5 max-w-md text-body-s leading-relaxed text-ink-300">{b.body}</p>
-                <span className="mt-4 inline-flex w-fit items-center gap-2 rounded-lg bg-white/95 px-4 py-2.5 font-mono text-micro font-semibold uppercase tracking-wider2 text-ink-950 transition-colors group-hover:bg-primary-500 group-hover:text-white">
+                <span className="mt-4 inline-flex w-fit items-center gap-2 rounded-full bg-white/95 px-4 py-2.5 font-mono text-micro font-semibold uppercase tracking-wider2 text-ink-950 transition-colors duration-200 group-hover:bg-primary-500 group-hover:text-white">
                   {b.cta}
                   <ArrowRight size={13} aria-hidden="true" />
                 </span>

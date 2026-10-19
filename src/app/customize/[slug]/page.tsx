@@ -129,7 +129,7 @@ export default async function CustomizePage({ params }: CustomizePageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
       />
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-sheet px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <ProductCustomizer
           product={product}
           options={options}

@@ -48,7 +48,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   return (
     <article
       className={cn(
-        'group relative flex h-full flex-col overflow-hidden rounded-xl border border-ink-200 bg-white',
+        'group relative flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200/80 bg-white',
         'shadow-card transition-all duration-200 ease-press',
         'hover:-translate-y-0.5 hover:border-ink-300 hover:shadow-card-hover',
         className,
@@ -116,7 +116,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <div className="flex items-end justify-between gap-3">
               <div>
                 <span className="label-caps block">{quote.isQuote ? 'Priced on request' : 'Starts at'}</span>
-                <span className="tnum mt-0.5 block font-display text-title-l font-extrabold leading-none text-ink-950">
+                <span className="tnum mt-0.5 block font-display text-title-l font-bold leading-none text-ink-950">
                   {quote.isQuote ? (
                     'Custom quote'
                   ) : (
@@ -133,7 +133,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 </span>
               </div>
 
-              <span className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-primary-500 px-3.5 font-mono text-micro font-semibold uppercase tracking-wider2 text-white transition-colors group-hover:bg-primary-600">
+              <span className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-primary-500 px-4 font-mono text-micro font-semibold uppercase tracking-wider2 text-white transition-colors duration-200 group-hover:bg-ink-950">
                 Configure
                 <ArrowRight
                   size={13}
