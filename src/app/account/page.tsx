@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { getBrowserSupabase } from '../../lib/supabaseBrowser';
-import { Button } from '../../components/ui/press';
-import { Package, LogOut, User, Clock, CheckCircle2, Truck, XCircle, Loader2, ArrowRight } from 'lucide-react';
+import { Button, Skeleton } from '../../components/ui/press';
+import { Package, LogOut, User, Clock, CheckCircle2, Truck, XCircle, ArrowRight } from 'lucide-react';
 import { money } from '../../lib/catalog';
 
 interface OrderRow {
@@ -54,8 +54,13 @@ export default function AccountPage() {
 
   if (loading || fetching) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 size={28} className="animate-spin text-primary-500" />
+      <div className="mx-auto max-w-sheet px-4 py-10 sm:px-6 lg:px-8">
+        <Skeleton className="h-9 w-56" />
+        <div className="mt-8 space-y-4">
+          {[0, 1].map(i => (
+            <Skeleton key={i} className="h-32 w-full rounded-2xl" />
+          ))}
+        </div>
       </div>
     );
   }

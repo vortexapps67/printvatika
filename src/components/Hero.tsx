@@ -135,7 +135,7 @@ export function Hero({ products = [] }: { products?: Product[] }) {
     <section aria-label="Featured offers">
       {/* ---- Banner carousel ---- */}
       <div
-        className="relative h-[430px] overflow-hidden bg-gradient-to-b from-ink-50 to-white sm:h-[470px] lg:h-[540px]"
+        className="haze relative h-[430px] overflow-hidden bg-gradient-to-b from-ink-50 to-white sm:h-[470px] lg:h-[540px]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocusCapture={() => setPaused(true)}

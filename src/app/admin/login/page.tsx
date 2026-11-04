@@ -2,15 +2,16 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldAlert, Loader2, KeyRound, TriangleAlert } from 'lucide-react';
+import { ShieldAlert, Loader2, KeyRound } from 'lucide-react';
 import { Button, ColourStrip, Field, RegistrationMark } from '../../../components/ui/press';
-import { SITE } from '../../../lib/site';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  // Autofilled for local evaluation. Clear before any public deploy.
-  const [email, setEmail] = useState('admin@printerwala.com');
-  const [password, setPassword] = useState('admin123');
+  // No credentials are kept here: the access check runs server-side against the
+  // press's own admin record (see /api/admin/login), so nothing an operator or a
+  // visitor can see on this page ever becomes a password.
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -70,7 +71,7 @@ export default function AdminLoginPage() {
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="admin@printvatika.com"
+                placeholder="you@printvatika.com"
                 autoComplete="username"
                 required
               />
@@ -112,17 +113,6 @@ export default function AdminLoginPage() {
               )}
             </Button>
           </form>
-
-          {/* Sandbox credentials notice — remove before any public deploy */}
-          <div className="mt-7 flex items-start gap-2.5 border border-amber-300 bg-amber-50 p-3.5">
-            <TriangleAlert size={15} className="mt-0.5 flex-none text-amber-700" aria-hidden="true" />
-            <div className="text-body-s leading-relaxed text-amber-900">
-              <p className="font-semibold">Local sandbox credentials</p>
-              <p className="tnum mt-1 font-mono text-micro">
-                admin@printerwala.com / admin123
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

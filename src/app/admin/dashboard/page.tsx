@@ -19,7 +19,6 @@ import {
   Building,
   User,
   X,
-  Loader2,
   Phone,
 } from 'lucide-react';
 import {
@@ -28,6 +27,7 @@ import {
   ColourStrip,
   Panel,
   PanelHead,
+  Skeleton,
   SpecRow,
   StatusPill,
 } from '../../../components/ui/press';
@@ -261,10 +261,47 @@ export default function AdminDashboardPage() {
   });
 
 if (isLoading) {
+    /* Skeleton queue rather than a bare spinner: the dashboard is a workspace,
+       and a skeletoned stats row + table reads as the page itself loading. */
     return (
-      <div className="flex flex-grow flex-col items-center justify-center gap-4 py-24">
-        <Loader2 className="animate-spin text-primary-600" size={32} aria-hidden="true" />
-        <h1 className="label-caps">Syncing press operations</h1>
+      <div className="mx-auto max-w-sheet px-4 py-8 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-5 border-b border-ink-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <Skeleton className="h-8 w-56" />
+            <Skeleton className="mt-3 h-3 w-44" />
+          </div>
+          <Skeleton className="h-9 w-32" />
+        </div>
+
+        <div className="mt-7 grid grid-cols-2 gap-px overflow-hidden rounded border border-ink-200 bg-ink-200 lg:grid-cols-4">
+          {[0, 1, 2, 3].map(i => (
+            <div key={i} className="bg-white p-5">
+              <Skeleton className="h-3 w-24" />
+              <Skeleton className="mt-3 h-8 w-20" />
+            </div>
+          ))}
+        </div>
+
+        <Panel flush className="mt-7">
+          <PanelHead
+            title="Order queue"
+            hint="Select a row to manage status and notify the customer."
+          />
+          <div className="space-y-3 p-5">
+            {[0, 1, 2].map(i => (
+              <div
+                key={i}
+                className="flex items-center justify-between gap-4 rounded-sm border border-ink-200 bg-white p-4"
+              >
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-48" />
+                </div>
+                <Skeleton className="h-6 w-24 shrink-0" />
+              </div>
+            ))}
+          </div>
+        </Panel>
       </div>
     );
   }

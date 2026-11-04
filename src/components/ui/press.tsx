@@ -1,6 +1,21 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
+/* ---- Skeleton -------------------------------------------------------------
+   Loading placeholder that follows the same tokens as the rest of the system:
+   ink wash fill, square corners (no rounding — the press sheet is square), and
+   the register fade-rise so a loading block enters with the same motion as
+   everything else on the page. */
+export function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      aria-hidden="true"
+      className={cn('animate-pulse rounded-sm bg-ink-200/70', className)}
+      {...props}
+    />
+  );
+}
+
 /* ==========================================================================
    Print Vatika primitives.
 
