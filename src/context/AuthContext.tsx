@@ -43,23 +43,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, name: string) => {
     const supabase = getBrowserSupabase();
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: name } },
-    });
-    return { error: error?.message ?? null };
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: name } },
+      });
+      return { error: error?.message ?? null };
+    } catch (e: any) {
+      /* A network-level failure (DNS, blocked request, offline) rejects rather
+         than returning an error object — surface it instead of throwing through. */
+      return { error: e?.message || 'Could not reach the sign-up service. Please try again.' };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
     const supabase = getBrowserSupabase();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error?.message ?? null };
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      return { error: error?.message ?? null };
+    } catch (e: any) {
+      return { error: e?.message || 'Could not reach the sign-in service. Please try again.' };
+    }
   };
 
   const signOut = async () => {
     const supabase = getBrowserSupabase();
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      /* Signing out must never block the UI. */
+    }
   };
 
   return (
