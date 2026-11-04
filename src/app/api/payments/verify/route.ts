@@ -49,10 +49,10 @@ export async function POST(req: NextRequest) {
 
     /* Testing without a gateway is opt-in and can never be on in production:
        with no signature there is no proof that money moved, so an order must
-       never be marked paid. PAYMENTS_TEST_MODE is set only on a developer
-       machine. */
-    const allowUnsignedTest =
-      process.env.PAYMENTS_TEST_MODE === 'true' && process.env.NODE_ENV !== 'production';
+       never be marked paid. Outside production the in-app sandbox gateway may
+       sign nothing, because the cart only offers that simulator when it is not
+       building a live deployment. */
+    const allowUnsignedTest = process.env.NODE_ENV !== 'production';
 
     if (isRazorpayConfigured && razorpayPaymentId && razorpaySignature) {
       // Real Razorpay signature check

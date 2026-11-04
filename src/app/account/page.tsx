@@ -11,6 +11,7 @@ import { money } from '../../lib/catalog';
 
 interface OrderRow {
   id: string;
+  customer_phone?: string;
   total_amount: number;
   payment_status: string;
   order_status: string;
@@ -143,7 +144,7 @@ export default function AccountPage() {
                   </ul>
                 )}
                 <div className="mt-4 flex gap-2">
-                  <Link href={`/track?id=${order.id}`} className="text-body-s font-semibold text-primary-600 hover:text-primary-700">
+                  <Link href={`/track?id=${order.id}&phone=${order.customer_phone || ''}`} className="text-body-s font-semibold text-primary-600 hover:text-primary-700">
                     Track order →
                   </Link>
                 </div>
@@ -160,11 +161,11 @@ function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string; Icon: any }> = {
     PAYMENT_PENDING: { label: 'Payment pending', cls: 'bg-ink-100 text-ink-700', Icon: Clock },
     PAID: { label: 'Paid', cls: 'bg-primary-50 text-primary-700', Icon: CheckCircle2 },
-    CONFIRMED: { label: 'Confirmed', cls: 'bg-indigo-50 text-indigo-700', Icon: CheckCircle2 },
+    CONFIRMED: { label: 'Confirmed', cls: 'bg-primary-50 text-primary-700', Icon: CheckCircle2 },
     PRINTING: { label: 'Printing', cls: 'bg-primary-50 text-primary-700', Icon: Package },
-    READY: { label: 'Ready', cls: 'bg-violet-50 text-violet-700', Icon: Package },
-    OUT_FOR_DELIVERY: { label: 'Out for delivery', cls: 'bg-amber-50 text-amber-700', Icon: Truck },
-    DELIVERED: { label: 'Delivered', cls: 'bg-emerald-50 text-emerald-700', Icon: CheckCircle2 },
+    READY: { label: 'Ready', cls: 'bg-wash-sage text-ink-700', Icon: Package },
+    OUT_FOR_DELIVERY: { label: 'Out for delivery', cls: 'bg-wash-sand text-ink-700', Icon: Truck },
+    DELIVERED: { label: 'Delivered', cls: 'bg-emerald-50 text-emerald-800', Icon: CheckCircle2 },
     CANCELLED: { label: 'Cancelled', cls: 'bg-red-50 text-red-700', Icon: XCircle },
   };
   const s = map[status] || { label: status, cls: 'bg-ink-100 text-ink-700', Icon: Clock };

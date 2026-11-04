@@ -7,6 +7,14 @@ import { useAuth } from '../../context/AuthContext';
 import { Button, Field } from '../../components/ui/press';
 import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 
+/** Where a signed-in user should land, honouring the `?next=` hand-off from
+    the cart's sign-in prompt (the cart links to /login?next=/cart). */
+function getSafeNext(): string {
+  if (typeof window === 'undefined') return '/account';
+  const next = new URLSearchParams(window.location.search).get('next');
+  return next && next.startsWith('/') ? next : '/account';
+}
+
 export default function LoginPage() {
   const { signIn, user } = useAuth();
   const router = useRouter();
@@ -16,7 +24,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   React.useEffect(() => {
-    if (user) router.replace('/account');
+    if (user) router.replace(getSafeNext());
   }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,7 +34,7 @@ export default function LoginPage() {
     const { error } = await signIn(email, password);
     setLoading(false);
     if (error) setError(error);
-    else router.push('/account');
+    else router.push(getSafeNext());
   };
 
   return (

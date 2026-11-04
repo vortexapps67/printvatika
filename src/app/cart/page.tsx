@@ -331,7 +331,9 @@ export default function CartPage() {
 
           if (verification.ok) {
             clearCart();
-            router.push(`/track?id=${order.id}&status=success`);
+            /* The tracker resolves an order by id + mobile number, so hand it both
+               — the success deep-link alone could never be looked up. */
+            router.push(`/track?id=${order.id}&phone=${checkoutDetails.customerPhone}`);
           } else {
             alert('Payment verification failed. Please contact support.');
           }
