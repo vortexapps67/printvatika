@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { Button, Field } from '../../components/ui/press';
-import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff, Sparkles } from 'lucide-react';
 
 /** Where a signed-in user should land, honouring the `?next=` hand-off from
     the cart's sign-in prompt (the cart links to /login?next=/cart). */
@@ -20,6 +20,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -38,51 +39,128 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mx-auto max-w-md px-4 py-16 sm:px-6">
-      <div className="text-center">
-        <h1 className="text-display-s font-bold text-ink-900">Welcome back</h1>
-        <p className="mt-2 text-body text-ink-500">Sign in to track orders and reorder in one tap.</p>
+    <div className="flex min-h-[calc(100vh-4rem)]">
+      {/* Left: brand panel */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-500 to-primary-700">
+        <div className="absolute inset-0 bg-[url('/images/hero-bg-light.png')] bg-cover bg-center opacity-20 mix-blend-overlay" />
+        <div className="relative z-10 flex flex-col justify-between p-12 text-white">
+          <div>
+            <div className="flex items-center gap-3">
+              <img src="/images/logo-mark.png" alt="" className="h-12 w-12 rounded-xl bg-white/20 p-1.5" />
+              <span className="text-2xl font-extrabold tracking-tight">Print<span className="text-primary-200">Vatika</span></span>
+            </div>
+          </div>
+          <div className="max-w-md">
+            <h2 className="text-4xl font-extrabold leading-tight tracking-tight">
+              Print that makes your brand unforgettable.
+            </h2>
+            <p className="mt-4 text-lg text-white/80 leading-relaxed">
+              Business cards, banners, apparel and more — proofed on screen before you pay. Trusted by 500+ businesses across Delhi NCR.
+            </p>
+            <div className="mt-8 flex items-center gap-6">
+              <div className="text-center">
+                <p className="text-3xl font-extrabold">24hr</p>
+                <p className="text-sm text-white/70">Dispatch</p>
+              </div>
+              <div className="h-10 w-px bg-white/20" />
+              <div className="text-center">
+                <p className="text-3xl font-extrabold">500+</p>
+                <p className="text-sm text-white/70">Businesses</p>
+              </div>
+              <div className="h-10 w-px bg-white/20" />
+              <div className="text-center">
+                <p className="text-3xl font-extrabold">4.9★</p>
+                <p className="text-sm text-white/70">Rating</p>
+              </div>
+            </div>
+          </div>
+          <p className="text-sm text-white/60">© {new Date().getFullYear()} Print Vatika. All rights reserved.</p>
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-        <Field label="Email" htmlFor="email">
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            required
-            autoComplete="email"
-          />
-        </Field>
-        <Field label="Password" htmlFor="password">
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-            autoComplete="current-password"
-          />
-        </Field>
+      {/* Right: form */}
+      <div className="flex w-full items-center justify-center px-4 py-12 lg:w-1/2">
+        <div className="w-full max-w-md animate-fade-rise">
+          <div className="mb-8">
+            <div className="flex items-center gap-2 text-primary-600">
+              <Sparkles size={18} />
+              <span className="text-body-s font-semibold uppercase tracking-wider">Welcome back</span>
+            </div>
+            <h1 className="mt-3 text-display-s font-extrabold tracking-tight text-ink-900">Sign in to your account</h1>
+            <p className="mt-2 text-body text-ink-500">Track orders, save addresses, and reorder in one tap.</p>
+          </div>
 
-        {error && (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-body-s text-red-700">{error}</p>
-        )}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label htmlFor="email" className="mb-1.5 block text-body-s font-semibold text-ink-700">Email address</label>
+              <div className="relative">
+                <Mail size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  autoComplete="email"
+                  className="h-12 w-full rounded-xl border border-ink-200 bg-white pl-11 pr-4 text-body text-ink-900 shadow-sm transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                />
+              </div>
+            </div>
 
-        <Button type="submit" size="lg" className="w-full" disabled={loading}>
-          {loading ? <Loader2 size={18} className="animate-spin" /> : <>Sign in <ArrowRight size={16} /></>}
-        </Button>
-      </form>
+            <div>
+              <label htmlFor="password" className="mb-1.5 block text-body-s font-semibold text-ink-700">Password</label>
+              <div className="relative">
+                <Lock size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  autoComplete="current-password"
+                  className="h-12 w-full rounded-xl border border-ink-200 bg-white pl-11 pr-12 text-body text-ink-900 shadow-sm transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-ink-400 transition-colors hover:text-ink-600"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
 
-      <p className="mt-6 text-center text-body-s text-ink-500">
-        New to Print Vatika?{' '}
-        <Link href="/signup" className="font-semibold text-primary-600 hover:text-primary-700">
-          Create an account
-        </Link>
-      </p>
+            {error && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-body-s text-red-700 animate-fade-rise">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary-500 text-body font-semibold text-white shadow-lg shadow-primary-500/25 transition-all hover:bg-primary-600 hover:shadow-xl hover:shadow-primary-500/30 disabled:opacity-60"
+            >
+              {loading ? <Loader2 size={18} className="animate-spin" /> : <>Sign in <ArrowRight size={16} /></>}
+            </button>
+          </form>
+
+          <div className="mt-6 flex items-center gap-4">
+            <div className="h-px flex-1 bg-ink-200" />
+            <span className="text-body-s text-ink-400">or</span>
+            <div className="h-px flex-1 bg-ink-200" />
+          </div>
+
+          <p className="mt-6 text-center text-body-s text-ink-500">
+            New to Print Vatika?{' '}
+            <Link href="/signup" className="font-semibold text-primary-600 transition-colors hover:text-primary-700">
+              Create a free account
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

@@ -8,61 +8,59 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        /* `primary` — the press red. A deep vermillion: the classic ink of a
-           working print shop, warm against the cream paper and never neon.
-           Carries action, links, prices and the cart button. */
+        /* `primary` — premium turquoise. Rich, sophisticated teal-turquoise
+           that reads as trust + freshness. Carries action, links, prices. */
         primary: {
-          50: '#FDF3EE',
-          100: '#FAE2D7',
-          200: '#F3C4AE',
-          300: '#E89C7C',
-          400: '#D96E45',
-          500: '#C24A24', // brand vermillion
-          600: '#A93E1D',
-          700: '#8C3319',
-          800: '#6E2914',
-          900: '#501E0F',
-          950: '#35140A',
+          50: '#ECFEFF',
+          100: '#CFFAFE',
+          200: '#A5F3FC',
+          300: '#67E8F9',
+          400: '#22D3EE',
+          500: '#06B6D4', // brand turquoise
+          600: '#0891B2',
+          700: '#0E7490',
+          800: '#155E75',
+          900: '#164E63',
+          950: '#083344',
         },
 
-        /* `ink` — warm charcoal neutrals, one family, slight orange undertone
-           so it sits with the paper rather than against it. */
+        /* `ink` — warm charcoal neutrals. */
         ink: {
-          50: '#FAF8F4',
-          100: '#F1EDE5',
-          200: '#E2DCD0',
-          300: '#C9C1B2',
-          400: '#A79D8A',
-          500: '#6F6353',
-          600: '#665E50',
-          700: '#4B4439',
-          800: '#33302A',
-          900: '#211F1B',
-          950: '#16140F',
+          50: '#F8FAFC',
+          100: '#F1F5F9',
+          200: '#E2E8F0',
+          300: '#CBD5E1',
+          400: '#94A3B8',
+          500: '#64748B',
+          600: '#475569',
+          700: '#334155',
+          800: '#1E293B',
+          900: '#0F172A',
+          950: '#020617',
         },
 
-        /* Press inks — kept for the CMYK control strip accent. */
+        /* Process inks — kept for the control strip accent. */
         press: {
-          cyan: '#00A3E0',
+          cyan: '#06B6D4',
           magenta: '#E5007E',
           yellow: '#FFB81C',
-          key: '#16140F',
+          key: '#0F172A',
         },
 
         /* Tinted washes for image tiles and category cards. */
         wash: {
-          aqua: '#EAF3F4',
-          mint: '#EDF4EB',
-          sand: '#F8F1E7',
-          sage: '#EFF4EC',
-          haze: '#F1EEF6',
+          aqua: '#ECFEFF',
+          mint: '#F0FDFA',
+          sand: '#FFF8E8',
+          sage: '#F0FDF4',
+          haze: '#EEF2FF',
         },
 
         status: {
-          pending: '#A79D8A',
-          paid: '#00A3E0',
+          pending: '#94A3B8',
+          paid: '#06B6D4',
           confirmed: '#6366F1',
-          printing: '#C24A24',
+          printing: '#06B6D4',
           ready: '#7C3AED',
           transit: '#D97706',
           done: '#0F9D58',
@@ -71,13 +69,12 @@ module.exports = {
       },
 
       fontFamily: {
-        /* Fraunces — a warm, contemporary old-style serif for display.
-           Outfit — geometric humanist sans for UI. IBM Plex Mono for the
-           spec-sheet voice (prices, SKUs, labels). */
-        display: ['var(--font-display)', 'Fraunces', 'Georgia', 'serif'],
-        sans: ['var(--font-sans)', 'Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        mono: ['var(--font-mono)', 'IBM Plex Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
-        serif: ['var(--font-display)', 'Fraunces', 'Georgia', 'serif'],
+        /* Plus Jakarta Sans — premium, modern, geometric. Used for both
+           display and body for a unified, polished look. */
+        display: ['var(--font-sans)', 'Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-mono)', 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        serif: ['var(--font-sans)', 'Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
 
       fontSize: {
@@ -88,35 +85,33 @@ module.exports = {
         'body-l': ['1.0625rem', { lineHeight: '1.75rem' }],
         lead: ['1.1875rem', { lineHeight: '1.75rem' }],
         'lead-l': ['1.375rem', { lineHeight: '1.875rem' }],
-        title: ['1.5rem', { lineHeight: '1.75rem', letterSpacing: '-0.01em' }],
-        'title-l': ['1.875rem', { lineHeight: '2.125rem', letterSpacing: '-0.015em' }],
+        title: ['1.5rem', { lineHeight: '2rem', letterSpacing: '-0.01em' }],
+        'title-l': ['1.875rem', { lineHeight: '2.25rem', letterSpacing: '-0.015em' }],
         'display-s': ['2.25rem', { lineHeight: '2.5rem', letterSpacing: '-0.02em' }],
-        display: ['2.75rem', { lineHeight: '2.875rem', letterSpacing: '-0.025em' }],
+        display: ['2.75rem', { lineHeight: '3rem', letterSpacing: '-0.025em' }],
         'display-l': ['3.5rem', { lineHeight: '3.5rem', letterSpacing: '-0.03em' }],
         'display-xl': ['4.5rem', { lineHeight: '4.25rem', letterSpacing: '-0.035em' }],
       },
 
       borderRadius: {
         none: '0',
-        xs: '3px',
+        xs: '4px',
         sm: '6px',
-        DEFAULT: '10px',
-        md: '12px',
-        lg: '16px',
-        xl: '20px',
+        DEFAULT: '8px',
+        md: '10px',
+        lg: '14px',
+        xl: '18px',
         '2xl': '24px',
         full: '9999px',
       },
 
       boxShadow: {
         none: 'none',
-        card: '0 1px 2px 0 rgb(22 20 15 / 0.05), 0 1px 3px 0 rgb(22 20 15 / 0.05)',
-        'card-hover': '0 6px 16px -4px rgb(22 20 15 / 0.14), 0 2px 6px -2px rgb(22 20 15 / 0.07)',
-        lift: '0 14px 40px -10px rgb(22 20 15 / 0.22)',
-        menu: '0 10px 32px -6px rgb(22 20 15 / 0.16)',
-        plate: '3px 3px 0 0 #16140F',
-        'plate-sm': '2px 2px 0 0 #16140F',
-        'plate-white': '3px 3px 0 0 #FFFFFF',
+        card: '0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)',
+        'card-hover': '0 8px 24px -4px rgb(0 0 0 / 0.12), 0 2px 6px -2px rgb(0 0 0 / 0.08)',
+        lift: '0 12px 32px -8px rgb(0 0 0 / 0.18)',
+        menu: '0 8px 24px -4px rgb(0 0 0 / 0.12)',
+        glow: '0 0 20px 0 rgb(6 182 212 / 0.25)',
       },
 
       letterSpacing: {
@@ -130,17 +125,38 @@ module.exports = {
 
       transitionTimingFunction: {
         press: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+        smooth: 'cubic-bezier(0.4, 0, 0.2, 1)',
       },
 
       keyframes: {
         'fade-rise': {
-          '0%': { opacity: '0', transform: 'translateY(6px)' },
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        'scale-in': {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        'slide-up': {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
         },
       },
 
       animation: {
-        'fade-rise': 'fade-rise 0.3s ease-out both',
+        'fade-rise': 'fade-rise 0.4s ease-out both',
+        'fade-in': 'fade-in 0.3s ease-out both',
+        'scale-in': 'scale-in 0.3s ease-out both',
+        'slide-up': 'slide-up 0.5s ease-out both',
+        shimmer: 'shimmer 2s linear infinite',
       },
     },
   },

@@ -1,7 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import { Fraunces, Outfit, IBM_Plex_Mono } from 'next/font/google';
-import Script from 'next/script';
+import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '../context/CartContext';
 import { AuthProvider } from '../context/AuthContext';
@@ -10,30 +9,16 @@ import { AnnouncementBar } from '../components/AnnouncementBar';
 import { Footer } from '../components/Footer';
 import { SITE } from '../lib/site';
 
-/* Display: Fraunces — warm old-style serif, used for headlines and the big
-   price on a card. Three axes are loaded: optical size (display cuts tighten
-   as they scale), SOFT (warmer, rounder terminals on the big headlines) and
-   WONK (the hand-set look on the hero line). */
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  variable: '--font-display',
-  display: 'swap',
-  /* Variable font: omit `weight` so every weight ships, and declare the
-     axes we actually vary — opsz, SOFT and WONK. */
-  axes: ['opsz', 'SOFT', 'WONK'],
-});
-
-/* Body + UI: Outfit — geometric humanist sans, friendlier than Inter and
-   built for interface text. */
-const outfit = Outfit({
+/* Display + body: Plus Jakarta Sans — premium, modern, geometric. */
+const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
-  weight: ['400', '500', '600', '700'],
+  weight: ['400', '500', '600', '700', '800'],
 });
 
-/* Specs and data: IBM Plex Mono — every measurement, price and order ref. */
-const plexMono = IBM_Plex_Mono({
+/* Specs and data: JetBrains Mono — every measurement, price and order ref. */
+const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
   display: 'swap',
@@ -137,28 +122,21 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-IN" className={`${fraunces.variable} ${outfit.variable} ${plexMono.variable}`}>
+    <html lang="en-IN" className={`${jakarta.variable} ${jetbrainsMono.variable}`}>
       <head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>
       <body className="flex min-h-screen flex-col">
-        {/* The Razorpay Checkout SDK must be on the page before the cart opens a
-            checkout: the cart instantiates `new window.Razorpay(...)` from it. It
-            lived only in the static cart.html, so the Next.js checkout could never
-            open a modal. */}
-        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-ink-950 focus:px-4 focus:py-2 focus:font-mono focus:text-white"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-primary-600 focus:px-4 focus:py-2 focus:font-mono focus:text-label focus:text-white"
         >
           Skip to content
         </a>
         <AuthProvider>
           <CartProvider>
-            <header>
-              <AnnouncementBar />
-              <Navbar />
-            </header>
+            <AnnouncementBar />
+            <Navbar />
             <main id="main" className="flex-grow">
               {children}
             </main>
