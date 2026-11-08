@@ -20,14 +20,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { email, password } = await req.json();
+    const { password } = await req.json();
 
-    if (!email || !password) {
-      return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 });
+    if (!password) {
+      return NextResponse.json({ error: 'Password is required.' }, { status: 400 });
     }
 
-    // Verify credentials
-    const isValid = await DbClient.authenticateAdmin(email, password);
+    // Verify credentials (single shared password stored in settings)
+    const isValid = await DbClient.authenticateAdmin('', password);
 
     if (!isValid) {
       return NextResponse.json({ error: 'Invalid admin credentials.' }, { status: 401 });
