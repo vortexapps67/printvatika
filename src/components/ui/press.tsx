@@ -223,15 +223,20 @@ export function Panel({
   className,
   children,
   flush,
+  dark,
 }: {
   className?: string;
   children: React.ReactNode;
   flush?: boolean;
+  dark?: boolean;
 }) {
   return (
     <div
       className={cn(
-        'relative rounded-2xl border border-ink-200/80 bg-white shadow-card',
+        'relative rounded-2xl border shadow-card',
+        dark
+          ? 'border-slate-800/80 bg-slate-900/80 backdrop-blur-xl text-slate-100 shadow-2xl'
+          : 'border-ink-200/80 bg-white text-ink-950',
         !flush && 'p-5 sm:p-6',
         className,
       )}
@@ -247,24 +252,27 @@ export function PanelHead({
   hint,
   action,
   className,
+  dark,
 }: {
   title: React.ReactNode;
   hint?: React.ReactNode;
   action?: React.ReactNode;
   className?: string;
+  dark?: boolean;
 }) {
   return (
     <div
       className={cn(
-        'flex flex-wrap items-center justify-between gap-3 border-b border-ink-200 px-5 py-4',
+        'flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4',
+        dark ? 'border-slate-800/90 bg-slate-950/60' : 'border-ink-200 bg-transparent',
         className,
       )}
     >
       <div className="min-w-0">
-        <h2 className="font-mono text-label font-semibold uppercase tracking-wider2 text-ink-800">
+        <h2 className={cn('font-mono text-label font-bold uppercase tracking-wider2', dark ? 'text-white' : 'text-ink-800')}>
           {title}
         </h2>
-        {hint && <p className="mt-0.5 text-body-s text-ink-500">{hint}</p>}
+        {hint && <p className={cn('mt-0.5 text-body-s', dark ? 'text-slate-400' : 'text-ink-500')}>{hint}</p>}
       </div>
       {action}
     </div>

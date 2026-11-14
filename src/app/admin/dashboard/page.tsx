@@ -764,25 +764,26 @@ export default function AdminDashboardPage() {
                 </dl>
 
                 {/* Queue Table */}
-                <Panel flush>
+                <Panel dark flush>
                   <PanelHead
-                    title="Order Queue & Dispatch"
-                    hint="Click 'Manage' on any row to inspect uploaded artwork files, verify transaction, and update status."
+                    dark
+                    title="Order Queue & Dispatch Control"
+                    hint="Click 'Manage' to inspect uploaded artwork files, verify transaction, and advance order status."
                   />
 
                   {/* Search and Filters */}
-                  <div className="flex flex-col gap-3 border-b border-ink-200 p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-col gap-3 border-b border-slate-800/80 bg-slate-950/40 p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="relative w-full sm:max-w-xs">
                       <Search
                         size={15}
-                        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400"
+                        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"
                       />
                       <input
                         type="search"
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
-                        placeholder="Search ID, name or phone…"
-                        className="w-full rounded-md border border-ink-200 bg-ink-50 py-1.5 pl-9 pr-3 text-body-s focus:border-ink-950 focus:bg-white focus:outline-none"
+                        placeholder="Search ID, customer name or phone…"
+                        className="w-full rounded-xl border border-slate-700/80 bg-slate-900/80 py-2 pl-9 pr-3 text-xs text-white placeholder-slate-500 shadow-inner focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                       />
                     </div>
 
@@ -795,10 +796,10 @@ export default function AdminDashboardPage() {
                               key={filter}
                               type="button"
                               onClick={() => setStatusFilter(filter)}
-                              className={`flex-none rounded-md px-2.5 py-1.5 font-mono text-micro font-medium uppercase tracking-wider2 transition-colors ${
+                              className={`flex-none rounded-xl px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wider transition-all ${
                                 active
-                                  ? 'bg-ink-950 text-white'
-                                  : 'border border-ink-200 text-ink-600 hover:border-ink-950'
+                                  ? 'bg-gradient-to-r from-primary-600 to-indigo-600 text-white shadow-md shadow-primary-500/25'
+                                  : 'border border-slate-800 bg-slate-900/60 text-slate-400 hover:border-slate-700 hover:text-white'
                               }`}
                             >
                               {filter.replace(/_/g, ' ')}
@@ -813,63 +814,89 @@ export default function AdminDashboardPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full border-collapse text-left">
                       <thead>
-                        <tr className="border-b border-ink-200 bg-ink-50 font-mono text-micro font-semibold uppercase tracking-wider2 text-ink-500">
+                        <tr className="border-b border-slate-800 bg-slate-950/80 font-mono text-[11px] font-bold uppercase tracking-wider text-slate-400">
                           <th className="px-4 py-3">Order ID</th>
                           <th className="px-4 py-3">Customer</th>
                           <th className="px-4 py-3">Fulfillment</th>
-                          <th className="px-4 py-3">Total</th>
+                          <th className="px-4 py-3">Total Amount</th>
                           <th className="px-4 py-3">Payment</th>
                           <th className="px-4 py-3">Status</th>
                           <th className="px-4 py-3 text-right">Action</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-ink-100">
+                      <tbody className="divide-y divide-slate-800/60">
                         {filteredOrders.length > 0 ? (
                           filteredOrders.map(o => (
-                            <tr key={o.id} className="transition-colors hover:bg-ink-50/70">
-                              <td className="whitespace-nowrap px-4 py-3 font-mono text-body-s font-bold text-ink-950">
-                                {o.id}
+                            <tr key={o.id} className="transition-colors hover:bg-slate-800/40">
+                              <td className="whitespace-nowrap px-4 py-3">
+                                <span className="rounded-lg border border-primary-500/30 bg-primary-500/10 px-2 py-0.5 font-mono text-xs font-bold text-primary-400">
+                                  #{o.id}
+                                </span>
                               </td>
                               <td className="px-4 py-3">
-                                <span className="block text-body-s font-medium text-ink-900">
+                                <span className="block text-xs font-bold text-white">
                                   {o.customer_name}
                                 </span>
-                                <span className="block font-mono text-micro text-ink-400">
+                                <span className="block font-mono text-[11px] text-slate-400">
                                   {o.customer_phone}
                                 </span>
                               </td>
                               <td className="px-4 py-3">
-                                <Badge tone={o.fulfillment_type === 'delivery' ? 'neutral' : 'warning'}>
+                                <span className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800/80 px-2 py-0.5 font-mono text-[10px] font-bold uppercase text-slate-300">
                                   {o.fulfillment_type === 'delivery' ? (
-                                    <Truck size={11} className="mr-1 inline" />
+                                    <Truck size={11} className="text-primary-400" />
                                   ) : (
-                                    <Building size={11} className="mr-1 inline" />
+                                    <Building size={11} className="text-amber-400" />
                                   )}
                                   {o.fulfillment_type}
-                                </Badge>
+                                </span>
                               </td>
-                              <td className="whitespace-nowrap px-4 py-3 font-mono text-body-s font-semibold text-ink-950">
+                              <td className="whitespace-nowrap px-4 py-3 font-mono text-xs font-bold text-emerald-400">
                                 ₹{o.total_amount.toFixed(2)}
                               </td>
                               <td className="px-4 py-3">
-                                <Badge tone={o.payment_status === 'PAID' ? 'success' : 'warning'}>
+                                <span
+                                  className={`inline-flex items-center rounded-full px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider ${
+                                    o.payment_status === 'PAID'
+                                      ? 'border border-emerald-500/30 bg-emerald-500/15 text-emerald-300'
+                                      : 'border border-amber-500/30 bg-amber-500/15 text-amber-300'
+                                  }`}
+                                >
                                   {o.payment_status}
-                                </Badge>
+                                </span>
                               </td>
                               <td className="px-4 py-3">
-                                <StatusPill status={o.order_status} />
+                                <span
+                                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider ${
+                                    o.order_status === 'CONFIRMED'
+                                      ? 'border border-emerald-500/30 bg-emerald-500/15 text-emerald-300'
+                                      : o.order_status === 'PRINTING'
+                                      ? 'border border-cyan-500/30 bg-cyan-500/15 text-cyan-300 animate-pulse'
+                                      : o.order_status === 'READY'
+                                      ? 'border border-indigo-500/30 bg-indigo-500/15 text-indigo-300'
+                                      : o.order_status === 'DELIVERED'
+                                      ? 'border border-blue-500/30 bg-blue-500/15 text-blue-300'
+                                      : 'border border-slate-700 bg-slate-800 text-slate-300'
+                                  }`}
+                                >
+                                  {o.order_status.replace(/_/g, ' ')}
+                                </span>
                               </td>
                               <td className="px-4 py-3 text-right">
-                                <Button variant="outline" size="sm" onClick={() => setSelectedOrder(o)}>
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedOrder(o)}
+                                  className="rounded-xl border border-slate-700/80 bg-slate-800/80 px-3 py-1 font-mono text-xs font-bold text-slate-200 shadow-sm transition-all hover:border-primary-500 hover:bg-primary-600 hover:text-white"
+                                >
                                   Manage
-                                </Button>
+                                </button>
                               </td>
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td colSpan={7} className="px-4 py-12 text-center text-body-s text-ink-500">
-                              No orders found matching current criteria.
+                            <td colSpan={7} className="px-4 py-12 text-center font-mono text-xs text-slate-400">
+                              No orders match the selected filter.
                             </td>
                           </tr>
                         )}
@@ -883,56 +910,57 @@ export default function AdminDashboardPage() {
             {/* ================= 2. PRODUCTS & IMAGES TAB ================= */}
             {activeTab === 'products' && (
               <div className="space-y-6">
-                <Panel flush>
+                <Panel dark flush>
                   <PanelHead
+                    dark
                     title="Products & Storefront Images"
-                    hint="All 8 press product lines. Click 'Edit Details' to change title, category, description, base unit, and choose or upload image."
+                    hint="All 8 commercial product lines. Change title, category, description, base unit, and choose studio photography."
                   />
 
                   <div className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
                     {products.map(p => (
                       <div
                         key={p.id}
-                        className="flex flex-col justify-between rounded-xl border border-ink-200 bg-white p-4 shadow-sm transition-all hover:border-ink-300"
+                        className="flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-md transition-all hover:border-slate-700 hover:shadow-lg"
                       >
                         <div>
-                          <div className="relative aspect-[16/10] overflow-hidden rounded-lg border border-ink-100 bg-ink-100">
+                          <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-slate-800 bg-slate-950">
                             <img
                               src={p.image_url}
                               alt={p.name}
                               className="h-full w-full object-cover"
                             />
                             <span
-                              className={`absolute right-2 top-2 rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider2 ${
+                              className={`absolute right-2.5 top-2.5 rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider ${
                                 p.is_active !== false
-                                  ? 'bg-emerald-600 text-white'
-                                  : 'bg-ink-800 text-ink-300'
+                                  ? 'border border-emerald-500/30 bg-emerald-500/20 text-emerald-300'
+                                  : 'border border-slate-700 bg-slate-800 text-slate-400'
                               }`}
                             >
-                              {p.is_active !== false ? 'Active' : 'Hidden'}
+                              {p.is_active !== false ? 'Live on Store' : 'Hidden'}
                             </span>
                           </div>
 
                           <div className="mt-3.5">
                             <div className="flex items-start justify-between gap-2">
                               <div>
-                                <h3 className="font-display text-body-l font-bold text-ink-950">{p.name}</h3>
-                                <p className="font-mono text-micro uppercase tracking-wider2 text-ink-400">
+                                <h3 className="font-display text-base font-bold text-white">{p.name}</h3>
+                                <p className="font-mono text-[11px] uppercase tracking-wider text-slate-400">
                                   {p.category} · /{p.slug}
                                 </p>
                               </div>
                             </div>
-                            <p className="mt-2 line-clamp-2 text-body-s text-ink-600">
+                            <p className="mt-2 line-clamp-2 text-xs text-slate-400">
                               {p.description || 'No description set.'}
                             </p>
                           </div>
                         </div>
 
-                        <div className="mt-4 border-t border-ink-100 pt-3">
+                        <div className="mt-4 border-t border-slate-800 pt-3">
                           {/* Inline Price editing */}
                           <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center overflow-hidden rounded-md border border-ink-200 bg-white">
-                              <span className="border-r border-ink-200 bg-ink-50 px-2 py-1 font-mono text-micro text-ink-500">
+                            <div className="flex items-center overflow-hidden rounded-xl border border-slate-700 bg-slate-950">
+                              <span className="border-r border-slate-700 bg-slate-900 px-2.5 py-1.5 font-mono text-xs text-slate-400">
                                 ₹
                               </span>
                               <input
@@ -945,28 +973,28 @@ export default function AdminDashboardPage() {
                                     [p.slug]: parseFloat(e.target.value) || 0,
                                   }))
                                 }
-                                className="w-20 px-2 py-1 font-mono text-body-s font-semibold text-ink-950 focus:outline-none"
+                                className="w-20 bg-transparent px-2.5 py-1.5 font-mono text-xs font-bold text-white focus:outline-none"
                               />
                               <button
                                 type="button"
                                 onClick={() => handleUpdateBasePrice(p.slug)}
                                 disabled={isSavingPrice}
-                                className="border-l border-ink-200 bg-ink-50 px-2.5 py-1 font-mono text-micro font-medium text-ink-700 hover:bg-ink-950 hover:text-white"
+                                className="border-l border-slate-700 bg-slate-800 px-3 py-1.5 font-mono text-xs font-bold text-slate-200 hover:bg-primary-600 hover:text-white transition-colors"
                               >
                                 Save
                               </button>
                             </div>
 
-                            <span className="font-mono text-micro text-ink-400">{p.base_unit}</span>
+                            <span className="font-mono text-xs text-slate-400">{p.base_unit}</span>
                           </div>
 
                           {/* Direct Image Swap Rail */}
-                          <div className="mt-3 rounded-lg border border-ink-200 bg-ink-50/70 p-2.5">
+                          <div className="mt-3 rounded-xl border border-slate-800 bg-slate-950/60 p-2.5">
                             <div className="flex items-center justify-between">
-                              <span className="font-mono text-[10px] font-bold uppercase tracking-wider2 text-ink-600">
+                              <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
                                 Quick Swap Image
                               </span>
-                              <span className="font-mono text-[9px] text-ink-400">1-click studio preset</span>
+                              <span className="font-mono text-[10px] text-slate-500">1-click preset</span>
                             </div>
                             <div className="mt-2 flex flex-wrap gap-1">
                               {AVAILABLE_IMAGES.slice(0, 8).map(img => (
@@ -975,10 +1003,10 @@ export default function AdminDashboardPage() {
                                   type="button"
                                   onClick={() => handleQuickUpdateProductImage(p.slug, img.path)}
                                   title={`Switch ${p.name} to ${img.label}`}
-                                  className={`rounded px-1.5 py-0.5 font-mono text-[9px] transition-colors ${
+                                  className={`rounded-lg px-2 py-0.5 font-mono text-[10px] font-medium transition-colors ${
                                     p.image_url === img.path
-                                      ? 'bg-ink-950 font-bold text-white shadow-xs'
-                                      : 'bg-white text-ink-700 border border-ink-200 hover:bg-ink-200'
+                                      ? 'border border-primary-500/40 bg-primary-600 text-white font-bold'
+                                      : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-slate-700 hover:text-white'
                                   }`}
                                 >
                                   {img.label}
@@ -989,25 +1017,24 @@ export default function AdminDashboardPage() {
 
                           {/* Action Buttons */}
                           <div className="mt-3 flex items-center gap-2">
-                            <Button
-                              variant="solid"
-                              size="sm"
+                            <button
+                              type="button"
                               onClick={() => setEditingProduct(p)}
-                              className="flex-1"
+                              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-700/80 bg-slate-800 px-3 py-2 font-mono text-xs font-bold text-white shadow-sm transition-all hover:bg-slate-700"
                             >
                               <Edit2 size={13} />
-                              Edit Details & Image
-                            </Button>
+                              Edit Product
+                            </button>
                             <button
                               type="button"
                               onClick={() => handleToggleProductActive(p.slug)}
-                              title={p.is_active ? 'Deactivate from shop' : 'Activate in shop'}
-                              className="rounded-md border border-ink-200 p-2 text-ink-600 transition-colors hover:bg-ink-100"
+                              title={p.is_active !== false ? 'Hide from storefront' : 'Make live'}
+                              className="rounded-xl border border-slate-700/80 bg-slate-800 p-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-all"
                             >
                               {p.is_active !== false ? (
-                                <ToggleRight size={22} className="text-emerald-600" />
+                                <ToggleRight size={18} className="text-emerald-400" />
                               ) : (
-                                <ToggleLeft size={22} className="text-ink-400" />
+                                <ToggleLeft size={18} className="text-slate-500" />
                               )}
                             </button>
                           </div>
@@ -1827,8 +1854,9 @@ export default function AdminDashboardPage() {
             {activeTab === 'settings' && (
               <div className="space-y-6">
                 {/* Master Admin Password */}
-                <Panel flush>
+                <Panel dark flush>
                   <PanelHead
+                    dark
                     title="Main Single Admin Password"
                     hint="A single shared master password controls access to this dashboard and admin login. Updating here takes effect immediately."
                   />
@@ -1836,51 +1864,54 @@ export default function AdminDashboardPage() {
                   <div className="p-5 sm:max-w-xl">
                     <div className="space-y-4">
                       <div>
-                        <label className="label-caps block">Master Access Password</label>
+                        <label className="mb-2 block font-mono text-xs font-bold uppercase tracking-wider text-slate-300">
+                          Master Access Password
+                        </label>
                         <div className="relative mt-2 flex items-center">
                           <input
                             type={showAdminPassword ? 'text' : 'password'}
                             value={adminPassword}
                             onChange={e => setAdminPassword(e.target.value)}
                             placeholder="Enter new admin password"
-                            className="w-full rounded-md border border-ink-300 bg-white px-3.5 py-2.5 pr-12 font-mono text-body font-bold text-ink-950 focus:border-ink-950 focus:outline-none"
+                            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 pr-12 font-mono text-sm font-bold text-white shadow-inner focus:border-primary-500 focus:outline-none"
                           />
                           <button
                             type="button"
                             onClick={() => setShowAdminPassword(!showAdminPassword)}
-                            className="absolute right-3 text-ink-400 hover:text-ink-700"
+                            className="absolute right-3.5 text-slate-400 hover:text-slate-200"
                             title={showAdminPassword ? 'Hide password' : 'Show password'}
                           >
                             {showAdminPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                           </button>
                         </div>
-                        <p className="mt-2 text-body-s text-ink-500">
-                          Current password is <code className="rounded bg-ink-200 px-1.5 py-0.5 font-mono text-micro font-bold text-ink-950">{adminPassword}</code>. You can change it to any new password anytime.
+                        <p className="mt-2 text-xs text-slate-400">
+                          Current master key: <code className="rounded-lg border border-slate-700 bg-slate-800 px-2 py-0.5 font-mono text-xs font-bold text-primary-400">{adminPassword}</code>
                         </p>
                       </div>
 
-                      <Button
-                        variant="solid"
-                        size="md"
+                      <button
+                        type="button"
                         onClick={handleSaveMasterPassword}
                         disabled={isSavingPassword}
+                        className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 px-5 py-2.5 font-mono text-xs font-bold text-white shadow-md hover:from-primary-700 hover:to-indigo-700 disabled:opacity-50 transition-all"
                       >
                         <ShieldCheck size={16} /> {isSavingPassword ? 'Updating Password...' : 'Save New Master Password'}
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 </Panel>
 
                 {/* Announcement Bar & Contact Sections */}
-                <Panel flush>
+                <Panel dark flush>
                   <PanelHead
+                    dark
                     title="Storefront Sections & Fulfillment Settings"
                     hint="Update the top announcement ticker, shop phone, WhatsApp, counter pickup address, and UPI ID."
                   />
 
                   <div className="space-y-5 p-5">
                     {/* Announcement Bar */}
-                    <div className="rounded-xl border border-ink-200 bg-ink-50/50 p-4">
+                    <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
                       <h4 className="font-display text-body font-bold text-ink-950">Top Announcement Bar</h4>
                       <p className="mt-1 text-body-s text-ink-500">
                         Appears at the very top of all customer pages with truck icon.
@@ -1985,55 +2016,66 @@ export default function AdminDashboardPage() {
       </main>
 
       {/* ================= PRODUCT EDIT MODAL ================= */}
+      {/* ================= PRODUCT EDITOR MODAL ================= */}
       {editingProduct && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-ink-950/70 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/80 backdrop-blur-md p-4"
           role="dialog"
           aria-modal="true"
         >
-          <div className="animate-fade-rise max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-ink-200 bg-white shadow-2xl">
-            <ColourStrip />
-            <div className="flex items-center justify-between border-b border-ink-200 p-5">
+          <div className="animate-fade-rise max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-slate-700/80 bg-slate-900/95 text-slate-100 shadow-2xl backdrop-blur-2xl">
+            {/* Top colored strip */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-primary-600 via-indigo-600 to-emerald-500" />
+
+            <div className="flex items-center justify-between border-b border-slate-800 p-5 sm:p-6">
               <div>
-                <Badge tone="neutral">Product Editor</Badge>
-                <h3 className="mt-1 font-display text-title font-bold text-ink-950">
+                <span className="rounded-full border border-primary-500/30 bg-primary-500/10 px-2.5 py-0.5 font-mono text-[11px] font-bold uppercase text-primary-400">
+                  Product Details & Studio Image
+                </span>
+                <h3 className="mt-1 font-display text-xl font-bold text-white">
                   Edit: {editingProduct.name}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingProduct(null)}
-                className="rounded p-1 text-ink-400 hover:bg-ink-100 hover:text-ink-950"
+                className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
               >
-                <X size={18} />
+                <X size={20} />
               </button>
             </div>
 
-            <div className="space-y-5 p-5">
+            <div className="space-y-5 p-5 sm:p-6">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="label-caps block">Product Name</label>
+                  <label className="mb-1 block font-mono text-xs font-bold uppercase tracking-wider text-slate-300">
+                    Product Title
+                  </label>
                   <input
                     type="text"
                     value={editingProduct.name}
                     onChange={e => setEditingProduct({ ...editingProduct, name: e.target.value })}
-                    className="mt-1 w-full rounded-md border border-ink-200 px-3 py-2 text-body-s font-bold"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 font-sans text-sm font-semibold text-white shadow-inner focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div>
-                  <label className="label-caps block">Category</label>
+                  <label className="mb-1 block font-mono text-xs font-bold uppercase tracking-wider text-slate-300">
+                    Category Tag
+                  </label>
                   <input
                     type="text"
                     value={editingProduct.category}
                     onChange={e => setEditingProduct({ ...editingProduct, category: e.target.value })}
-                    className="mt-1 w-full rounded-md border border-ink-200 px-3 py-2 text-body-s"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 font-sans text-sm text-white shadow-inner focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="label-caps block">Base Price (₹)</label>
+                  <label className="mb-1 block font-mono text-xs font-bold uppercase tracking-wider text-slate-300">
+                    Base Price (₹)
+                  </label>
                   <input
                     type="number"
                     step="0.5"
@@ -2044,26 +2086,30 @@ export default function AdminDashboardPage() {
                         base_price: parseFloat(e.target.value) || 0,
                       })
                     }
-                    className="mt-1 w-full rounded-md border border-ink-200 px-3 py-2 font-mono text-body font-bold text-ink-950"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 font-mono text-sm font-bold text-emerald-400 shadow-inner focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
                 <div>
-                  <label className="label-caps block">Base Unit Quote</label>
+                  <label className="mb-1 block font-mono text-xs font-bold uppercase tracking-wider text-slate-300">
+                    Unit Quote
+                  </label>
                   <input
                     type="text"
                     value={editingProduct.base_unit}
                     onChange={e => setEditingProduct({ ...editingProduct, base_unit: e.target.value })}
                     placeholder="/ piece, / 100 pcs, / sq ft"
-                    className="mt-1 w-full rounded-md border border-ink-200 px-3 py-2 font-mono text-body-s"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 font-mono text-xs text-white shadow-inner focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
                 </div>
               </div>
 
               {/* Image selector & preset picker */}
-              <div className="space-y-3 rounded-lg border border-ink-200 bg-ink-50/60 p-4">
-                <label className="label-caps block">Product Image</label>
+              <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                <label className="block font-mono text-xs font-bold uppercase tracking-wider text-slate-300">
+                  Photography Asset
+                </label>
                 <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 flex-none overflow-hidden rounded-md border border-ink-200 bg-white">
+                  <div className="h-16 w-16 flex-none overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
                     <img
                       src={editingProduct.image_url}
                       alt={editingProduct.name}
@@ -2078,13 +2124,13 @@ export default function AdminDashboardPage() {
                         setEditingProduct({ ...editingProduct, image_url: e.target.value })
                       }
                       placeholder="/images/business-cards.jpg"
-                      className="w-full rounded-md border border-ink-200 bg-white px-3 py-2 font-mono text-micro"
+                      className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-xs text-slate-300 focus:border-primary-500 focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <span className="font-mono text-micro uppercase tracking-wider2 text-ink-400">
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     Quick Pick Photography:
                   </span>
                   <div className="mt-2 flex flex-wrap gap-1.5">
@@ -2095,10 +2141,10 @@ export default function AdminDashboardPage() {
                         onClick={() =>
                           setEditingProduct({ ...editingProduct, image_url: img.path })
                         }
-                        className={`rounded px-2 py-1 font-mono text-micro transition-colors ${
+                        className={`rounded-lg px-2.5 py-1 font-mono text-[10px] font-medium transition-colors ${
                           editingProduct.image_url === img.path
-                            ? 'bg-ink-950 text-white'
-                            : 'bg-white text-ink-700 hover:bg-ink-200'
+                            ? 'border border-primary-500/50 bg-primary-600 text-white font-bold'
+                            : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-slate-700 hover:text-white'
                         }`}
                       >
                         {img.label}
@@ -2109,42 +2155,48 @@ export default function AdminDashboardPage() {
               </div>
 
               <div>
-                <label className="label-caps block">Product Description</label>
+                <label className="mb-1 block font-mono text-xs font-bold uppercase tracking-wider text-slate-300">
+                  Product Description
+                </label>
                 <textarea
                   rows={3}
                   value={editingProduct.description || ''}
                   onChange={e => setEditingProduct({ ...editingProduct, description: e.target.value })}
-                  className="mt-1 w-full rounded-md border border-ink-200 px-3 py-2 text-body-s leading-relaxed"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 p-3 text-xs leading-relaxed text-slate-200 shadow-inner focus:border-primary-500 focus:outline-none"
                 />
               </div>
 
-              <div className="flex items-center justify-between border-t border-ink-100 pt-3">
-                <label className="flex items-center gap-2 cursor-pointer">
+              <div className="flex items-center justify-between border-t border-slate-800 pt-4">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={editingProduct.is_active !== false}
                     onChange={e =>
                       setEditingProduct({ ...editingProduct, is_active: e.target.checked })
                     }
-                    className="h-4 w-4 rounded border-ink-300 text-ink-950"
+                    className="h-4 w-4 rounded border-slate-700 bg-slate-950 text-primary-600 focus:ring-primary-500/20"
                   />
-                  <span className="text-body-s font-medium text-ink-800">
-                    Active on Storefront
+                  <span className="font-mono text-xs font-semibold text-slate-300">
+                    Live on Consumer Storefront
                   </span>
                 </label>
 
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setEditingProduct(null)}>
+                <div className="flex gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setEditingProduct(null)}
+                    className="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 font-mono text-xs font-bold text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                  >
                     Cancel
-                  </Button>
-                  <Button
-                    variant="solid"
-                    size="sm"
+                  </button>
+                  <button
+                    type="button"
                     onClick={handleSaveProductModal}
                     disabled={isSavingProduct}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 px-4 py-2 font-mono text-xs font-bold text-white shadow-md hover:from-primary-700 hover:to-indigo-700 disabled:opacity-50 transition-all"
                   >
-                    <Check size={14} /> {isSavingProduct ? 'Saving…' : 'Save Product'}
-                  </Button>
+                    <Check size={14} /> {isSavingProduct ? 'Saving…' : 'Save Changes'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -2155,39 +2207,40 @@ export default function AdminDashboardPage() {
       {/* ================= ORDER DETAILS MODAL ================= */}
       {selectedOrder && (
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink-950/70 p-4 sm:p-8"
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/80 backdrop-blur-md p-4 sm:p-8"
           role="dialog"
           aria-modal="true"
         >
-          <div className="animate-fade-rise my-auto w-full max-w-5xl rounded-xl border border-ink-200 bg-white shadow-2xl">
-            <ColourStrip />
+          <div className="animate-fade-rise my-auto w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-700/80 bg-slate-900/95 text-slate-100 shadow-2xl backdrop-blur-2xl">
+            {/* Top colored strip */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-primary-600 via-indigo-600 to-emerald-500" />
 
             {/* Header */}
-            <div className="flex items-start justify-between gap-4 border-b border-ink-200 p-5 sm:p-6">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-800 p-5 sm:p-6">
               <div>
-                <Badge tone="neutral">Order Inspection</Badge>
-                <h2 className="mt-2 font-display text-title-l font-bold text-ink-950">
-                  {selectedOrder.id}
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full border border-primary-500/30 bg-primary-500/10 px-2.5 py-0.5 font-mono text-[11px] font-bold uppercase text-primary-400">
+                    Order Inspection
+                  </span>
+                  <span className="rounded-full border border-slate-700 bg-slate-800 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-slate-300">
+                    {selectedOrder.fulfillment_type === 'delivery' ? 'Courier Delivery' : 'Store Pickup'}
+                  </span>
+                </div>
+                <h2 className="mt-2.5 font-display text-2xl sm:text-3xl font-extrabold text-white">
+                  #{selectedOrder.id}
                 </h2>
-                <p className="mt-1 font-mono text-body-s text-ink-500">
-                  Placed {new Date(selectedOrder.created_at).toLocaleString('en-IN')}
+                <p className="mt-1 font-mono text-xs text-slate-400">
+                  Placed on {new Date(selectedOrder.created_at).toLocaleString('en-IN')}
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <Badge tone={selectedOrder.fulfillment_type === 'delivery' ? 'neutral' : 'warning'}>
-                  {selectedOrder.fulfillment_type === 'delivery' ? (
-                    <Truck size={12} className="mr-1 inline" />
-                  ) : (
-                    <Building size={12} className="mr-1 inline" />
-                  )}
-                  {selectedOrder.fulfillment_type}
-                </Badge>
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setSelectedOrder(null)}
-                  className="rounded p-1 text-ink-400 hover:bg-ink-100 hover:text-ink-950"
+                  className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+                  aria-label="Close dialog"
                 >
-                  <X size={18} />
+                  <X size={20} />
                 </button>
               </div>
             </div>
@@ -2196,27 +2249,50 @@ export default function AdminDashboardPage() {
               {/* Left Column: Customer & Items */}
               <div className="space-y-6 lg:col-span-7">
                 <section>
-                  <h3 className="label-caps mb-3">Customer Information</h3>
-                  <dl className="grid gap-2 sm:grid-cols-2 rounded-lg border border-ink-200 bg-ink-50 p-3.5">
-                    <div className="flex items-center gap-2 text-body-s text-ink-800">
-                      <User size={14} className="text-ink-400" />
-                      <span className="font-semibold">{selectedOrder.customer_name}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-body-s text-ink-800">
-                      <Phone size={14} className="text-ink-400" />
-                      <span className="font-mono font-medium">{selectedOrder.customer_phone}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-body-s text-ink-800 sm:col-span-2">
-                      <Notebook size={14} className="text-ink-400" />
-                      <span>{selectedOrder.customer_email}</span>
-                    </div>
-                  </dl>
+                  <h3 className="mb-2.5 font-mono text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    Customer Information
+                  </h3>
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                    <dl className="grid gap-2.5 sm:grid-cols-2">
+                      <div className="flex items-center gap-2 text-xs text-slate-200">
+                        <User size={15} className="text-primary-400 shrink-0" />
+                        <span className="font-bold text-white">{selectedOrder.customer_name}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-200">
+                        <Phone size={15} className="text-emerald-400 shrink-0" />
+                        <span className="font-mono font-medium">{selectedOrder.customer_phone}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-200 sm:col-span-2">
+                        <Notebook size={15} className="text-slate-400 shrink-0" />
+                        <span>{selectedOrder.customer_email}</span>
+                      </div>
+                    </dl>
+
+                    {/* WhatsApp Action */}
+                    {selectedOrder.customer_phone && (
+                      <div className="mt-3.5 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                        <span className="text-[11px] font-mono text-slate-400">Quick Contact</span>
+                        <a
+                          href={`https://wa.me/91${selectedOrder.customer_phone.replace(/\D/g, '').slice(-10)}?text=${encodeURIComponent(`Hello ${selectedOrder.customer_name}, regards from Print Vatika regarding Order #${selectedOrder.id}.`)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/15 px-3 py-1 font-mono text-xs font-bold text-emerald-300 hover:bg-emerald-500/25 transition-colors"
+                        >
+                          <Phone size={12} />
+                          <span>WhatsApp Customer</span>
+                        </a>
+                      </div>
+                    )}
+                  </div>
                 </section>
 
                 {selectedOrder.fulfillment_type === 'delivery' && (
                   <section>
-                    <h3 className="label-caps mb-2">Delivery Address</h3>
-                    <p className="rounded-lg border border-ink-200 bg-ink-50 p-3.5 text-body-s leading-relaxed text-ink-800">
+                    <h3 className="mb-2 font-mono text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      Delivery Address
+                    </h3>
+                    <p className="rounded-2xl border border-slate-800 bg-slate-950/60 p-3.5 font-mono text-xs leading-relaxed text-slate-300">
+                      <Truck size={14} className="inline mr-2 text-primary-400" />
                       {selectedOrder.delivery_address}, {selectedOrder.delivery_city},{' '}
                       {selectedOrder.delivery_state} — {selectedOrder.delivery_pincode}
                     </p>
@@ -2224,20 +2300,22 @@ export default function AdminDashboardPage() {
                 )}
 
                 <section>
-                  <h3 className="label-caps mb-3">Items Configured & Artwork</h3>
-                  <div className="space-y-3">
+                  <h3 className="mb-2.5 font-mono text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    Configured Items & Artwork Proof
+                  </h3>
+                  <div className="space-y-3.5">
                     {selectedOrder.items?.map(item => (
-                      <article key={item.id} className="rounded-lg border border-ink-200 p-4">
+                      <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
                         <div className="flex items-start justify-between gap-4">
                           <div>
-                            <h4 className="font-display text-body font-bold text-ink-950">
+                            <h4 className="font-display text-sm font-bold text-white">
                               {item.product_name}
                             </h4>
-                            <p className="font-mono text-micro font-semibold uppercase tracking-wider2 text-ink-500">
+                            <p className="font-mono text-xs font-bold text-primary-400">
                               {item.quantity} units
                             </p>
                           </div>
-                          <span className="font-mono text-body font-bold text-ink-950">
+                          <span className="font-mono text-sm font-bold text-emerald-400">
                             ₹{item.total_price.toFixed(2)}
                           </span>
                         </div>
@@ -2247,18 +2325,20 @@ export default function AdminDashboardPage() {
                           {Object.entries(item.selected_options).map(([k, v]) => (
                             <li
                               key={k}
-                              className="rounded bg-ink-100 px-2 py-0.5 font-mono text-micro text-ink-700"
+                              className="rounded-lg border border-slate-800 bg-slate-900 px-2 py-0.5 font-mono text-[11px] text-slate-300"
                             >
-                              <span className="text-ink-400">{k}:</span> {v}
+                              <span className="text-slate-500">{k}:</span> {v}
                             </li>
                           ))}
                         </ul>
 
                         {/* Files row */}
-                        <div className="mt-4 grid gap-3 border-t border-ink-100 pt-4 sm:grid-cols-2">
+                        <div className="mt-4 grid gap-3 border-t border-slate-800/80 pt-3.5 sm:grid-cols-2">
                           <div>
-                            <span className="label-caps block text-micro">Approved Proof</span>
-                            <div className="mt-1.5 aspect-[4/3] overflow-hidden rounded-md border border-ink-200 bg-ink-100">
+                            <span className="block font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              Approved Visual Proof
+                            </span>
+                            <div className="mt-1.5 aspect-[4/3] overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
                               {item.preview_file_url ? (
                                 <img
                                   src={item.preview_file_url}
@@ -2266,7 +2346,7 @@ export default function AdminDashboardPage() {
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
-                                <span className="flex h-full items-center justify-center font-mono text-micro text-ink-400">
+                                <span className="flex h-full items-center justify-center font-mono text-xs text-slate-500">
                                   No visual proof
                                 </span>
                               )}
@@ -2275,9 +2355,11 @@ export default function AdminDashboardPage() {
 
                           <div className="flex flex-col justify-between">
                             <div>
-                              <span className="label-caps block text-micro">Print File Download</span>
-                              <p className="mt-1 font-mono text-micro text-ink-500">
-                                Customer uploaded artwork
+                              <span className="block font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                Original Print Artwork
+                              </span>
+                              <p className="mt-1 font-mono text-xs text-slate-400">
+                                High-res file uploaded by buyer
                               </p>
                             </div>
                             <div className="pt-3">
@@ -2285,13 +2367,13 @@ export default function AdminDashboardPage() {
                                 <a
                                   href={item.original_file_url}
                                   download={`${item.product_slug}-order-${selectedOrder.id}`}
-                                  className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-ink-950 px-3 py-2.5 font-mono text-micro font-semibold uppercase tracking-wider2 text-white hover:bg-primary-600"
+                                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 px-3 py-2.5 font-mono text-xs font-bold text-white shadow-md hover:from-primary-700 hover:to-indigo-700 transition-all"
                                 >
-                                  <Download size={14} /> Download Original
+                                  <Download size={14} /> Download File
                                 </a>
                               ) : (
-                                <span className="block rounded bg-ink-100 p-2 text-center font-mono text-micro text-ink-400">
-                                  No file uploaded
+                                <span className="block rounded-xl border border-slate-800 bg-slate-900 p-2.5 text-center font-mono text-xs text-slate-500">
+                                  No artwork uploaded
                                 </span>
                               )}
                             </div>
@@ -2305,35 +2387,42 @@ export default function AdminDashboardPage() {
 
               {/* Right Column: Financials & Status Management */}
               <div className="space-y-6 lg:col-span-5">
-                <div className="rounded-lg border border-ink-200 bg-ink-50 p-4">
-                  <dl className="divide-y divide-ink-200">
-                    <SpecRow label="Subtotal" value={`₹${selectedOrder.subtotal.toFixed(2)}`} />
-                    <SpecRow
-                      label="Delivery"
-                      value={
-                        selectedOrder.delivery_charge > 0
+                <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+                  <div className="space-y-2 font-mono text-xs">
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span>Subtotal</span>
+                      <span>₹{selectedOrder.subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-slate-400">
+                      <span>Delivery</span>
+                      <span>
+                        {selectedOrder.delivery_charge > 0
                           ? `₹${selectedOrder.delivery_charge.toFixed(2)}`
-                          : 'Free Pickup'
-                      }
-                    />
-                    <SpecRow
-                      label="Total Paid"
-                      value={`₹${selectedOrder.total_amount.toFixed(2)}`}
-                      strong
-                      className="pt-2"
-                    />
-                  </dl>
+                          : 'Free Pickup'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between border-t border-slate-800 pt-2 text-sm font-bold text-white">
+                      <span>Total Amount</span>
+                      <span className="text-emerald-400">₹{selectedOrder.total_amount.toFixed(2)}</span>
+                    </div>
+                  </div>
 
-                  <div className="mt-4 border-t border-ink-200 pt-3">
+                  <div className="mt-4 border-t border-slate-800 pt-3">
                     <div className="flex items-center justify-between">
-                      <span className="label-caps">Payment State</span>
-                      <Badge tone={selectedOrder.payment_status === 'PAID' ? 'success' : 'warning'}>
+                      <span className="font-mono text-xs text-slate-400">Payment Status</span>
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider ${
+                          selectedOrder.payment_status === 'PAID'
+                            ? 'border border-emerald-500/30 bg-emerald-500/15 text-emerald-300'
+                            : 'border border-amber-500/30 bg-amber-500/15 text-amber-300'
+                        }`}
+                      >
                         {selectedOrder.payment_status}
-                      </Badge>
+                      </span>
                     </div>
                     {selectedOrder.payment_id && (
-                      <p className="mt-2 font-mono text-micro text-ink-600">
-                        Txn / UTR: <span className="font-bold">{selectedOrder.payment_id}</span>
+                      <p className="mt-2 font-mono text-[11px] text-slate-400">
+                        Txn / UTR: <span className="font-bold text-slate-200">{selectedOrder.payment_id}</span>
                       </p>
                     )}
                   </div>
@@ -2341,7 +2430,9 @@ export default function AdminDashboardPage() {
 
                 {/* Move to status buttons */}
                 <div>
-                  <h3 className="label-caps mb-2.5">Move Production Status</h3>
+                  <h3 className="mb-2 font-mono text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    Advance Production Status
+                  </h3>
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       'PAID',
@@ -2361,12 +2452,12 @@ export default function AdminDashboardPage() {
                           onClick={() =>
                             handleUpdateOrderStatus(selectedOrder.id, status as OrderStatus)
                           }
-                          className={`rounded-md p-2.5 font-mono text-micro font-semibold uppercase tracking-wider2 transition-all ${
+                          className={`rounded-xl p-2.5 font-mono text-xs font-bold uppercase tracking-wider transition-all ${
                             isCurrent
-                              ? 'bg-ink-200 text-ink-400 cursor-default'
+                              ? 'border border-primary-500/40 bg-primary-500/20 text-primary-300 shadow-sm cursor-default'
                               : status === 'CANCELLED'
-                              ? 'border border-red-200 bg-white text-red-700 hover:bg-red-50'
-                              : 'border border-ink-200 bg-white text-ink-800 hover:bg-ink-950 hover:text-white'
+                              ? 'border border-red-500/30 bg-red-950/40 text-red-300 hover:bg-red-900/60'
+                              : 'border border-slate-800 bg-slate-800/80 text-slate-300 hover:border-slate-600 hover:bg-slate-700 hover:text-white'
                           }`}
                         >
                           {status.replace(/_/g, ' ')}
@@ -2378,16 +2469,18 @@ export default function AdminDashboardPage() {
 
                 {/* Customer Notification Note */}
                 <div>
-                  <h3 className="label-caps mb-2">WhatsApp / Status Note</h3>
+                  <h3 className="mb-2 font-mono text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    WhatsApp Status Note
+                  </h3>
                   <textarea
                     rows={2}
                     value={statusUpdateNote}
                     onChange={e => setStatusUpdateNote(e.target.value)}
                     placeholder="e.g. Plates mounted, finishing in lamination..."
-                    className="w-full rounded-md border border-ink-200 p-2.5 text-body-s"
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950/80 p-3 font-mono text-xs text-white placeholder-slate-500 shadow-inner focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   />
-                  <p className="mt-1 text-micro text-ink-400">
-                    Recorded in order log and sent to customer on WhatsApp update.
+                  <p className="mt-1 font-mono text-[11px] text-slate-500">
+                    Recorded in press timeline and dispatched on WhatsApp update.
                   </p>
                 </div>
               </div>

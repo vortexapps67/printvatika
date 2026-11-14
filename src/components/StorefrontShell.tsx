@@ -16,7 +16,7 @@ export function StorefrontShell({ children }: { children: React.ReactNode }) {
     // Pure standalone Admin Console environment:
     // Strip customer announcement bar, customer navbar, customer footer, and customer floating bottom dock!
     return (
-      <div className="flex min-h-screen flex-col bg-ink-950 text-ink-100 antialiased">
+      <div className="flex min-h-screen flex-col bg-[#0B0F19] [background-image:none] text-slate-100 antialiased">
         {children}
       </div>
     );
