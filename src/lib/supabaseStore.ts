@@ -299,8 +299,11 @@ export const supabaseStore = {
 
   /* ── Admin ─────────────────────────────────────────────────────────────── */
 
-  /** The shop runs a single shared admin password, stored in `settings`. */
+  /** The shop runs a single shared admin password, stored in `settings` or ADMIN_PASSWORD env var. */
   async authenticateAdmin(_email: string, passwordHash: string): Promise<boolean> {
+    const envPassword = process.env.ADMIN_PASSWORD;
+    if (envPassword && passwordHash === envPassword) return true;
+
     const data = await read('admin login check', () =>
       getSupabase().from('settings').select('value').eq('key', 'admin_password').maybeSingle()
     );
@@ -317,6 +320,44 @@ export const supabaseStore = {
       .update({ base_price: perPieceToBasePrice(basePrice, row) })
       .eq('slug', slug);
     if (error) fail(`price update for ${slug}`, error);
+    return true;
+  },
+
+  async updateProduct(slug: string, updates: Partial<Product>): Promise<boolean> {
+    const row = await productRow(slug);
+    if (!row) return false;
+    const patch: Record<string, unknown> = {};
+    if (updates.name !== undefined) patch.name = updates.name;
+    if (updates.description !== undefined) patch.description = updates.description;
+    if (updates.image_url !== undefined) patch.image = legacyImage(updates.image_url);
+    if (updates.base_price !== undefined) patch.base_price = perPieceToBasePrice(updates.base_price, row);
+    if (updates.base_unit !== undefined) patch.base_unit = updates.base_unit;
+    if (updates.is_active !== undefined) patch.active = updates.is_active;
+
+    const { error } = await getSupabase()
+      .from('products')
+      .update(patch)
+      .eq('slug', slug);
+    if (error) fail(`product update for ${slug}`, error);
+    return true;
+  },
+
+  async getSettings(): Promise<Record<string, string>> {
+    const data = await read('all settings lookup', () =>
+      getSupabase().from('settings').select('key, value')
+    );
+    const res: Record<string, string> = {};
+    ((data ?? []) as Array<{ key: string; value: string }>).forEach((r) => {
+      res[r.key] = r.value;
+    });
+    return res;
+  },
+
+  async updateSetting(key: string, value: string): Promise<boolean> {
+    const { error } = await getSupabase()
+      .from('settings')
+      .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    if (error) fail(`setting update for ${key}`, error);
     return true;
   },
 

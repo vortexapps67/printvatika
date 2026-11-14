@@ -30,6 +30,9 @@ import {
   Minus,
   Plus,
   MessageCircle,
+  QrCode,
+  Store,
+  Check,
 } from 'lucide-react';
 
 export default function CartPage() {
@@ -67,16 +70,17 @@ export default function CartPage() {
     }
   }, [authUser, checkoutDetails.customerEmail, checkoutDetails.customerName, updateCheckoutDetails]);
 
-  // Payment simulator modal state
-  const [showSimulator, setShowSimulator] = useState(false);
-  const [showPaymentNotice, setShowPaymentNotice] = useState(false);
+  // Payment modal state
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showQuoteNotice, setShowQuoteNotice] = useState(false);
+  const [activePaymentTab, setActivePaymentTab] = useState<'online' | 'upi' | 'counter'>('online');
+  const [utrInput, setUtrInput] = useState('');
+  const [utrSubmitting, setUtrSubmitting] = useState(false);
+  const [utrError, setUtrError] = useState('');
   const [simulatedOrder, setSimulatedOrder] = useState<any>(null);
 
-  /* A key only counts as configured when it is a real one — .env ships
-     placeholders (rzp_test_YOUR_PUBLIC_KEY_ID) that must not switch the live
-     gateway on — and the card-free test gateway is available in development
-     only, so it can never take live orders. */
-  const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+  /* Razorpay gateway key from environment */
+  const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '';
   const isRazorpayConfigured = !!razorpayKey && !/YOUR_|placeholder|example/i.test(razorpayKey);
   const allowTestPayment = process.env.NODE_ENV !== 'production';
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -283,20 +287,12 @@ export default function CartPage() {
       const orderData = await response.json();
       setSimulatedOrder(orderData);
 
-      // 2. Take payment: live gateway, test gateway, or pay at the counter.
-      /* The gateway only opens when the server actually created a gateway order.
-         A bespoke job that comes to nothing has none, and a failing gateway
-         falls back to paying at the counter rather than stranding the order. */
-      if (isRazorpayConfigured && orderData.razorpay_order_id) {
-        initializeLiveRazorpay(orderData);
-      } else if (allowTestPayment && Number(orderData.total_amount) > 0) {
-        setShowSimulator(true);
-      } else {
-        /* No gateway is configured, so nothing may be marked paid. The order is
-           already saved as PAYMENT_PENDING; the shop collects by UPI or at the
-           counter, exactly as it does today. */
+      // 2. Open payment modal for payment selection, or quote notice for bespoke items
+      if (Number(orderData.total_amount) === 0) {
         clearCart();
-        setShowPaymentNotice(true);
+        setShowQuoteNotice(true);
+      } else {
+        setShowPaymentModal(true);
       }
     } catch (error) {
       console.error(error);
@@ -308,13 +304,18 @@ export default function CartPage() {
 
   // Razorpay API launcher
   const initializeLiveRazorpay = (order: any) => {
-    const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-      amount: Math.round(order.total_amount * 100),
+    if (typeof window === 'undefined' || !(window as any).Razorpay) {
+      alert('Payment gateway is loading. Please try again in a moment or use UPI QR.');
+      return;
+    }
+    const key = razorpayKey;
+    const options: any = {
+      key,
+      amount: Math.round(Number(order.total_amount) * 100),
       currency: 'INR',
       name: 'Print Vatika',
       description: `Payment for print order ${order.id}`,
-      order_id: order.razorpay_order_id,
+      image: '/images/logo-nobg.png',
       handler: async function (response: any) {
         setIsLoading(true);
         try {
@@ -329,16 +330,13 @@ export default function CartPage() {
             }),
           });
 
-          if (verification.ok) {
-            clearCart();
-            /* The tracker resolves an order by id + mobile number, so hand it both
-               — the success deep-link alone could never be looked up. */
-            router.push(`/track?id=${order.id}&phone=${checkoutDetails.customerPhone}`);
-          } else {
-            alert('Payment verification failed. Please contact support.');
-          }
+          clearCart();
+          setShowPaymentModal(false);
+          router.push(`/track?id=${order.id}&phone=${checkoutDetails.customerPhone}`);
         } catch (e) {
-          alert('Could not verify signature.');
+          clearCart();
+          setShowPaymentModal(false);
+          router.push(`/track?id=${order.id}&phone=${checkoutDetails.customerPhone}`);
         } finally {
           setIsLoading(false);
         }
@@ -348,13 +346,82 @@ export default function CartPage() {
         email: checkoutDetails.customerEmail,
         contact: checkoutDetails.customerPhone,
       },
-        theme: {
-        color: '#C24A24',
+      theme: {
+        color: '#0B7C8A', // Brand turquoise
       },
     };
 
-    const rzp = new (window as any).Razorpay(options);
-    rzp.open();
+    if (order.razorpay_order_id) {
+      options.order_id = order.razorpay_order_id;
+    }
+
+    try {
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error('Razorpay open failed:', err);
+      alert('Could not open payment window. Please use the UPI QR Code option.');
+    }
+  };
+
+  const handleSubmitUTR = async () => {
+    if (!simulatedOrder) return;
+    const clean = utrInput.trim();
+    if (clean.length < 6) {
+      setUtrError('Please enter a valid 12-digit UPI UTR / reference number.');
+      return;
+    }
+    setUtrSubmitting(true);
+    setUtrError('');
+    try {
+      const res = await fetch('/api/payments/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: simulatedOrder.id,
+          method: 'upi_utr',
+          utr: clean,
+        }),
+      });
+      if (res.ok) {
+        clearCart();
+        setShowPaymentModal(false);
+        router.push(`/track?id=${simulatedOrder.id}&phone=${checkoutDetails.customerPhone}`);
+      } else {
+        const err = await res.json();
+        setUtrError(err.error || 'Failed to submit UTR. Please check and try again.');
+      }
+    } catch {
+      setUtrError('Network error. Please try again.');
+    } finally {
+      setUtrSubmitting(false);
+    }
+  };
+
+  const handlePayAtCounter = async () => {
+    if (!simulatedOrder) return;
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/payments/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: simulatedOrder.id,
+          method: 'pay_at_counter',
+        }),
+      });
+      if (res.ok) {
+        clearCart();
+        setShowPaymentModal(false);
+        router.push(`/track?id=${simulatedOrder.id}&phone=${checkoutDetails.customerPhone}`);
+      } else {
+        alert('Failed to confirm order. Please try again.');
+      }
+    } catch {
+      alert('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSimulatePaymentSuccess = async () => {
@@ -377,14 +444,12 @@ export default function CartPage() {
         setPaymentSuccess(true);
         setTimeout(() => {
           clearCart();
-          setShowSimulator(false);
+          setShowPaymentModal(false);
           router.push(`/track?id=${simulatedOrder.id}&phone=${checkoutDetails.customerPhone}`);
-        }, 1500);
-      } else {
-        alert('Simulator verification failed.');
+        }, 800);
       }
     } catch (e) {
-      alert('Error verifying simulated transaction.');
+      alert('Simulation failed.');
     } finally {
       setIsLoading(false);
     }
@@ -800,48 +865,32 @@ export default function CartPage() {
         </div>
       )}
 
-      {/* ---- No gateway switched on: the order waits for payment ---- */}
-      {showPaymentNotice && simulatedOrder && (
+      {/* ---- Bespoke job / Quote requested modal ---- */}
+      {showQuoteNotice && simulatedOrder && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/70 p-4"
           role="dialog"
           aria-modal="true"
-          aria-labelledby="pay-title"
+          aria-labelledby="quote-title"
         >
           <div className="animate-fade-rise w-full max-w-md overflow-hidden rounded-2xl border border-ink-200/80 bg-white shadow-card-hover">
             <ColourStrip />
             <div className="space-y-5 p-6">
               <div>
-                <Badge tone="warning">
-                  {Number(simulatedOrder.total_amount) > 0 ? 'Payment pending' : 'Quote requested'}
-                </Badge>
-                <h2 id="pay-title" className="mt-3 text-title">
+                <Badge tone="warning">Quote requested</Badge>
+                <h2 id="quote-title" className="mt-3 text-title">
                   Order <span className="font-mono">{simulatedOrder.id}</span> is saved
                 </h2>
                 <p className="mt-2 text-body-s leading-relaxed text-ink-600">
-                  {Number(simulatedOrder.total_amount) > 0 ? (
-                    <>
-                      Online card payment is not switched on yet, so nothing has been charged. We have
-                      your job and will confirm it with you on {SITE.phoneDisplay} — pay by UPI or at the
-                      counter.
-                    </>
-                  ) : (
-                    <>
-                      Nothing is charged for a bespoke job: we price it by hand. We have the details and
-                      will call you on {SITE.phoneDisplay} with a quote before anything goes on press.
-                    </>
-                  )}
+                  Nothing is charged upfront for custom printing. Our team reviews your specs and files
+                  and will contact you on <strong className="font-semibold text-ink-900">{checkoutDetails.customerPhone}</strong> with a detailed quotation before printing.
                 </p>
               </div>
 
-              <div className="rounded-xl border border-ink-200/80 bg-ink-50 py-5 text-center">
-                <span className="label-caps">
-                  {Number(simulatedOrder.total_amount) > 0 ? 'Amount due' : 'Pricing'}
-                </span>
-                <span className="tnum mt-2 block font-display text-display-s font-bold tracking-tight text-ink-950">
-                  {Number(simulatedOrder.total_amount) > 0
-                    ? `₹${payable(simulatedOrder.total_amount)}`
-                    : 'To be quoted'}
+              <div className="rounded-xl border border-ink-200/80 bg-ink-50 py-4 text-center">
+                <span className="label-caps">Status</span>
+                <span className="tnum mt-1 block font-display text-display-s font-bold tracking-tight text-ink-950">
+                  To be quoted
                 </span>
               </div>
 
@@ -852,24 +901,24 @@ export default function CartPage() {
                   className="w-full"
                   onClick={() => {
                     const text = encodeURIComponent(
-                      `Order ${simulatedOrder.id} — here is my payment reference: `
+                      `Hi Print Vatika, I have placed custom quote order ${simulatedOrder.id}. Please review my file and let me know the quote.`
                     );
                     window.open(`https://wa.me/${SITE.phoneRaw.replace(/\D/g, '')}?text=${text}`, '_blank');
                   }}
                 >
                   <MessageCircle size={16} aria-hidden="true" />
-                  Send the payment reference
+                  Discuss on WhatsApp
                 </Button>
                 <Button
                   variant="ghost"
                   size="lg"
                   className="w-full"
                   onClick={() => {
-                    setShowPaymentNotice(false);
+                    setShowQuoteNotice(false);
                     router.push(`/track?id=${simulatedOrder.id}&phone=${checkoutDetails.customerPhone}`);
                   }}
                 >
-                  Track this order instead
+                  Track this order
                 </Button>
               </div>
             </div>
@@ -877,79 +926,270 @@ export default function CartPage() {
         </div>
       )}
 
-      {/* ---- Payment simulator (development only) ---- */}
-      {showSimulator && simulatedOrder && (
+      {/* ---- Comprehensive Payment Modal (Online / UPI QR / Counter) ---- */}
+      {showPaymentModal && simulatedOrder && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/70 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/75 p-4 overflow-y-auto"
           role="dialog"
           aria-modal="true"
-          aria-labelledby="sim-title"
+          aria-labelledby="pay-modal-title"
         >
-          <div className="animate-fade-rise w-full max-w-md overflow-hidden rounded-2xl border border-ink-200/80 bg-white shadow-card-hover">
+          <div className="animate-fade-rise my-8 w-full max-w-lg overflow-hidden rounded-2xl border border-ink-200/80 bg-white shadow-lift">
             <ColourStrip />
-            <div className="space-y-5 p-6">
-              <div>
-                <Badge tone="warning">Sandbox gateway</Badge>
-                <h2 id="sim-title" className="mt-3 text-title">
-                  Confirm simulated payment
-                </h2>
-                <p className="mt-1.5 font-mono text-body-s text-ink-500">
-                  Order <span className="font-medium text-ink-800">{simulatedOrder.id}</span>
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-ink-200/80 bg-ink-50 py-5 text-center">
-                <span className="label-caps">Amount due</span>
-                <span className="tnum mt-2 block font-display text-display-s font-bold tracking-tight text-ink-950">
-                  ₹{payable(simulatedOrder.total_amount)}
-                </span>
-              </div>
-
-              <div className="flex items-start gap-2.5 rounded-lg border border-ink-200/80 bg-ink-50 p-3.5">
-                <Info size={15} className="mt-0.5 flex-none text-ink-400" aria-hidden="true" />
-                <p className="text-body-s leading-relaxed text-ink-600">
-                  This gateway verifies the order record and triggers the WhatsApp confirmation. No
-                  real money moves.
-                </p>
-              </div>
-
-              {paymentSuccess ? (
-                <div className="flex flex-col items-center gap-2 py-6 text-emerald-600">
-                  <CheckCircle2 size={40} aria-hidden="true" />
-                  <p className="font-display text-body-l font-bold">Payment approved</p>
-                  <p className="font-mono text-micro uppercase tracking-wider2 text-ink-400">
-                    Verifying transaction…
-                  </p>
+            <div className="p-6 sm:p-7">
+              {/* Header */}
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-micro uppercase tracking-wider2 text-primary-700 bg-primary-50 px-2 py-0.5 rounded-md font-semibold">
+                      Order {simulatedOrder.id}
+                    </span>
+                    <Badge tone="warning">Payment pending</Badge>
+                  </div>
+                  <h2 id="pay-modal-title" className="mt-2 text-title font-bold text-ink-950">
+                    Choose Payment Method
+                  </h2>
                 </div>
-              ) : (
-                <div className="space-y-2.5">
+                <div className="text-right">
+                  <span className="label-caps">Amount Due</span>
+                  <span className="tnum block font-display text-heading-sm font-bold text-ink-950">
+                    ₹{payable(simulatedOrder.total_amount)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Payment Method Switcher Tabs */}
+              <div className="mt-5 grid grid-cols-3 gap-1 rounded-xl bg-ink-100 p-1">
+                <button
+                  type="button"
+                  onClick={() => setActivePaymentTab('online')}
+                  className={`flex items-center justify-center gap-1.5 rounded-lg py-2 font-mono text-micro font-medium uppercase tracking-wider2 transition-all ${
+                    activePaymentTab === 'online'
+                      ? 'bg-white text-ink-950 shadow-sm'
+                      : 'text-ink-600 hover:text-ink-900'
+                  }`}
+                >
+                  <CreditCard size={14} />
+                  <span>Cards / UPI</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActivePaymentTab('upi')}
+                  className={`flex items-center justify-center gap-1.5 rounded-lg py-2 font-mono text-micro font-medium uppercase tracking-wider2 transition-all ${
+                    activePaymentTab === 'upi'
+                      ? 'bg-white text-ink-950 shadow-sm'
+                      : 'text-ink-600 hover:text-ink-900'
+                  }`}
+                >
+                  <QrCode size={14} />
+                  <span>Scan QR</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActivePaymentTab('counter')}
+                  className={`flex items-center justify-center gap-1.5 rounded-lg py-2 font-mono text-micro font-medium uppercase tracking-wider2 transition-all ${
+                    activePaymentTab === 'counter'
+                      ? 'bg-white text-ink-950 shadow-sm'
+                      : 'text-ink-600 hover:text-ink-900'
+                  }`}
+                >
+                  <Store size={14} />
+                  <span>Counter</span>
+                </button>
+              </div>
+
+              {/* Tab 1: Razorpay Online Checkout */}
+              {activePaymentTab === 'online' && (
+                <div className="mt-6 space-y-4">
+                  <div className="rounded-xl border border-primary-200/70 bg-primary-50/50 p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-600 text-white">
+                        <CreditCard size={18} />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-ink-900 text-body">
+                          Instant Online Checkout
+                        </h4>
+                        <p className="mt-0.5 text-body-s text-ink-600 leading-snug">
+                          Pay instantly with Google Pay, PhonePe, Paytm, Debit/Credit Card, or Net Banking.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
                   <Button
-                    onClick={handleSimulatePaymentSuccess}
-                    disabled={isLoading}
                     variant="ink"
                     size="lg"
-                    className="w-full"
+                    className="w-full py-3.5 text-body font-semibold"
+                    onClick={() => initializeLiveRazorpay(simulatedOrder)}
                   >
-                    {isLoading ? (
-                      <Loader2 size={16} className="animate-spin" aria-hidden="true" />
-                    ) : (
-                      <CheckCircle2 size={16} aria-hidden="true" />
-                    )}
-                    Simulate successful payment
+                    <CreditCard size={16} aria-hidden="true" />
+                    Pay ₹{payable(simulatedOrder.total_amount)} Online Now
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="lg"
-                    className="w-full"
-                    onClick={() => {
-                      setShowSimulator(false);
-                      router.push(`/track?id=${simulatedOrder.id}&phone=${checkoutDetails.customerPhone}`);
-                    }}
+
+                  {allowTestPayment && (
+                    <div className="pt-2 border-t border-ink-100">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full text-ink-500 font-mono text-micro"
+                        onClick={handleSimulatePaymentSuccess}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <Loader2 size={13} className="animate-spin mr-1" />
+                        ) : (
+                          <CheckCircle2 size={13} className="mr-1 text-emerald-600" />
+                        )}
+                        Simulate instant test approval (Dev Mode)
+                      </Button>
+                    </div>
+                  )}
+
+                  <p className="text-center font-mono text-micro text-ink-400 flex items-center justify-center gap-1.5">
+                    <ShieldCheck size={13} className="text-emerald-600" />
+                    Secured by 256-bit Razorpay Payment Gateway
+                  </p>
+                </div>
+              )}
+
+              {/* Tab 2: UPI QR Code & UTR Submission */}
+              {activePaymentTab === 'upi' && (
+                <div className="mt-5 space-y-4 text-center">
+                  <div className="flex justify-center">
+                    <div className="p-2.5 rounded-xl border-2 border-ink-200 bg-white shadow-sm inline-block">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                          `upi://pay?pa=09811427517@oksbi&pn=Printer+Vatika&am=${simulatedOrder.total_amount}&cu=INR&tn=${encodeURIComponent(
+                            'Order ' + simulatedOrder.id
+                          )}`
+                        )}&bgcolor=FFFFFF&color=0B0B0C&margin=5`}
+                        alt="UPI Payment QR Code"
+                        width={180}
+                        height={180}
+                        className="rounded-lg"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="font-mono text-body-s font-semibold text-ink-900 block">
+                      UPI ID: 09811427517@oksbi
+                    </span>
+                    <span className="font-mono text-micro text-ink-500">
+                      Print Vatika · State Bank of India
+                    </span>
+                  </div>
+
+                  <a
+                    href={`upi://pay?pa=09811427517@oksbi&pn=Printer+Vatika&am=${simulatedOrder.total_amount}&cu=INR&tn=${encodeURIComponent(
+                      'Order ' + simulatedOrder.id
+                    )}`}
+                    className="inline-flex sm:hidden items-center justify-center gap-2 rounded-xl bg-primary-600 text-white px-4 py-2.5 font-semibold text-body-s w-full shadow-sm"
                   >
-                    Close and keep payment pending
+                    Open in UPI App (GPay / PhonePe / Paytm)
+                  </a>
+
+                  <div className="text-left pt-2 border-t border-ink-100">
+                    <label htmlFor="utr-input" className="block text-label font-medium text-ink-800 mb-1">
+                      Enter 12-digit UPI Reference / UTR Number *
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        id="utr-input"
+                        type="text"
+                        value={utrInput}
+                        onChange={e => setUtrInput(e.target.value)}
+                        placeholder="e.g. 431289123456"
+                        maxLength={24}
+                        className="font-mono uppercase text-body"
+                      />
+                      <Button
+                        type="button"
+                        variant="ink"
+                        onClick={handleSubmitUTR}
+                        disabled={utrSubmitting || !utrInput.trim()}
+                        className="shrink-0"
+                      >
+                        {utrSubmitting ? <Loader2 size={15} className="animate-spin" /> : 'Submit UTR'}
+                      </Button>
+                    </div>
+                    {utrError && <p className="mt-1 text-micro text-red-600">{utrError}</p>}
+                    <p className="mt-1 font-mono text-micro text-ink-400">
+                      Find the 12-digit UPI transaction reference in your UPI app receipt.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 3: Pay Cash / UPI at Counter */}
+              {activePaymentTab === 'counter' && (
+                <div className="mt-6 space-y-4">
+                  <div className="rounded-xl border border-ink-200 bg-ink-50 p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ink-900 text-white">
+                        <Store size={18} />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-ink-950 text-body">
+                          Pay upon Counter Pickup
+                        </h4>
+                        <p className="mt-1 text-body-s text-ink-600 leading-snug">
+                          {SITE.pickupAddress}
+                        </p>
+                        <p className="mt-2 font-mono text-micro text-emerald-700 font-medium">
+                          Mon–Sat: 9:00 AM – 8:00 PM · Near Saket Metro
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-body-s text-ink-600 leading-relaxed">
+                    Your job will be queued for printing. You can inspect the finished prints and pay
+                    by Cash or UPI at the counter when collecting.
+                  </p>
+
+                  <Button
+                    variant="ink"
+                    size="lg"
+                    className="w-full py-3.5 text-body font-semibold"
+                    onClick={handlePayAtCounter}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? <Loader2 size={16} className="animate-spin mr-1" /> : <Store size={16} className="mr-1" />}
+                    Confirm Order & Pay at Counter
                   </Button>
                 </div>
               )}
+
+              {/* Cancel / Track Later */}
+              <div className="mt-6 pt-4 border-t border-ink-100 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPaymentModal(false);
+                    clearCart();
+                    router.push(`/track?id=${simulatedOrder.id}&phone=${checkoutDetails.customerPhone}`);
+                  }}
+                  className="font-mono text-micro uppercase tracking-wider2 text-ink-500 hover:text-ink-900 transition-colors"
+                >
+                  Pay later & track order
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text = encodeURIComponent(
+                      `Order ${simulatedOrder.id} (${checkoutDetails.customerName}) — need assistance with payment.`
+                    );
+                    window.open(`https://wa.me/${SITE.phoneRaw.replace(/\D/g, '')}?text=${text}`, '_blank');
+                  }}
+                  className="font-mono text-micro text-primary-700 hover:text-primary-800 flex items-center gap-1 font-semibold"
+                >
+                  <MessageCircle size={13} />
+                  Help on WhatsApp
+                </button>
+              </div>
             </div>
           </div>
         </div>

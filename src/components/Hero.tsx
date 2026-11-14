@@ -21,13 +21,14 @@ import { cn } from '@/lib/utils';
  * prefers-reduced-motion.
  */
 
-interface Slide {
+export interface Slide {
+  id?: string;
   image: string;
-  alt: string;
+  alt?: string;
   eyebrow: string;
   title: string;
   body: string;
-  chip: { label: string; value: string };
+  chip?: { label: string; value: string };
   href: string;
   cta: string;
   href2?: string;
@@ -110,8 +111,30 @@ function slidesFor(products: Product[]): Slide[] {
 
 const ROTATE_MS = 6000;
 
-export function Hero({ products = [] }: { products?: Product[] }) {
-  const slides = slidesFor(products);
+export function Hero({
+  products = [],
+  customBanners,
+}: {
+  products?: Product[];
+  customBanners?: Slide[];
+}) {
+  const defaultSlides = slidesFor(products);
+  const slides = (customBanners && customBanners.length > 0)
+    ? customBanners.map((s, idx) => ({
+        image: s.image || defaultSlides[idx % defaultSlides.length]?.image || '/images/banner-signage.jpg',
+        alt: s.alt || s.title || 'Print Vatika banner',
+        eyebrow: s.eyebrow || 'Print Vatika',
+        title: s.title || 'Quality Printing',
+        body: s.body || '',
+        chip: s.chip?.value
+          ? s.chip
+          : (defaultSlides[idx % defaultSlides.length]?.chip || { label: 'Starting at', value: 'Best price' }),
+        href: s.href || '/catalog',
+        cta: s.cta || 'Order Now',
+        href2: s.href2,
+        cta2: s.cta2,
+      }))
+    : defaultSlides;
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);

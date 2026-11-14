@@ -1,0 +1,25 @@
+{
+  "name": "Print Vatika — Online Printing Press",
+  "short_name": "Print Vatika",
+  "description": "Commercial printing press in Delhi. Order visiting cards, flex banners, custom t-shirts, posters and brochures with live proofs.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e40af",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/logo-mark.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/logo-mark.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["shopping", "business"]
+}

@@ -14,7 +14,17 @@ import { SITE } from '../lib/site';
  * what make it read as a coupon at a glance.
  */
 
-const OFFERS = [
+export interface OfferTicket {
+  id?: string;
+  Icon?: any;
+  title: string;
+  body: string;
+  tag: string;
+  href: string;
+  cta: string;
+}
+
+const DEFAULT_OFFERS: OfferTicket[] = [
   {
     Icon: PackageCheck,
     title: 'Free store pickup',
@@ -49,13 +59,22 @@ const OFFERS = [
   },
 ];
 
-export function OfferTickets() {
+const ICONS = [PackageCheck, Truck, BadgeCheck, ShieldCheck];
+
+export function OfferTickets({ offers }: { offers?: OfferTicket[] }) {
+  const list = (offers && offers.length > 0)
+    ? offers.map((o, idx) => ({
+        ...o,
+        Icon: o.Icon || ICONS[idx % ICONS.length],
+      }))
+    : DEFAULT_OFFERS;
+
   return (
     <section aria-label="Store offers" className="mx-auto max-w-sheet px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {OFFERS.map(({ Icon, title, body, tag, href, cta }) => (
+        {list.map(({ Icon, title, body, tag, href, cta }, idx) => (
           <li
-            key={title}
+            key={title || idx}
             className="group relative flex flex-col rounded-2xl border-2 border-dashed border-primary-200 bg-primary-50/60 p-5 transition-colors duration-200 hover:border-primary-400 hover:bg-primary-50"
           >
             {/* Perforation notch — the detail that makes a card read as a ticket. */}

@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Product } from '../types';
-import { ArrowRight, Truck, Tag, Sparkles } from 'lucide-react';
+import { ArrowRight, Truck, Tag, Sparkles, CheckCircle2, Star } from 'lucide-react';
 import { dealUnit, money, unitQuote } from '../lib/catalog';
 import type { Deal } from '../lib/catalog';
 import { Ribbon } from './ui/press';
@@ -104,6 +104,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <h3 className="font-display text-title font-bold leading-tight text-ink-950 transition-colors group-hover:text-primary-600">
             {product.name}
           </h3>
+
+          {/* Flipkart-style rating + Vatika Assured badge */}
+          <div className="mt-1.5 flex items-center gap-2">
+            <span className="inline-flex items-center gap-0.5 rounded bg-emerald-700 px-1.5 py-0.5 font-mono text-[10px] font-bold text-white">
+              <span>4.8</span>
+              <Star size={9} className="fill-white" />
+            </span>
+            <span className="inline-flex items-center gap-1 rounded bg-blue-50 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-blue-800">
+              <CheckCircle2 size={10} className="text-blue-600" />
+              Vatika Assured
+            </span>
+          </div>
 
           {!compact && (
             <p className="mt-2 line-clamp-2 flex-1 text-body-s leading-relaxed text-ink-500">

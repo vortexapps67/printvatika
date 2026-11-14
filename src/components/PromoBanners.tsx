@@ -11,7 +11,19 @@ import { ArrowRight } from 'lucide-react';
  * the page reads as one shop window rather than a set of widgets.
  */
 
-const BANNERS = [
+export interface PromoBanner {
+  id?: string;
+  image: string;
+  alt?: string;
+  eyebrow: string;
+  title: string;
+  body: string;
+  href: string;
+  cta: string;
+  featured?: boolean;
+}
+
+const DEFAULT_BANNERS: PromoBanner[] = [
   {
     image: '/images/brochures.jpg',
     alt: 'Folded printed brochures arranged on a table',
@@ -44,13 +56,14 @@ const BANNERS = [
   },
 ];
 
-export function PromoBanners() {
+export function PromoBanners({ banners }: { banners?: PromoBanner[] }) {
+  const list = (banners && banners.length > 0) ? banners : DEFAULT_BANNERS;
   return (
     <section aria-label="Featured departments" className="mx-auto max-w-sheet px-4 pb-4 sm:px-6 lg:px-8">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {BANNERS.map(b => (
+        {list.map((b, idx) => (
           <Link
-            key={b.image}
+            key={b.id || b.image || idx}
             href={b.href}
             className={`group relative block overflow-hidden rounded-2xl shadow-card transition-shadow duration-300 hover:shadow-card-hover ${
               b.featured ? 'sm:col-span-2 lg:col-span-1' : ''
@@ -59,7 +72,7 @@ export function PromoBanners() {
             <div className="relative aspect-[4/3] bg-ink-100">
               <img
                 src={b.image}
-                alt={b.alt}
+                alt={b.alt || b.title}
                 loading="lazy"
                 decoding="async"
                 className="h-full w-full object-cover transition-transform duration-700 ease-press group-hover:scale-105"

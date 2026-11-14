@@ -963,8 +963,9 @@
 
   // ── RAZORPAY HANDLER ──────────────────────────
   function payWithRazorpay(orderId, totalAmount, name, email, phone) {
+    const rzpKey = (typeof window !== 'undefined' && window.ENV && window.ENV.RAZORPAY_KEY_ID) || '';
     const options = {
-      key: 'rzp_test_TSRQUFIenOSjSW', // test key
+      key: rzpKey,
       amount: totalAmount * 100, // amount in paisa
       currency: 'INR',
       name: SETTINGS.shop_name || 'Print Vatika',

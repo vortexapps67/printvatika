@@ -93,7 +93,7 @@ window.PRODUCTS = [
     id: 'p4', slug: 'flyers', name: 'Flyers & Pamphlets',
     category: 'marketing',
     desc: 'Vibrant promotional flyers on glossy or matte art paper. A4, A5, or DL sizes.',
-    image: 'imgs/business-cards.jpg',
+    image: 'imgs/flyers.jpg',
     basePrice: 199, baseUnit: '/ 500 pcs',
     options: [
       { key: 'size', label: 'Flyer Size', type: 'select', choices: [
@@ -164,7 +164,7 @@ window.PRODUCTS = [
     id: 'p7', slug: 'stickers', name: 'Stickers & Labels',
     category: 'stationery',
     desc: 'Die-cut custom stickers on gloss, matte, or waterproof vinyl material.',
-    image: 'imgs/posters.jpg',
+    image: 'imgs/stickers.svg',
     basePrice: 199, baseUnit: '/ 100 pcs',
     options: [
       { key: 'shape', label: 'Sticker Shape', type: 'select', choices: [

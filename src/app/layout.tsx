@@ -1,11 +1,14 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '../context/CartContext';
 import { AuthProvider } from '../context/AuthContext';
 import { Navbar } from '../components/Navbar';
 import { AnnouncementBar } from '../components/AnnouncementBar';
+import { MobileBottomNav } from '../components/MobileBottomNav';
+import { PwaInstallPrompt } from '../components/PwaInstallPrompt';
 import { Footer } from '../components/Footer';
 import { SITE } from '../lib/site';
 
@@ -30,6 +33,12 @@ const OG_ALT =
   'Print Vatika — commercial printing press near Saket Metro, New Delhi. 300 DPI, offset and digital, 24-48 hour dispatch, free store pickup.';
 
 export const metadata: Metadata = {
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Print Vatika',
+  },
   metadataBase: new URL('https://printvatika.vercel.app'),
   title: {
     default: 'Print Vatika | Commercial Printing Press, Saket Metro New Delhi',
@@ -124,9 +133,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-IN" className={`${jakarta.variable} ${jetbrainsMono.variable}`}>
       <head>
+        <meta name="theme-color" content="#1e40af" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <link rel="apple-touch-icon" href="/images/logo-mark.png" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>
       <body className="flex min-h-screen flex-col">
+        {/* Load Razorpay Checkout SDK for fast, seamless online payments */}
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-primary-600 focus:px-4 focus:py-2 focus:font-mono focus:text-label focus:text-white"
@@ -137,10 +152,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CartProvider>
             <AnnouncementBar />
             <Navbar />
-            <main id="main" className="flex-grow">
+            <main id="main" className="flex-grow pb-16 md:pb-0">
               {children}
             </main>
             <Footer />
+            <MobileBottomNav />
+            <PwaInstallPrompt />
           </CartProvider>
         </AuthProvider>
       </body>

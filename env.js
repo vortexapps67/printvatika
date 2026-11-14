@@ -1,9 +1,10 @@
 // Print Vatika - Client-side Environment Configuration
-// This file allows configuring client-side API endpoints and keys for static hosting environments.
+// For Vercel / production, set these via Vercel Project Settings -> Environment Variables.
 window.ENV = window.ENV || {
-  APP_URL: 'https://printvatika.vercel.app',
-  SUPABASE_URL: 'https://vbbcijydjuziocfbcagn.supabase.co',
-  SUPABASE_ANON_KEY: 'sb_publishable_pRjENfyp4wRDPhSITiPNRg_7ymjGJpj',
+  APP_URL: '',
+  SUPABASE_URL: '',
+  SUPABASE_ANON_KEY: '',
+  RAZORPAY_KEY_ID: '',
   SHOP_NAME: 'Print Vatika',
   PHONE: '09811427517',
   WHATSAPP: '919811427517',

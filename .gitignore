@@ -39,5 +39,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# scratch output from scripts/verify-db-parity.mjs
+# local data & scratch
+/.data/
 /.tmp-verify/

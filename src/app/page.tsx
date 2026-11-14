@@ -4,6 +4,8 @@ import { DbClient } from '../lib/db';
 import { ProductCard } from '../components/ProductCard';
 import { Hero } from '../components/Hero';
 import { CategoryTiles } from '../components/CategoryTiles';
+import { CategoryStories } from '../components/CategoryStories';
+import { FlashDealStrip } from '../components/FlashDealStrip';
 import { OfferTickets } from '../components/OfferTickets';
 import { PromoBanners } from '../components/PromoBanners';
 import { dealsBySlug } from '../lib/catalog';
@@ -35,10 +37,32 @@ import {
 export const revalidate = 0;
 
 export default async function HomePage() {
-  const [products, rules] = await Promise.all([
+  const [products, rules, settings] = await Promise.all([
     DbClient.getProducts(),
     DbClient.getAllPricingRules(),
+    DbClient.getSettings(),
   ]);
+
+  let customBanners = undefined;
+  if (settings.hero_banners) {
+    try {
+      customBanners = JSON.parse(settings.hero_banners);
+    } catch {}
+  }
+
+  let customPromos = undefined;
+  if (settings.promo_banners) {
+    try {
+      customPromos = JSON.parse(settings.promo_banners);
+    } catch {}
+  }
+
+  let customOffers = undefined;
+  if (settings.offer_tickets) {
+    try {
+      customOffers = JSON.parse(settings.offer_tickets);
+    } catch {}
+  }
 
   /* Every "save X%" badge on this page is derived from the real quantity
      tiers, so a deal promised on the storefront is a deal the checkout
@@ -152,8 +176,18 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* ---- Flipkart-style Category Stories Bubble Row ---- */}
+      <CategoryStories />
+
       {/* ---- Storefront hero: rotating banners, then search ---- */}
-      <Hero products={products} />
+      <Hero products={products} customBanners={customBanners} />
+
+      {/* ---- Flipkart-style Deal of the Day Live Countdown Timer Strip ---- */}
+      <FlashDealStrip
+        saleActive={settings.sale_active !== 'false'}
+        title={settings.sale_title}
+        badge={settings.sale_badge}
+      />
 
       {/* ---- Promise strip: what the press guarantees ---- */}
       <section aria-label="What the press guarantees" className="border-b border-ink-200 bg-white">
@@ -229,7 +263,7 @@ export default async function HomePage() {
       </section>
 
       {/* ---- Offers, drawn as tickets ---- */}
-      <OfferTickets />
+      <OfferTickets offers={customOffers} />
 
       {/* ---- Deals of the week ---- */}
       <section
@@ -290,7 +324,7 @@ export default async function HomePage() {
 
       {/* ---- Banner block: departments and job types ---- */}
       <div className="pt-14 sm:pt-16">
-        <PromoBanners />
+        <PromoBanners banners={customPromos} />
       </div>
 
       {/* ---- The full catalog, all eight lines ---- */}

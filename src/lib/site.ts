@@ -21,6 +21,7 @@ export const SITE = {
   phoneRaw: '+919811427517',
   phoneDisplay: '+91 98114 27517',
   email: 'orders@printvatika.com',
+  upiId: '09811427517@oksbi',
 
   /** Mon-Sat. Online orders are taken around the clock. */
   hours: [

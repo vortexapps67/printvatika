@@ -5,7 +5,8 @@ export const dynamic = 'force-dynamic';
 // One-time endpoint to update the admin password. Remove after use.
 export async function POST(req: NextRequest) {
   const { password, secret } = await req.json();
-  if (secret !== 'printvatika-setup-2026') {
+  const expectedSecret = process.env.SETUP_SECRET || process.env.ADMIN_PASSWORD;
+  if (!expectedSecret || secret !== expectedSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   if (!password) {

@@ -25,6 +25,13 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ success });
     }
 
+    if (action === 'update' || action === 'updateProduct') {
+      const rawUpdates = body.updates || body;
+      const { action: _a, slug: _s, ...cleanUpdates } = rawUpdates;
+      const success = await DbClient.updateProduct(slug, cleanUpdates);
+      return NextResponse.json({ success, message: 'Product updated successfully.' });
+    }
+
     return NextResponse.json({ error: 'Invalid action specified' }, { status: 400 });
 
   } catch (error) {

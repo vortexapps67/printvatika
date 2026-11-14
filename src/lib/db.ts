@@ -28,6 +28,7 @@ function readLocalDb(): {
   order_items: OrderItem[];
   order_status_history: OrderStatusHistory[];
   admin_users: { email: string; passwordHash: string }[];
+  settings?: Record<string, string>;
 } {
   initLocalDbFile();
   try {
@@ -53,70 +54,98 @@ function getSeedData() {
       id: 'p1',
       name: 'Business Cards',
       slug: 'business-cards',
-      description: 'Premium visiting cards to make a lasting first impression. Single/Double sided on heavy cardstock.',
+      description: 'Single or double-sided on heavyweight cardstock. Matte, gloss, or velvet lamination available.',
       category: 'Stationery',
       image_url: '/images/business-cards.jpg',
-      base_price: 1.00,
+      base_price: 2.99,
+      base_unit: '/ 100 pcs',
+      base_qty: 100,
+      from_price: 2.99,
+      default_qty: 250,
       is_active: true,
     },
     {
       id: 'p2',
       name: 'Custom T-Shirts',
       slug: 't-shirts',
-      description: 'High-quality cotton t-shirts with front, back, or double-sided printing. Choose colors & sizes.',
+      description: 'Cotton t-shirts with front, back, or double-sided printing. Multiple colours and sizes.',
       category: 'Apparel',
       image_url: '/images/t-shirts.jpg',
       base_price: 249.00,
+      base_unit: '/ piece',
+      base_qty: 1,
+      from_price: 249.00,
+      default_qty: 10,
       is_active: true,
     },
     {
       id: 'p3',
       name: 'Flex Banners',
       slug: 'flex-banners',
-      description: 'Weatherproof indoor/outdoor advertising flex banners. Enter custom dimensions and finishes.',
+      description: 'Indoor/outdoor weatherproof flex banners. Enter dimensions, choose material and finishing.',
       category: 'Signage',
       image_url: '/images/flex-banners.jpg',
       base_price: 15.00, // per sqft
+      base_unit: '/ sq.ft',
+      base_qty: 1,
+      from_price: 15.00,
+      default_qty: 1,
       is_active: true,
     },
     {
       id: 'p4',
       name: 'Flyers & Pamphlets',
       slug: 'flyers',
-      description: 'Vibrant promotional flyers to spread the word. Perfect for distribution and letterbox drops.',
+      description: 'Vibrant promotional flyers on glossy or matte art paper. A4, A5, or DL sizes.',
       category: 'Marketing',
       image_url: '/images/flyers.jpg',
-      base_price: 2.00,
+      base_price: 0.398,
+      base_unit: '/ 500 pcs',
+      base_qty: 500,
+      from_price: 0.238,
+      default_qty: 500,
       is_active: true,
     },
     {
       id: 'p5',
       name: 'Posters',
       slug: 'posters',
-      description: 'Large high-definition wall posters for events, announcements, or custom decor.',
+      description: 'Large-format HD wall posters for events, décor, or promotions. Multiple sizes.',
       category: 'Marketing',
       image_url: '/images/posters.jpg',
       base_price: 49.00,
+      base_unit: '/ piece',
+      base_qty: 1,
+      from_price: 49.00,
+      default_qty: 5,
       is_active: true,
     },
     {
       id: 'p6',
       name: 'Brochures',
       slug: 'brochures',
-      description: 'Professional folded bi-fold or tri-fold brochures to showcase your brand product catalog.',
+      description: 'Bi-fold or tri-fold brochures on premium glossy card. Great for menus and product sheets.',
       category: 'Marketing',
       image_url: '/images/brochures.jpg',
       base_price: 8.00,
+      base_unit: '/ piece',
+      base_qty: 1,
+      from_price: 8.00,
+      default_qty: 100,
       is_active: true,
     },
     {
       id: 'p7',
       name: 'Stickers & Labels',
       slug: 'stickers',
-      description: 'Die-cut custom shape circle or square labels. Waterproof vinyl options available.',
+      description: 'Die-cut custom stickers on gloss, matte, or waterproof vinyl material.',
       category: 'Stationery',
       image_url: '/images/stickers.svg',
-      base_price: 3.00,
+      base_price: 1.99,
+      base_unit: '/ 100 pcs',
+      base_qty: 100,
+      from_price: 1.99,
+      default_qty: 100,
       is_active: true,
     },
     {
@@ -126,7 +155,11 @@ function getSeedData() {
       description: 'Have a unique requirement? Upload your files and specify requirements for a custom quotation.',
       category: 'Specialty',
       image_url: '/images/custom-print.jpg',
-      base_price: 99.00,
+      base_price: 0,
+      base_unit: '/ quote',
+      base_qty: 1,
+      from_price: 0,
+      default_qty: 1,
       is_active: true,
     }
   ];
@@ -443,7 +476,7 @@ function getSeedData() {
   const admin_users = [
     {
       email: 'admin@printerwala.com',
-      passwordHash: 'admin123' // Simplified password check for local sandbox run
+      passwordHash: process.env.ADMIN_PASSWORD || ''
     }
   ];
 
@@ -642,13 +675,14 @@ class LocalDb {
     db.orders[orderIndex].payment_status = 'PAID';
     db.orders[orderIndex].order_status = 'PAID'; // transition from PAYMENT_PENDING to PAID
     db.orders[orderIndex].payment_id = paymentId;
+    (db.orders[orderIndex] as any).utr = paymentId;
     db.orders[orderIndex].updated_at = new Date().toISOString();
 
     const historyEntry: OrderStatusHistory = {
       id: `sh-${orderId}-${Date.now()}`,
       order_id: orderId,
       status: 'PAID',
-      notes: `Payment verified. Transaction ID: ${paymentId}`,
+      notes: `Payment verified. Transaction / UTR: ${paymentId}`,
       created_at: new Date().toISOString()
     };
 
@@ -661,18 +695,27 @@ class LocalDb {
   // Admin authenticate
   static async authenticateAdmin(email: string, passwordHash: string): Promise<boolean> {
     const db = readLocalDb();
+    const envPassword = process.env.ADMIN_PASSWORD;
+    const settingsPassword = envPassword || db.settings?.admin_password || '';
+    // Support single shared password (e.g. from /admin/login) or email-specific credentials
+    if (!email) {
+      return (
+        db.admin_users.some(u => u.passwordHash === passwordHash) ||
+        (Boolean(settingsPassword) && passwordHash === settingsPassword)
+      );
+    }
     const admin = db.admin_users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (!admin) return false;
-
-    // Simple password check for local runs. In full production, this maps to bcrypt/Supabase Auth
-    return admin.passwordHash === passwordHash;
+    if (admin && admin.passwordHash === passwordHash) return true;
+    return Boolean(settingsPassword) && passwordHash === settingsPassword;
   }
 
-  /* The local JSON file has no `settings` table, so it has no discount codes
-     either. Offline runs simply accept none — the live codes come from the shop's
-     own settings row. */
+  /* Active discount coupons supported by the print shop. */
   static async getCoupons(): Promise<Coupon[]> {
-    return [];
+    return [
+      { code: 'VATIKA50', type: 'flat', value: 50, minOrder: 500, active: true },
+      { code: 'BULK100', type: 'flat', value: 100, minOrder: 1000, active: true },
+      { code: 'FREEDEL', type: 'delivery', value: 50, minOrder: 300, active: true },
+    ];
   }
 
   // Admin updates
@@ -724,6 +767,182 @@ class LocalDb {
     writeLocalDb(db);
     return true;
   }
+
+  static async updateProduct(slug: string, updates: Partial<Product>): Promise<boolean> {
+    const db = readLocalDb();
+    const idx = db.products.findIndex(p => p.slug === slug);
+    if (idx === -1) return false;
+
+    db.products[idx] = {
+      ...db.products[idx],
+      ...updates
+    };
+    writeLocalDb(db);
+    return true;
+  }
+
+  static getDefaultSettings(): Record<string, string> {
+    return {
+      admin_password: process.env.ADMIN_PASSWORD || '',
+      sale_active: 'true',
+      sale_title: 'Deal of the Day · Up to 35% Bulk Discount on Business Cards & Flex Banners!',
+      sale_badge: 'Deal of the Day',
+      sale_hours: '6',
+      shop_name: 'Print Vatika',
+      shop_tagline: 'Commercial printing press, Saket Metro',
+      phone: '09811427517',
+      whatsapp: '919811427517',
+      email: 'orders@printvatika.com',
+      address: 'F-298, Himmat Singh Marg, Near Saket Metro, Lado Sarai, New Delhi - 110030',
+      upi_id: '09811427517@oksbi',
+      delivery_charge: '50',
+      announcement_text: 'Commercial printing press near Saket Metro · 24–48 hour dispatch · Free store pickup · Flat ₹50 courier across India',
+      announcement_link: '/catalog',
+      hero_headline: 'Print Vatika — commercial printing press near Saket Metro.',
+      hero_subheadline: 'Order visiting cards, flex banners, custom t-shirts, flyers and brochures with live proofs.',
+      hero_banners: JSON.stringify([
+        {
+          id: 'banner-signage',
+          image: '/images/banner-signage.jpg',
+          eyebrow: 'Signage · priced by the foot',
+          title: 'Flex banners from ₹15 a sq ft.',
+          body: 'Enter the exact feet, pick the finish and the eyelets, and watch the price update. Weatherproof star flex, dispatched in 24–48 hours.',
+          chip: { label: 'Starting at', value: '₹15/sqft' },
+          href: '/catalog?category=Signage',
+          cta: 'Shop signage',
+          href2: '/customize/flex-banners',
+          cta2: 'Upload artwork'
+        },
+        {
+          id: 'banner-cards',
+          image: '/images/banner-cards.jpg',
+          eyebrow: 'Stationery · proofed first',
+          title: 'Business cards from ₹299 for 100.',
+          body: '300–400 GSM stock, matte through velvet lamination. Line your artwork up against the real trim size, approve that exact file, then pay.',
+          chip: { label: 'Starting at', value: '₹299 for 100' },
+          href: '/customize/business-cards',
+          cta: 'Design your card',
+          href2: '/catalog?category=Stationery',
+          cta2: 'All stationery'
+        },
+        {
+          id: 'banner-tshirts',
+          image: '/images/banner-tshirts.jpg',
+          eyebrow: 'Apparel · printed in-house',
+          title: 'Custom t-shirts from ₹249.',
+          body: 'Cotton tees screen printed at the counter — front, back or both, in the colour and size you pick. Ten or ten thousand.',
+          chip: { label: 'Starting at', value: '₹249' },
+          href: '/customize/t-shirts',
+          cta: 'Print a tee',
+          href2: '/catalog?category=Apparel',
+          cta2: 'All apparel'
+        },
+        {
+          id: 'banner-posters',
+          image: '/images/banner-posters.jpg',
+          eyebrow: 'Marketing · event ready',
+          title: 'Posters from ₹49, flyers from ₹199 for 500.',
+          body: 'A3 to A1 on matte, gloss or waterproof synthetic. The collateral for a launch, a sale or an event, cut and ready to hand out.',
+          chip: { label: 'Starting at', value: '₹49' },
+          href: '/catalog?category=Marketing',
+          cta: 'Shop marketing',
+          href2: '/customize/custom-print',
+          cta2: 'Quote a custom job'
+        }
+      ]),
+      promo_banners: JSON.stringify([
+        {
+          id: 'promo-marketing',
+          image: '/images/brochures.jpg',
+          eyebrow: 'Marketing',
+          title: 'Brochures, flyers & posters',
+          body: 'Everything for a launch or an event, from A6 handouts to A1 posters.',
+          href: '/catalog?category=Marketing',
+          cta: 'Shop marketing',
+          featured: true
+        },
+        {
+          id: 'promo-specialty',
+          image: '/images/custom-print.jpg',
+          eyebrow: 'Specialty',
+          title: 'Not on the shelf?',
+          body: 'Upload the artwork, describe the job, get a quote back from the counter.',
+          href: '/customize/custom-print',
+          cta: 'Get a quote',
+          featured: false
+        },
+        {
+          id: 'promo-counter',
+          image: '/images/hero-bg-light.png',
+          eyebrow: 'The counter',
+          title: 'Feel the stock first',
+          body: 'Card weights, laminates and flex swatches to hand, Mon–Sat.',
+          href: '#visit',
+          cta: 'Find us',
+          featured: false
+        }
+      ]),
+      offer_tickets: JSON.stringify([
+        {
+          id: 'offer-pickup',
+          title: 'Free store pickup',
+          body: 'Collect from F-298, Himmat Singh Marg, Near Saket Metro. No minimum order, nothing added to the price.',
+          tag: 'No code needed',
+          href: '#visit',
+          cta: 'Find the counter'
+        },
+        {
+          id: 'offer-courier',
+          title: 'Flat ₹50 courier',
+          body: 'Home delivery anywhere in India at one flat rate, shown before you pay.',
+          tag: 'All India',
+          href: '/catalog',
+          cta: 'Start an order'
+        },
+        {
+          id: 'offer-bulk',
+          title: 'Up to 35% off in bulk',
+          body: 'Quantity tiers apply themselves as you raise the count — the basket price is the invoice price.',
+          tag: 'Applied automatically',
+          href: '/catalog',
+          cta: 'See the catalog'
+        },
+        {
+          id: 'offer-proof',
+          title: 'Proof before you pay',
+          body: 'Position the artwork on the real trim size, check it on screen, approve that exact file.',
+          tag: 'Every order',
+          href: '/customize/custom-print',
+          cta: 'Upload artwork'
+        }
+      ]),
+      discount_coupons: JSON.stringify([
+        { code: 'VATIKA50', type: 'flat', value: 50, minOrder: 500, active: true },
+        { code: 'BULK100', type: 'flat', value: 100, minOrder: 1000, active: true },
+        { code: 'FREEDEL', type: 'delivery', value: 50, minOrder: 300, active: true }
+      ])
+    };
+  }
+
+  static async getSettings(): Promise<Record<string, string>> {
+    const db = readLocalDb();
+    const defaults = this.getDefaultSettings();
+    const stored = db.settings || {};
+    return { ...defaults, ...stored };
+  }
+
+  static async updateSetting(key: string, value: string): Promise<boolean> {
+    const db = readLocalDb();
+    if (!db.settings) db.settings = {};
+    db.settings[key] = value;
+    if (key === 'admin_password') {
+      if (db.admin_users && db.admin_users.length > 0) {
+        db.admin_users[0].passwordHash = value;
+      }
+    }
+    writeLocalDb(db);
+    return true;
+  }
 }
 
 /* ── Storage dispatch ─────────────────────────────────────────────────────────
@@ -733,42 +952,87 @@ class LocalDb {
 
 export class DbClient {
   static async getProducts(): Promise<Product[]> {
-    return supabaseConfigured() ? supabaseStore.getProducts() : LocalDb.getProducts();
+    try {
+      if (supabaseConfigured()) return await supabaseStore.getProducts();
+    } catch (e) {
+      console.warn('Supabase getProducts fallback:', e);
+    }
+    return LocalDb.getProducts();
   }
 
   static async getProductBySlug(slug: string): Promise<Product | null> {
-    return supabaseConfigured() ? supabaseStore.getProductBySlug(slug) : LocalDb.getProductBySlug(slug);
+    try {
+      if (supabaseConfigured()) {
+        const p = await supabaseStore.getProductBySlug(slug);
+        if (p) return p;
+      }
+    } catch (e) {
+      console.warn('Supabase getProductBySlug fallback:', e);
+    }
+    return LocalDb.getProductBySlug(slug);
   }
 
   static async getProductOptions(slug: string): Promise<ProductOption[]> {
-    return supabaseConfigured() ? supabaseStore.getProductOptions(slug) : LocalDb.getProductOptions(slug);
+    try {
+      if (supabaseConfigured()) return await supabaseStore.getProductOptions(slug);
+    } catch (e) {
+      console.warn('Supabase getProductOptions fallback:', e);
+    }
+    return LocalDb.getProductOptions(slug);
   }
 
   static async getPricingRules(slug: string): Promise<PricingRule[]> {
-    return supabaseConfigured() ? supabaseStore.getPricingRules(slug) : LocalDb.getPricingRules(slug);
+    try {
+      if (supabaseConfigured()) return await supabaseStore.getPricingRules(slug);
+    } catch (e) {
+      console.warn('Supabase getPricingRules fallback:', e);
+    }
+    return LocalDb.getPricingRules(slug);
   }
 
   static async getAllPricingRules(): Promise<PricingRule[]> {
-    return supabaseConfigured() ? supabaseStore.getAllPricingRules() : LocalDb.getAllPricingRules();
+    try {
+      if (supabaseConfigured()) return await supabaseStore.getAllPricingRules();
+    } catch (e) {
+      console.warn('Supabase getAllPricingRules fallback:', e);
+    }
+    return LocalDb.getAllPricingRules();
   }
 
   static async createOrder(
     orderInput: Omit<Order, 'created_at' | 'updated_at' | 'status_history' | 'items'>,
     itemsInput: Array<Omit<OrderItem, 'id' | 'order_id'>>
   ): Promise<Order> {
-    return supabaseConfigured()
-      ? supabaseStore.createOrder(orderInput, itemsInput)
-      : LocalDb.createOrder(orderInput, itemsInput);
+    try {
+      if (supabaseConfigured()) return await supabaseStore.createOrder(orderInput, itemsInput);
+    } catch (e) {
+      console.warn('Supabase createOrder fallback:', e);
+    }
+    return LocalDb.createOrder(orderInput, itemsInput);
   }
 
   static async getOrderById(orderId: string): Promise<Order | null> {
-    return supabaseConfigured() ? supabaseStore.getOrderById(orderId) : LocalDb.getOrderById(orderId);
+    try {
+      if (supabaseConfigured()) {
+        const o = await supabaseStore.getOrderById(orderId);
+        if (o) return o;
+      }
+    } catch (e) {
+      console.warn('Supabase getOrderById fallback:', e);
+    }
+    return LocalDb.getOrderById(orderId);
   }
 
   static async getOrderByIdAndPhone(orderId: string, phone: string): Promise<Order | null> {
-    return supabaseConfigured()
-      ? supabaseStore.getOrderByIdAndPhone(orderId, phone)
-      : LocalDb.getOrderByIdAndPhone(orderId, phone);
+    try {
+      if (supabaseConfigured()) {
+        const o = await supabaseStore.getOrderByIdAndPhone(orderId, phone);
+        if (o) return o;
+      }
+    } catch (e) {
+      console.warn('Supabase getOrderByIdAndPhone fallback:', e);
+    }
+    return LocalDb.getOrderByIdAndPhone(orderId, phone);
   }
 
   static async getOrders(filters?: {
@@ -776,7 +1040,12 @@ export class DbClient {
     search?: string;
     date?: string;
   }): Promise<Order[]> {
-    return supabaseConfigured() ? supabaseStore.getOrders(filters) : LocalDb.getOrders(filters);
+    try {
+      if (supabaseConfigured()) return await supabaseStore.getOrders(filters);
+    } catch (e) {
+      console.warn('Supabase getOrders fallback:', e);
+    }
+    return LocalDb.getOrders(filters);
   }
 
   static async updateOrderStatus(
@@ -785,53 +1054,127 @@ export class DbClient {
     paymentStatus?: PaymentStatus,
     notes?: string
   ): Promise<Order | null> {
-    return supabaseConfigured()
-      ? supabaseStore.updateOrderStatus(orderId, status, paymentStatus, notes)
-      : LocalDb.updateOrderStatus(orderId, status, paymentStatus, notes);
+    try {
+      if (supabaseConfigured()) return await supabaseStore.updateOrderStatus(orderId, status, paymentStatus, notes);
+    } catch (e) {
+      console.warn('Supabase updateOrderStatus fallback:', e);
+    }
+    return LocalDb.updateOrderStatus(orderId, status, paymentStatus, notes);
   }
 
   static async setOrderPaid(orderId: string, paymentId: string): Promise<Order | null> {
-    return supabaseConfigured() ? supabaseStore.setOrderPaid(orderId, paymentId) : LocalDb.setOrderPaid(orderId, paymentId);
+    try {
+      if (supabaseConfigured()) return await supabaseStore.setOrderPaid(orderId, paymentId);
+    } catch (e) {
+      console.warn('Supabase setOrderPaid fallback:', e);
+    }
+    return LocalDb.setOrderPaid(orderId, paymentId);
   }
 
   static async authenticateAdmin(email: string, passwordHash: string): Promise<boolean> {
-    return supabaseConfigured()
-      ? supabaseStore.authenticateAdmin(email, passwordHash)
-      : LocalDb.authenticateAdmin(email, passwordHash);
+    try {
+      if (supabaseConfigured()) return await supabaseStore.authenticateAdmin(email, passwordHash);
+    } catch (e) {
+      console.warn('Supabase authenticateAdmin fallback:', e);
+    }
+    return LocalDb.authenticateAdmin(email, passwordHash);
   }
 
   static async updateProductPrice(slug: string, basePrice: number): Promise<boolean> {
-    return supabaseConfigured()
-      ? supabaseStore.updateProductPrice(slug, basePrice)
-      : LocalDb.updateProductPrice(slug, basePrice);
+    try {
+      if (supabaseConfigured()) return await supabaseStore.updateProductPrice(slug, basePrice);
+    } catch (e) {
+      console.warn('Supabase updateProductPrice fallback:', e);
+    }
+    return LocalDb.updateProductPrice(slug, basePrice);
   }
 
   static async updateProductOptions(slug: string, options: ProductOption[]): Promise<boolean> {
-    return supabaseConfigured()
-      ? supabaseStore.updateProductOptions(slug, options)
-      : LocalDb.updateProductOptions(slug, options);
+    try {
+      if (supabaseConfigured()) return await supabaseStore.updateProductOptions(slug, options);
+    } catch (e) {
+      console.warn('Supabase updateProductOptions fallback:', e);
+    }
+    return LocalDb.updateProductOptions(slug, options);
   }
 
   static async updatePricingRules(slug: string, rules: PricingRule[]): Promise<boolean> {
-    return supabaseConfigured()
-      ? supabaseStore.updatePricingRules(slug, rules)
-      : LocalDb.updatePricingRules(slug, rules);
+    try {
+      if (supabaseConfigured()) return await supabaseStore.updatePricingRules(slug, rules);
+    } catch (e) {
+      console.warn('Supabase updatePricingRules fallback:', e);
+    }
+    return LocalDb.updatePricingRules(slug, rules);
   }
 
   static async addProduct(product: Product, options: ProductOption[]): Promise<boolean> {
-    return supabaseConfigured()
-      ? supabaseStore.addProduct(product, options)
-      : LocalDb.addProduct(product, options);
+    try {
+      if (supabaseConfigured()) return await supabaseStore.addProduct(product, options);
+    } catch (e) {
+      console.warn('Supabase addProduct fallback:', e);
+    }
+    return LocalDb.addProduct(product, options);
   }
 
   static async toggleProductActive(slug: string): Promise<boolean> {
-    return supabaseConfigured()
-      ? supabaseStore.toggleProductActive(slug)
-      : LocalDb.toggleProductActive(slug);
+    try {
+      if (supabaseConfigured()) return await supabaseStore.toggleProductActive(slug);
+    } catch (e) {
+      console.warn('Supabase toggleProductActive fallback:', e);
+    }
+    return LocalDb.toggleProductActive(slug);
   }
 
-  /** Discount codes from the shop's settings. */
+  static async updateProduct(slug: string, updates: Partial<Product>): Promise<boolean> {
+    let supOk = false;
+    try {
+      if (supabaseConfigured()) {
+        supOk = await supabaseStore.updateProduct(slug, updates);
+      }
+    } catch (e) {
+      console.warn('Supabase updateProduct fallback:', e);
+    }
+    const locOk = await LocalDb.updateProduct(slug, updates);
+    return supOk || locOk;
+  }
+
+  static async getSettings(): Promise<Record<string, string>> {
+    try {
+      if (supabaseConfigured()) {
+        const s = await supabaseStore.getSettings();
+        if (s && Object.keys(s).length > 0) {
+          return { ...LocalDb.getDefaultSettings(), ...s };
+        }
+      }
+    } catch (e) {
+      console.warn('Supabase getSettings fallback:', e);
+    }
+    return LocalDb.getSettings();
+  }
+
+  static async updateSetting(key: string, value: string): Promise<boolean> {
+    let supOk = false;
+    try {
+      if (supabaseConfigured()) {
+        supOk = await supabaseStore.updateSetting(key, value);
+      }
+    } catch (e) {
+      console.warn('Supabase updateSetting fallback:', e);
+    }
+    const locOk = await LocalDb.updateSetting(key, value);
+    return supOk || locOk;
+  }
+
+  /** Discount codes from the shop's settings, falling back to active shop codes. */
   static async getCoupons(): Promise<Coupon[]> {
-    return supabaseConfigured() ? supabaseStore.getCoupons() : LocalDb.getCoupons();
+    try {
+      if (supabaseConfigured()) {
+        const c = await supabaseStore.getCoupons();
+        if (c && c.length > 0) return c;
+      }
+    } catch (e) {
+      console.warn('Supabase getCoupons fallback:', e);
+    }
+    return LocalDb.getCoupons();
   }
 }

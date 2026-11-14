@@ -213,6 +213,27 @@ export const Navbar: React.FC = () => {
         </div>
       </div>
 
+      {/* Mobile search bar — Flipkart style instant search for mobile shoppers */}
+      <div className="border-t border-ink-100 bg-white px-4 py-2 md:hidden">
+        <form onSubmit={handleSearchSubmit} role="search">
+          <div className="relative">
+            <Search
+              size={15}
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-400"
+              aria-hidden="true"
+            />
+            <input
+              type="search"
+              value={navSearch}
+              onChange={e => setNavSearch(e.target.value)}
+              placeholder="Search visiting cards, flex banners, t-shirts…"
+              aria-label="Search products"
+              className="h-9 w-full rounded-full border border-ink-200 bg-ink-50/80 pl-9 pr-3 text-body-s text-ink-900 placeholder:text-ink-400 focus:border-primary-500 focus:bg-white focus:outline-none"
+            />
+          </div>
+        </form>
+      </div>
+
       {/* ---- Tier 2: categories ---- */}
       <nav aria-label="Product categories" className="hidden border-t border-ink-100 md:block">
         <div className="mx-auto max-w-sheet px-4 sm:px-6 lg:px-8">
