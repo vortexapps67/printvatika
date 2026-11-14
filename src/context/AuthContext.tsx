@@ -11,8 +11,8 @@ interface AuthContextType {
   signUp: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
-  sendOtp: (target: string, type: 'phone' | 'email', name?: string) => Promise<{ success: boolean; error?: string }>;
-  verifyOtp: (target: string, type: 'phone' | 'email', code: string, name?: string) => Promise<{ success: boolean; user?: any; error?: string }>;
+  sendOtp: (email: string, nameOrType?: string, name?: string) => Promise<{ success: boolean; error?: string }>;
+  verifyOtp: (email: string, codeOrType: string, codeOrName?: string, name?: string) => Promise<{ success: boolean; user?: any; error?: string }>;
   setCustomUser: (user: any) => void;
 }
 
@@ -145,61 +145,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   /**
-   * Sends OTP - uses Supabase Auth natively for email OTP!
+   * Sends Email OTP natively via Supabase Auth!
    */
-  const sendOtp = async (target: string, type: 'phone' | 'email', name?: string) => {
-    const cleanTarget = target.trim();
+  const sendOtp = async (email: string, nameOrType?: string, optionalName?: string) => {
+    const cleanEmail = email.trim().toLowerCase();
+    const resolvedName = (nameOrType && nameOrType !== 'email' && nameOrType !== 'phone') ? nameOrType : optionalName;
 
     // 1. Native Supabase Email OTP Auth
-    if (type === 'email') {
-      try {
-        const supabase = getBrowserSupabase();
-        if (supabase) {
-          const { error } = await supabase.auth.signInWithOtp({
-            email: cleanTarget.toLowerCase(),
-            options: {
-              shouldCreateUser: true,
-              data: name ? { full_name: name } : undefined,
-            },
-          });
+    try {
+      const supabase = getBrowserSupabase();
+      if (supabase) {
+        const { error } = await supabase.auth.signInWithOtp({
+          email: cleanEmail,
+          options: {
+            shouldCreateUser: true,
+            data: resolvedName ? { full_name: resolvedName } : undefined,
+          },
+        });
 
-          if (error) {
-            console.warn('Supabase signInWithOtp error:', error);
-            return { success: false, error: error.message };
-          }
-
-          return { success: true };
+        if (error) {
+          console.warn('Supabase signInWithOtp error:', error);
+          return { success: false, error: error.message };
         }
-      } catch (err: any) {
-        console.warn('Supabase email OTP error:', err);
+
+        return { success: true };
       }
+    } catch (err: any) {
+      console.warn('Supabase email OTP error:', err);
     }
 
-    // 2. Phone OTP via Supabase (if configured) or Server Gateway
-    if (type === 'phone') {
-      try {
-        const supabase = getBrowserSupabase();
-        if (supabase) {
-          const digits = cleanTarget.replace(/\D/g, '');
-          const phoneFormatted = digits.length === 10 ? `+91${digits}` : (cleanTarget.startsWith('+') ? cleanTarget : `+${digits}`);
-          const { error } = await supabase.auth.signInWithOtp({
-            phone: phoneFormatted,
-            options: { shouldCreateUser: true },
-          });
-
-          if (!error) {
-            return { success: true };
-          }
-        }
-      } catch {}
-    }
-
-    // 3. Fallback to API route
+    // 2. Server API fallback for email
     try {
       const res = await fetch('/api/auth/otp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target: cleanTarget, type }),
+        body: JSON.stringify({ target: cleanEmail, type: 'email' }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -212,84 +192,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   /**
-   * Verifies OTP - verifies natively with Supabase Auth for email!
+   * Verifies Email OTP natively via Supabase Auth!
    */
-  const verifyOtp = async (target: string, type: 'phone' | 'email', code: string, name?: string) => {
-    const cleanTarget = target.trim();
-    const cleanCode = code.trim();
+  const verifyOtp = async (email: string, codeOrType: string, codeOrName?: string, optionalName?: string) => {
+    const cleanEmail = email.trim().toLowerCase();
+    let cleanCode = '';
+    let resolvedName: string | undefined;
+
+    if (codeOrType === 'email' || codeOrType === 'phone') {
+      cleanCode = String(codeOrName || '').trim();
+      resolvedName = optionalName;
+    } else {
+      cleanCode = String(codeOrType || '').trim();
+      resolvedName = codeOrName;
+    }
 
     // 1. Native Supabase Email OTP Verification
-    if (type === 'email') {
-      try {
-        const supabase = getBrowserSupabase();
-        if (supabase) {
-          // Try type 'email'
-          let { data, error } = await supabase.auth.verifyOtp({
-            email: cleanTarget.toLowerCase(),
+    try {
+      const supabase = getBrowserSupabase();
+      if (supabase) {
+        // Try type 'email'
+        let { data, error } = await supabase.auth.verifyOtp({
+          email: cleanEmail,
+          token: cleanCode,
+          type: 'email',
+        });
+
+        // If not found with type 'email', try 'signup'
+        if (error || !data?.user) {
+          const retrySignup = await supabase.auth.verifyOtp({
+            email: cleanEmail,
             token: cleanCode,
-            type: 'email',
+            type: 'signup',
           });
-
-          // If not found with type 'email', try 'signup'
-          if (error || !data?.user) {
-            const retrySignup = await supabase.auth.verifyOtp({
-              email: cleanTarget.toLowerCase(),
-              token: cleanCode,
-              type: 'signup',
-            });
-            if (!retrySignup.error && retrySignup.data?.user) {
-              data = retrySignup.data;
-              error = null;
-            }
-          }
-
-          if (error) {
-            return { success: false, error: error.message };
-          }
-
-          if (data?.user) {
-            setUser(data.user);
-            setSession(data.session);
-            return { success: true, user: data.user };
+          if (!retrySignup.error && retrySignup.data?.user) {
+            data = retrySignup.data;
+            error = null;
           }
         }
-      } catch (err: any) {
-        console.warn('Supabase verifyOtp error:', err);
+
+        if (error) {
+          return { success: false, error: error.message };
+        }
+
+        if (data?.user) {
+          setUser(data.user);
+          setSession(data.session);
+          return { success: true, user: data.user };
+        }
       }
+    } catch (err: any) {
+      console.warn('Supabase verifyOtp error:', err);
     }
 
-    // 2. Phone OTP Verification via Supabase
-    if (type === 'phone') {
-      try {
-        const supabase = getBrowserSupabase();
-        if (supabase) {
-          const digits = cleanTarget.replace(/\D/g, '');
-          const phoneFormatted = digits.length === 10 ? `+91${digits}` : (cleanTarget.startsWith('+') ? cleanTarget : `+${digits}`);
-          const { data, error } = await supabase.auth.verifyOtp({
-            phone: phoneFormatted,
-            token: cleanCode,
-            type: 'sms',
-          });
-
-          if (!error && data?.user) {
-            setUser(data.user);
-            setSession(data.session);
-            return { success: true, user: data.user };
-          }
-        }
-      } catch {}
-    }
-
-    // 3. Fallback to API route
+    // 2. Server API fallback for email
     try {
       const res = await fetch('/api/auth/otp/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target: cleanTarget, type, code: cleanCode, name }),
+        body: JSON.stringify({ target: cleanEmail, type: 'email', code: cleanCode, name: resolvedName }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        return { success: false, error: data.error || 'Verification failed.' };
+        return { success: false, error: data.error || 'Invalid or expired OTP code.' };
       }
       setCustomUser(data.user);
       return { success: true, user: data.user };

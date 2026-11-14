@@ -34,7 +34,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [authMethod, setAuthMethod] = useState<'phone_otp' | 'email_otp' | 'password'>('phone_otp');
+  const [authMethod, setAuthMethod] = useState<'email_otp' | 'password'>('email_otp');
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,13 +42,12 @@ export default function SignupPage() {
   // OTP Modal states
   const [otpModalOpen, setOtpModalOpen] = useState(false);
   const [otpTarget, setOtpTarget] = useState('');
-  const [otpType, setOtpType] = useState<'phone' | 'email'>('phone');
 
   React.useEffect(() => {
     if (user) router.replace(getSafeNext());
   }, [user, router]);
 
-  const handleStartOtpVerification = async (typeToVerify: 'phone' | 'email') => {
+  const handleStartEmailOtp = async () => {
     setError('');
 
     if (!name.trim()) {
@@ -56,75 +55,63 @@ export default function SignupPage() {
       return;
     }
 
-    const targetVal = typeToVerify === 'phone' ? phone.trim() : email.trim();
-
-    if (typeToVerify === 'phone') {
-      const cleanDigits = phone.replace(/\D/g, '');
-      if (cleanDigits.length < 10) {
-        setError('Please enter a valid 10-digit mobile number.');
-        return;
-      }
-    } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email.trim())) {
-        setError('Please enter a valid email address.');
-        return;
-      }
+    const cleanEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      setError('Please enter a valid email address.');
+      return;
     }
 
     setLoading(true);
-    const res = await sendOtp(targetVal, typeToVerify, name);
+    const res = await sendOtp(cleanEmail, name);
     setLoading(false);
 
     if (!res.success) {
-      setError(res.error || 'Failed to send OTP. Please try again.');
+      setError(res.error || 'Failed to send OTP code to your email. Please try again.');
       return;
     }
 
-    setOtpTarget(targetVal);
-    setOtpType(typeToVerify);
+    setOtpTarget(cleanEmail);
     setOtpModalOpen(true);
   };
 
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (authMethod === 'phone_otp') {
-      await handleStartOtpVerification('phone');
-      return;
-    }
     if (authMethod === 'email_otp') {
-      await handleStartOtpVerification('email');
+      await handleStartEmailOtp();
       return;
     }
 
-    // Standard password signup
+    // Standard password signup via Supabase
+    if (!name.trim()) {
+      setError('Please enter your full name.');
+      return;
+    }
     if (!password || password.length < 6) {
       setError('Password must be at least 6 characters.');
       return;
     }
 
     setLoading(true);
-    const { error } = await signUp(email, password, name);
+    const { error } = await signUp(email.trim().toLowerCase(), password, name);
     setLoading(false);
 
     if (error) {
       setError(error);
     } else {
-      // Trigger OTP verification for extra security
-      await handleStartOtpVerification('email');
+      router.push(getSafeNext());
     }
   };
 
   const handleOtpVerified = (verifiedUser: any) => {
     setOtpModalOpen(false);
-    // Link local custom user
     setCustomUser({
       ...verifiedUser,
       name: name || verifiedUser.name,
       phone: phone || verifiedUser.phone,
-      email: email || verifiedUser.email,
+      email: email.trim().toLowerCase() || verifiedUser.email,
     });
     router.push(getSafeNext());
   };
@@ -175,50 +162,38 @@ export default function SignupPage() {
               <span className="text-body-s font-semibold uppercase tracking-wider">Fast Account Creation</span>
             </div>
             <h1 className="mt-3 text-display-s font-extrabold tracking-tight text-ink-900">Create your account</h1>
-            <p className="mt-2 text-body text-ink-500">Verify your mobile or email with an instant OTP.</p>
+            <p className="mt-2 text-body text-ink-500">Sign up instantly with Supabase Email OTP or Password.</p>
           </div>
 
           {/* Verification Method Switcher */}
-          <div className="mb-6 grid grid-cols-3 gap-1.5 rounded-2xl bg-ink-100 p-1 border border-ink-200/60">
-            <button
-              type="button"
-              onClick={() => { setAuthMethod('phone_otp'); setError(''); }}
-              className={`flex items-center justify-center gap-1.5 rounded-xl py-2 px-1 font-mono text-micro font-bold uppercase tracking-wider transition-all duration-200 ${
-                authMethod === 'phone_otp'
-                  ? 'bg-white text-ink-950 shadow-sm border border-ink-200/80'
-                  : 'text-ink-600 hover:text-ink-900'
-              }`}
-            >
-              <Phone size={13} />
-              Mobile OTP
-            </button>
+          <div className="mb-6 grid grid-cols-2 gap-1.5 rounded-2xl bg-ink-100 p-1 border border-ink-200/60">
             <button
               type="button"
               onClick={() => { setAuthMethod('email_otp'); setError(''); }}
-              className={`flex items-center justify-center gap-1.5 rounded-xl py-2 px-1 font-mono text-micro font-bold uppercase tracking-wider transition-all duration-200 ${
+              className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-2 font-mono text-micro font-bold uppercase tracking-wider transition-all duration-200 ${
                 authMethod === 'email_otp'
                   ? 'bg-white text-ink-950 shadow-sm border border-ink-200/80'
                   : 'text-ink-600 hover:text-ink-900'
               }`}
             >
-              <Mail size={13} />
+              <Mail size={14} className="text-primary-600" />
               Email OTP
             </button>
             <button
               type="button"
               onClick={() => { setAuthMethod('password'); setError(''); }}
-              className={`flex items-center justify-center gap-1.5 rounded-xl py-2 px-1 font-mono text-micro font-bold uppercase tracking-wider transition-all duration-200 ${
+              className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-2 font-mono text-micro font-bold uppercase tracking-wider transition-all duration-200 ${
                 authMethod === 'password'
                   ? 'bg-white text-ink-950 shadow-sm border border-ink-200/80'
                   : 'text-ink-600 hover:text-ink-900'
               }`}
             >
-              <Lock size={13} />
+              <Lock size={14} />
               Password
             </button>
           </div>
 
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Full Name */}
             <div>
               <label htmlFor="name" className="mb-1.5 block text-body-s font-semibold text-ink-700">
@@ -239,10 +214,33 @@ export default function SignupPage() {
               </div>
             </div>
 
-            {/* Mobile Number */}
+            {/* Email Address */}
+            <div>
+              <label htmlFor="email" className="mb-1.5 block text-body-s font-semibold text-ink-700">
+                Email address <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Mail size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="you@company.com"
+                  required
+                  autoComplete="email"
+                  className="h-12 w-full rounded-xl border border-ink-200 bg-white pl-11 pr-4 text-body text-ink-900 shadow-sm transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                />
+              </div>
+              {authMethod === 'email_otp' && (
+                <p className="mt-1.5 text-micro text-ink-500">We will email you a secure 6-digit code via Supabase.</p>
+              )}
+            </div>
+
+            {/* Mobile Number (optional for delivery/updates) */}
             <div>
               <label htmlFor="phone" className="mb-1.5 block text-body-s font-semibold text-ink-700">
-                Mobile number {authMethod === 'phone_otp' && <span className="text-red-500">*</span>}
+                Mobile number <span className="text-ink-400 font-normal">(for delivery tracking)</span>
               </label>
               <div className="relative flex">
                 <span className="inline-flex h-12 items-center gap-1.5 rounded-l-xl border border-r-0 border-ink-200 bg-ink-50 px-3.5 font-mono text-body-s font-bold text-ink-700 select-none">
@@ -255,28 +253,7 @@ export default function SignupPage() {
                   value={phone}
                   onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                   placeholder="98114 27517"
-                  required={authMethod === 'phone_otp'}
                   className="h-12 w-full rounded-r-xl border border-ink-200 bg-white px-4 text-body font-mono text-ink-900 shadow-sm transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
-                />
-              </div>
-            </div>
-
-            {/* Email Address */}
-            <div>
-              <label htmlFor="email" className="mb-1.5 block text-body-s font-semibold text-ink-700">
-                Email address {(authMethod === 'email_otp' || authMethod === 'password') && <span className="text-red-500">*</span>}
-              </label>
-              <div className="relative">
-                <Mail size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="you@company.com"
-                  required={authMethod === 'email_otp' || authMethod === 'password'}
-                  autoComplete="email"
-                  className="h-12 w-full rounded-xl border border-ink-200 bg-white pl-11 pr-4 text-body text-ink-900 shadow-sm transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                 />
               </div>
             </div>
@@ -328,11 +305,6 @@ export default function SignupPage() {
                   <Loader2 size={18} className="animate-spin" />
                   Sending code...
                 </>
-              ) : authMethod === 'phone_otp' ? (
-                <>
-                  <Phone size={16} />
-                  Send Mobile OTP & Sign Up
-                </>
               ) : authMethod === 'email_otp' ? (
                 <>
                   <Mail size={16} />
@@ -365,7 +337,7 @@ export default function SignupPage() {
         isOpen={otpModalOpen}
         onClose={() => setOtpModalOpen(false)}
         target={otpTarget}
-        type={otpType}
+        type="email"
         userName={name}
         onVerified={handleOtpVerified}
       />

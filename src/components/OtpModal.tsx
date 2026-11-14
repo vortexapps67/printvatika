@@ -17,7 +17,7 @@ interface OtpModalProps {
   isOpen: boolean;
   onClose: () => void;
   target: string;
-  type: 'phone' | 'email';
+  type?: 'phone' | 'email';
   userName?: string;
   onVerified: (user: any) => void;
 }
@@ -26,7 +26,6 @@ export function OtpModal({
   isOpen,
   onClose,
   target,
-  type,
   userName,
   onVerified,
 }: OtpModalProps) {
@@ -117,7 +116,7 @@ export function OtpModal({
     setError('');
 
     try {
-      const res = await verifyOtp(target, type, code, userName);
+      const res = await verifyOtp(target, code, userName);
 
       if (!res.success) {
         throw new Error(res.error || 'Verification failed. Please check the code and try again.');
@@ -140,7 +139,7 @@ export function OtpModal({
     setError('');
 
     try {
-      const res = await sendOtp(target, type, userName);
+      const res = await sendOtp(target, userName);
       if (!res.success) {
         throw new Error(res.error || 'Failed to resend verification code.');
       }
@@ -169,11 +168,11 @@ export function OtpModal({
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-50 text-primary-600">
-                {type === 'phone' ? <Phone size={22} /> : <Mail size={22} />}
+                <Mail size={22} />
               </div>
               <div>
                 <h3 className="font-display text-title font-bold text-ink-950">
-                  Verify {type === 'phone' ? 'Mobile' : 'Email'}
+                  Verify Your Email
                 </h3>
                 <p className="text-body-s text-ink-500">Enter the 6-digit verification code</p>
               </div>
@@ -190,11 +189,11 @@ export function OtpModal({
           {/* Target Pill */}
           <div className="rounded-xl border border-ink-100 bg-ink-50 px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2 text-body-s font-medium text-ink-800">
-              <ShieldCheck size={16} className="text-primary-600 shrink-0" />
+              <Mail size={16} className="text-primary-600 shrink-0" />
               <span className="font-mono text-body-s">{target}</span>
             </div>
             <span className="font-mono text-micro text-emerald-700 font-semibold uppercase tracking-wider">
-              Sent
+              Sent via Supabase
             </span>
           </div>
 

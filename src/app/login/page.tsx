@@ -28,8 +28,6 @@ export default function LoginPage() {
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<'otp' | 'password'>('otp');
-  const [otpType, setOtpType] = useState<'phone' | 'email'>('phone');
-  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -58,32 +56,23 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
 
-    const targetVal = otpType === 'phone' ? phone.trim() : email.trim();
-
-    if (otpType === 'phone') {
-      const clean = phone.replace(/\D/g, '');
-      if (clean.length < 10) {
-        setError('Please enter a valid 10-digit mobile number.');
-        return;
-      }
-    } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email.trim())) {
-        setError('Please enter a valid email address.');
-        return;
-      }
-    }
-
-    setLoading(true);
-    const res = await sendOtp(targetVal, otpType);
-    setLoading(false);
-
-    if (!res.success) {
-      setError(res.error || 'Failed to send OTP. Please try again.');
+    const cleanEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      setError('Please enter a valid email address.');
       return;
     }
 
-    setOtpTarget(targetVal);
+    setLoading(true);
+    const res = await sendOtp(cleanEmail);
+    setLoading(false);
+
+    if (!res.success) {
+      setError(res.error || 'Failed to send OTP code to your email. Please try again.');
+      return;
+    }
+
+    setOtpTarget(cleanEmail);
     setOtpModalOpen(true);
   };
 
@@ -145,7 +134,7 @@ export default function LoginPage() {
             <p className="mt-2 text-body text-ink-500">Track orders, inspect print proofs, and reorder in one tap.</p>
           </div>
 
-          {/* Tabs: OTP Login vs Password Login */}
+          {/* Tabs: Email OTP Login vs Password Login */}
           <div className="mb-6 grid grid-cols-2 gap-1.5 rounded-2xl bg-ink-100 p-1 border border-ink-200/60">
             <button
               type="button"
@@ -156,8 +145,8 @@ export default function LoginPage() {
                   : 'text-ink-600 hover:text-ink-900'
               }`}
             >
-              <Phone size={14} className="text-primary-600" />
-              Instant OTP Login
+              <Mail size={14} className="text-primary-600" />
+              Email OTP Login
             </button>
             <button
               type="button"
@@ -175,77 +164,25 @@ export default function LoginPage() {
 
           {activeTab === 'otp' ? (
             <form onSubmit={handleSendOtp} className="space-y-4">
-              {/* Toggle Phone vs Email */}
-              <div className="flex items-center justify-between text-body-s text-ink-600 mb-1">
-                <span className="font-semibold text-ink-700">Receive OTP on:</span>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setOtpType('phone')}
-                    className={`font-mono text-micro px-2.5 py-1 rounded-lg font-semibold transition-colors ${
-                      otpType === 'phone'
-                        ? 'bg-primary-50 text-primary-700 border border-primary-200'
-                        : 'text-ink-500 hover:text-ink-900'
-                    }`}
-                  >
-                    Mobile SMS
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setOtpType('email')}
-                    className={`font-mono text-micro px-2.5 py-1 rounded-lg font-semibold transition-colors ${
-                      otpType === 'email'
-                        ? 'bg-primary-50 text-primary-700 border border-primary-200'
-                        : 'text-ink-500 hover:text-ink-900'
-                    }`}
-                  >
-                    Email
-                  </button>
+              <div>
+                <label htmlFor="login-email-otp" className="mb-1.5 block text-body-s font-semibold text-ink-700">
+                  Email address
+                </label>
+                <div className="relative">
+                  <Mail size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
+                  <input
+                    id="login-email-otp"
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="you@company.com"
+                    required
+                    autoFocus
+                    className="h-12 w-full rounded-xl border border-ink-200 bg-white pl-11 pr-4 text-body text-ink-900 shadow-sm transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                  />
                 </div>
+                <p className="mt-1.5 text-micro text-ink-500">We will email you a secure 6-digit code via Supabase.</p>
               </div>
-
-              {otpType === 'phone' ? (
-                <div>
-                  <label htmlFor="login-phone" className="mb-1.5 block text-body-s font-semibold text-ink-700">
-                    Mobile Number
-                  </label>
-                  <div className="relative flex">
-                    <span className="inline-flex h-12 items-center gap-1.5 rounded-l-xl border border-r-0 border-ink-200 bg-ink-50 px-3.5 font-mono text-body-s font-bold text-ink-700 select-none">
-                      🇮🇳 +91
-                    </span>
-                    <input
-                      id="login-phone"
-                      type="tel"
-                      inputMode="numeric"
-                      value={phone}
-                      onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                      placeholder="98114 27517"
-                      required
-                      autoFocus
-                      className="h-12 w-full rounded-r-xl border border-ink-200 bg-white px-4 text-body font-mono text-ink-900 shadow-sm transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <label htmlFor="login-email-otp" className="mb-1.5 block text-body-s font-semibold text-ink-700">
-                    Email address
-                  </label>
-                  <div className="relative">
-                    <Mail size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-400" />
-                    <input
-                      id="login-email-otp"
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      placeholder="you@company.com"
-                      required
-                      autoFocus
-                      className="h-12 w-full rounded-xl border border-ink-200 bg-white pl-11 pr-4 text-body text-ink-900 shadow-sm transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
-                    />
-                  </div>
-                </div>
-              )}
 
               {error && (
                 <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-body-s text-red-700 animate-fade-rise">
@@ -261,11 +198,11 @@ export default function LoginPage() {
                 {loading ? (
                   <>
                     <Loader2 size={18} className="animate-spin" />
-                    Sending OTP...
+                    Sending Code...
                   </>
                 ) : (
                   <>
-                    Send Verification Code <ArrowRight size={16} />
+                    Send Email OTP <ArrowRight size={16} />
                   </>
                 )}
               </button>
@@ -348,7 +285,7 @@ export default function LoginPage() {
         isOpen={otpModalOpen}
         onClose={() => setOtpModalOpen(false)}
         target={otpTarget}
-        type={otpType}
+        type="email"
         onVerified={handleOtpVerified}
       />
     </div>
