@@ -11,6 +11,9 @@ interface AuthContextType {
   signUp: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  sendOtp: (target: string, type: 'phone' | 'email') => Promise<{ success: boolean; demoCode?: string; error?: string }>;
+  verifyOtp: (target: string, type: 'phone' | 'email', code: string, name?: string) => Promise<{ success: boolean; user?: any; error?: string }>;
+  setCustomUser: (user: any) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,23 +26,70 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const supabase = getBrowserSupabase();
 
-    // Initial session
+    // 1. Initial Supabase session
     supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      setLoading(false);
+      if (data.session?.user) {
+        setSession(data.session);
+        setUser(data.session.user);
+        setLoading(false);
+      } else {
+        // 2. Check local OTP session fallback
+        if (typeof window !== 'undefined') {
+          try {
+            const stored = localStorage.getItem('vatika_customer_session');
+            if (stored) {
+              const parsed = JSON.parse(stored);
+              const customUser: any = {
+                id: parsed.id,
+                email: parsed.email || '',
+                phone: parsed.phone || '',
+                user_metadata: {
+                  full_name: parsed.name || '',
+                  phone: parsed.phone || '',
+                },
+              };
+              setUser(customUser);
+            }
+          } catch {}
+        }
+        setLoading(false);
+      }
     });
 
-    // Listen for changes
+    // Listen for Supabase changes
     const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
-      setUser(s?.user ?? null);
+      if (s?.user) setUser(s.user);
     });
 
     return () => {
       listener.subscription.unsubscribe();
     };
   }, []);
+
+  const setCustomUser = (u: any) => {
+    if (!u) {
+      setUser(null);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('vatika_customer_session');
+      }
+      return;
+    }
+
+    const formatted: any = {
+      id: u.id,
+      email: u.email || '',
+      phone: u.phone || '',
+      user_metadata: {
+        full_name: u.name || '',
+        phone: u.phone || '',
+      },
+    };
+    setUser(formatted);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('vatika_customer_session', JSON.stringify(u));
+    }
+  };
 
   const signUp = async (email: string, password: string, name: string) => {
     const supabase = getBrowserSupabase();
@@ -51,8 +101,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       return { error: error?.message ?? null };
     } catch (e: any) {
-      /* A network-level failure (DNS, blocked request, offline) rejects rather
-         than returning an error object — surface it instead of throwing through. */
       return { error: e?.message || 'Could not reach the sign-up service. Please try again.' };
     }
   };
@@ -67,17 +115,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const sendOtp = async (target: string, type: 'phone' | 'email') => {
+    try {
+      const res = await fetch('/api/auth/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target, type }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return { success: false, error: data.error || 'Failed to send OTP.' };
+      }
+      return { success: true, demoCode: data.demoCode };
+    } catch (e: any) {
+      return { success: false, error: e?.message || 'Network error sending OTP.' };
+    }
+  };
+
+  const verifyOtp = async (target: string, type: 'phone' | 'email', code: string, name?: string) => {
+    try {
+      const res = await fetch('/api/auth/otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target, type, code, name }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return { success: false, error: data.error || 'Verification failed.' };
+      }
+      setCustomUser(data.user);
+      return { success: true, user: data.user };
+    } catch (e: any) {
+      return { success: false, error: e?.message || 'Network error verifying OTP.' };
+    }
+  };
+
   const signOut = async () => {
     const supabase = getBrowserSupabase();
     try {
       await supabase.auth.signOut();
-    } catch {
-      /* Signing out must never block the UI. */
-    }
+    } catch {}
+    setCustomUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        loading,
+        signUp,
+        signIn,
+        signOut,
+        sendOtp,
+        verifyOtp,
+        setCustomUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
