@@ -5,11 +5,7 @@ import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '../context/CartContext';
 import { AuthProvider } from '../context/AuthContext';
-import { Navbar } from '../components/Navbar';
-import { AnnouncementBar } from '../components/AnnouncementBar';
-import { MobileBottomNav } from '../components/MobileBottomNav';
-import { PwaInstallPrompt } from '../components/PwaInstallPrompt';
-import { Footer } from '../components/Footer';
+import { StorefrontShell } from '../components/StorefrontShell';
 import { SITE } from '../lib/site';
 
 /* Display + body: Plus Jakarta Sans — premium, modern, geometric. */
@@ -150,14 +146,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <AuthProvider>
           <CartProvider>
-            <AnnouncementBar />
-            <Navbar />
-            <main id="main" className="flex-grow pb-24 md:pb-8">
+            <StorefrontShell>
               {children}
-            </main>
-            <Footer />
-            <MobileBottomNav />
-            <PwaInstallPrompt />
+            </StorefrontShell>
           </CartProvider>
         </AuthProvider>
       </body>

@@ -613,72 +613,75 @@ export default function AdminDashboardPage() {
   ).length;
 
   return (
-    <div className="min-h-screen bg-ink-50 pb-24 text-ink-900">
+    <div className="min-h-screen bg-slate-950 pb-16 text-slate-100 antialiased selection:bg-primary-500 selection:text-white">
       {/* Toast Alert */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-lg border border-primary-500 bg-ink-950 px-5 py-3.5 font-mono text-body-s font-semibold text-white shadow-2xl animate-fade-rise">
-          <Sparkles size={17} className="text-primary-400" />
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl border border-primary-500/40 bg-slate-900/95 px-5 py-3.5 font-mono text-xs font-semibold text-white shadow-2xl backdrop-blur-xl animate-fade-rise">
+          <Sparkles size={16} className="text-primary-400" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Top Header */}
-      <header className="sticky top-0 z-40 border-b border-ink-200 bg-white shadow-sm">
+      {/* Top Header - Sleek Executive Navbar */}
+      <header className="sticky top-0 z-40 border-b border-slate-800/90 bg-slate-950/90 backdrop-blur-xl shadow-lg">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-4">
-            <img
-              src="/images/logo-lockup.webp"
-              alt="Print Vatika"
-              width={140}
-              height={40}
-              className="h-8 w-auto object-contain"
-            />
-            <div className="hidden h-5 w-px bg-ink-200 sm:block" />
-            <div className="flex items-center gap-2">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-mono text-micro font-semibold uppercase tracking-wider2 text-ink-600">
-                Press Admin Control
-              </span>
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-600 via-primary-500 to-indigo-600 font-black text-white shadow-lg shadow-primary-500/30">
+              PV
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-display font-extrabold text-base tracking-tight text-white">
+                  PrintVatika
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Live Press Console
+                </span>
+              </div>
+              <p className="font-mono text-xs text-slate-400">Commercial Printing Control Plane</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
+            <button
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="hidden sm:inline-flex"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700/80 bg-slate-900/70 px-3 py-1.5 font-mono text-xs font-medium text-slate-300 shadow-sm transition-all hover:border-slate-600 hover:bg-slate-800 hover:text-white disabled:opacity-50"
             >
-              <RefreshCw size={13} className={isRefreshing ? 'animate-spin' : ''} />
-              Sync Real-Time
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open('/', '_blank')}
+              <RefreshCw size={13} className={isRefreshing ? 'animate-spin text-primary-400' : 'text-slate-400'} />
+              <span className="hidden sm:inline">Sync Real-Time</span>
+            </button>
+            <a
+              href="/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700/80 bg-slate-900/70 px-3 py-1.5 font-mono text-xs font-medium text-slate-300 shadow-sm transition-all hover:border-slate-600 hover:bg-slate-800 hover:text-white"
               title="Open storefront in new tab"
             >
-              <ExternalLink size={13} />
+              <ExternalLink size={13} className="text-slate-400" />
               <span className="hidden sm:inline">Storefront</span>
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-red-600 hover:bg-red-50">
-              <LogOut size={14} />
-              <span className="hidden sm:inline">Exit</span>
-            </Button>
+            </a>
+            <button
+              onClick={handleLogout}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-red-950/40 px-3 py-1.5 font-mono text-xs font-medium text-red-300 shadow-sm transition-all hover:bg-red-900/60 hover:text-white"
+            >
+              <LogOut size={13} />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
           </div>
         </div>
 
         {/* Tab Strip */}
-        <div className="border-t border-ink-100 bg-white px-4 sm:px-6">
-          <nav className="scrollbar-none mx-auto flex max-w-7xl space-x-1 overflow-x-auto py-2">
+        <div className="border-t border-slate-800/80 bg-slate-900/50 px-4 sm:px-6">
+          <nav className="scrollbar-none mx-auto flex max-w-7xl space-x-1.5 overflow-x-auto py-2">
             {[
-              { id: 'orders', label: 'Orders Queue', count: orders.length, icon: ShoppingBag },
-              { id: 'products', label: 'Products & Images', count: products.length, icon: ImageIcon },
+              { id: 'orders', label: 'Order Queue', count: orders.length, icon: ShoppingBag },
+              { id: 'products', label: 'Products & Catalog', count: products.length, icon: ImageIcon },
               { id: 'banners', label: 'Hero Banners', icon: Sparkles },
-              { id: 'promos', label: 'Offers & Promos', icon: Tag },
+              { id: 'promos', label: 'Promos & Offers', icon: Tag },
               { id: 'pricing', label: 'Pricing Rules', icon: Percent },
-              { id: 'settings', label: 'Master Password & Settings', icon: KeyRound },
+              { id: 'settings', label: 'Master Password', icon: KeyRound },
             ].map(tab => {
               const active = activeTab === tab.id;
               const Icon = tab.icon;
@@ -686,18 +689,18 @@ export default function AdminDashboardPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex flex-none items-center gap-2 rounded-md px-3.5 py-2 font-mono text-micro font-semibold uppercase tracking-wider2 transition-all ${
+                  className={`flex flex-none items-center gap-2 rounded-xl px-3.5 py-2 font-mono text-xs font-bold uppercase tracking-wider transition-all duration-150 ${
                     active
-                      ? 'bg-ink-950 text-white shadow-sm'
-                      : 'text-ink-600 hover:bg-ink-100 hover:text-ink-950'
+                      ? 'bg-gradient-to-r from-primary-600 to-indigo-600 text-white shadow-md shadow-primary-500/20'
+                      : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
                   }`}
                 >
-                  <Icon size={14} />
+                  <Icon size={14} className={active ? 'text-white' : 'text-slate-500'} />
                   <span>{tab.label}</span>
                   {tab.count !== undefined && (
                     <span
-                      className={`ml-1 rounded px-1.5 py-0.5 text-[10px] ${
-                        active ? 'bg-primary-500 text-white' : 'bg-ink-200 text-ink-700'
+                      className={`ml-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        active ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-300'
                       }`}
                     >
                       {tab.count}
@@ -734,22 +737,27 @@ export default function AdminDashboardPage() {
             {activeTab === 'orders' && (
               <div className="space-y-6">
                 {/* Metrics */}
-                <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <dl className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
                   {[
-                    { label: 'Total Orders', value: orders.length, icon: ShoppingBag },
-                    { label: 'Payment Pending', value: pendingOrders, icon: Clock },
-                    { label: 'In Production', value: inPressOrders, icon: Printer },
+                    { label: 'Total Orders', value: orders.length, icon: ShoppingBag, color: 'text-blue-600 bg-blue-50 border-blue-200/60' },
+                    { label: 'Payment Pending', value: pendingOrders, icon: Clock, color: 'text-amber-600 bg-amber-50 border-amber-200/60' },
+                    { label: 'In Production', value: inPressOrders, icon: Printer, color: 'text-emerald-600 bg-emerald-50 border-emerald-200/60' },
                     {
                       label: 'Press Volume',
                       value: `₹${totalRevenue.toLocaleString('en-IN')}`,
                       icon: TrendingUp,
+                      color: 'text-purple-600 bg-purple-50 border-purple-200/60',
                     },
-                  ].map(({ label, value, icon: Icon }) => (
-                    <div key={label} className="rounded-xl border border-ink-200 bg-white p-4 shadow-sm">
-                      <dt className="label-caps text-ink-500">{label}</dt>
-                      <dd className="mt-2 flex items-baseline justify-between">
-                        <span className="font-display text-title-l font-bold text-ink-950">{value}</span>
-                        <Icon size={18} className="text-ink-400" />
+                  ].map(({ label, value, icon: Icon, color }) => (
+                    <div key={label} className="rounded-2xl border border-ink-200/80 bg-white p-5 shadow-sm transition-all hover:shadow-md">
+                      <div className="flex items-center justify-between">
+                        <dt className="font-mono text-micro font-bold uppercase tracking-wider text-ink-500">{label}</dt>
+                        <div className={`flex h-9 w-9 items-center justify-center rounded-xl border ${color}`}>
+                          <Icon size={16} />
+                        </div>
+                      </div>
+                      <dd className="mt-3">
+                        <span className="font-display text-2xl sm:text-3xl font-extrabold text-ink-950">{value}</span>
                       </dd>
                     </div>
                   ))}
