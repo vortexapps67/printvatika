@@ -39,7 +39,6 @@ export default function LoginPage() {
   // OTP Modal State
   const [otpModalOpen, setOtpModalOpen] = useState(false);
   const [otpTarget, setOtpTarget] = useState('');
-  const [otpDemoCode, setOtpDemoCode] = useState<string | undefined>(undefined);
 
   React.useEffect(() => {
     if (user) router.replace(getSafeNext());
@@ -85,7 +84,6 @@ export default function LoginPage() {
     }
 
     setOtpTarget(targetVal);
-    setOtpDemoCode(res.demoCode);
     setOtpModalOpen(true);
   };
 

@@ -36,8 +36,8 @@ export default function AccountPage() {
     (async () => {
       try {
         const supabase = getBrowserSupabase();
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData.session?.access_token;
+        const sessionData = supabase ? await supabase.auth.getSession() : null;
+        const token = sessionData?.data?.session?.access_token;
         const res = await fetch('/api/account/orders', {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });

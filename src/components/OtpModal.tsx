@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import {
   ShieldCheck,
   X,
@@ -29,6 +30,7 @@ export function OtpModal({
   userName,
   onVerified,
 }: OtpModalProps) {
+  const { verifyOtp, sendOtp } = useAuth();
   const [digits, setDigits] = useState<string[]>(['', '', '', '', '', '']);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -115,26 +117,15 @@ export function OtpModal({
     setError('');
 
     try {
-      const res = await fetch('/api/auth/otp/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          target,
-          type,
-          code,
-          name: userName,
-        }),
-      });
+      const res = await verifyOtp(target, type, code, userName);
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Verification failed. Please try again.');
+      if (!res.success) {
+        throw new Error(res.error || 'Verification failed. Please check the code and try again.');
       }
 
       setVerifiedSuccess(true);
       setTimeout(() => {
-        onVerified(data.user);
+        onVerified(res.user);
       }, 700);
     } catch (err: any) {
       setError(err?.message || 'Invalid code. Please try again.');
@@ -149,20 +140,15 @@ export function OtpModal({
     setError('');
 
     try {
-      const res = await fetch('/api/auth/otp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target, type }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to resend OTP.');
+      const res = await sendOtp(target, type, userName);
+      if (!res.success) {
+        throw new Error(res.error || 'Failed to resend verification code.');
       }
       setCountdown(45);
       setDigits(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
     } catch (err: any) {
-      setError(err?.message || 'Could not resend OTP.');
+      setError(err?.message || 'Could not resend verification code.');
     } finally {
       setIsResending(false);
     }

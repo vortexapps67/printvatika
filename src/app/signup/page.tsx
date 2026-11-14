@@ -43,7 +43,6 @@ export default function SignupPage() {
   const [otpModalOpen, setOtpModalOpen] = useState(false);
   const [otpTarget, setOtpTarget] = useState('');
   const [otpType, setOtpType] = useState<'phone' | 'email'>('phone');
-  const [otpDemoCode, setOtpDemoCode] = useState<string | undefined>(undefined);
 
   React.useEffect(() => {
     if (user) router.replace(getSafeNext());
@@ -74,7 +73,7 @@ export default function SignupPage() {
     }
 
     setLoading(true);
-    const res = await sendOtp(targetVal, typeToVerify);
+    const res = await sendOtp(targetVal, typeToVerify, name);
     setLoading(false);
 
     if (!res.success) {
@@ -84,7 +83,6 @@ export default function SignupPage() {
 
     setOtpTarget(targetVal);
     setOtpType(typeToVerify);
-    setOtpDemoCode(res.demoCode);
     setOtpModalOpen(true);
   };
 

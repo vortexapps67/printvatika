@@ -5,21 +5,30 @@
    is the client that drives customer sign-in / sign-up / sign-out; the server
    still talks to Supabase through the secret key in supabaseStore.ts.
    ───────────────────────────────────────────────────────────────────────────── */
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-let cached: ReturnType<typeof createClient> | null = null;
+let cached: SupabaseClient | null = null;
 
-export function getBrowserSupabase() {
+export function isBrowserSupabaseConfigured(): boolean {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  return Boolean(url && anonKey && !/your-|YOUR_|placeholder/i.test(anonKey));
+}
+
+export function getBrowserSupabase(): SupabaseClient | null {
   if (cached) return cached;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-  if (!url || !anonKey) {
-    throw new Error('Supabase public credentials not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+  if (!url || !anonKey || /your-|YOUR_|placeholder/i.test(anonKey)) {
+    return null;
   }
-  cached = createClient(
-    url,
-    anonKey,
-    { auth: { persistSession: true, autoRefreshToken: true } }
-  );
-  return cached;
+  try {
+    cached = createClient(url, anonKey, {
+      auth: { persistSession: true, autoRefreshToken: true },
+    });
+    return cached;
+  } catch (err) {
+    console.warn('Failed to initialize browser Supabase client:', err);
+    return null;
+  }
 }

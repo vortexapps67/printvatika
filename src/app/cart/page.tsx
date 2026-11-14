@@ -274,8 +274,9 @@ export default function CartPage() {
          pastes an offer and goes straight to paying still gets it. */
       const appliedCoupon = coupon ?? (couponInput.trim() ? await applyCoupon() : null);
 
-      const { data: sessionData } = await getBrowserSupabase().auth.getSession();
-      const accessToken = sessionData.session?.access_token;
+      const browserSb = getBrowserSupabase();
+      const sessionData = browserSb ? await browserSb.auth.getSession() : null;
+      const accessToken = sessionData?.data?.session?.access_token;
 
       // 1. Submit cart specifications and buyer data to API to create PENDING order
       const response = await fetch('/api/orders', {
