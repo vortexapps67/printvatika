@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateOtp, normalizeEmail, normalizePhone } from '../../../../../lib/otpService';
 import { checkRateLimit } from '../../../../../lib/rateLimit';
+import { sendRealSms, sendRealEmail } from '../../../../../lib/smsService';
 
 export async function POST(req: NextRequest) {
   try {
@@ -48,39 +49,28 @@ export async function POST(req: NextRequest) {
     const { code, expiresAt } = generateOtp(target, type);
     const normalizedTarget = type === 'phone' ? normalizePhone(target) : normalizeEmail(target);
 
-    // If WhatsApp API credentials are configured, dispatch real WhatsApp OTP message
-    const whatsappApiToken = process.env.WHATSAPP_API_TOKEN;
-    const whatsappApiUrl = process.env.WHATSAPP_API_URL;
-    if (type === 'phone' && whatsappApiToken && whatsappApiUrl) {
-      try {
-        await fetch(whatsappApiUrl, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${whatsappApiToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            messaging_product: 'whatsapp',
-            to: normalizedTarget.replace(/\+/g, ''),
-            type: 'text',
-            text: {
-              body: `Your Print Vatika verification code is: ${code}. Valid for 10 minutes. Do not share this code with anyone.`,
-            },
-          }),
-        });
-      } catch (err) {
-        console.warn('Failed to send live WhatsApp message:', err);
-      }
+    // 2. Dispatch real SMS or Email
+    let dispatchResult: any = { sent: false };
+    if (type === 'phone') {
+      dispatchResult = await sendRealSms(normalizedTarget, code);
+    } else {
+      dispatchResult = await sendRealEmail(normalizedTarget, code);
     }
+
+    // Check if test / demo mode is explicitly enabled
+    const isTestMode = process.env.ENABLE_DEMO_OTP === 'true';
 
     return NextResponse.json({
       success: true,
-      message: `OTP sent to ${normalizedTarget}`,
+      message: dispatchResult.sent
+        ? `Verification code sent via ${dispatchResult.provider || 'SMS'}`
+        : `Verification code generated for ${normalizedTarget}`,
       target: normalizedTarget,
       type,
       expiresAt,
-      // Pass demo code for instant local / test verification without requiring paid SMS carrier
-      demoCode: code,
+      gatewayConfigured: dispatchResult.sent,
+      // Only include demo code if test mode is explicitly enabled in env
+      demoCode: isTestMode ? code : undefined,
     });
   } catch (error: any) {
     console.error('Error generating OTP:', error);

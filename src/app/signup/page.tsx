@@ -369,7 +369,6 @@ export default function SignupPage() {
         target={otpTarget}
         type={otpType}
         userName={name}
-        demoCode={otpDemoCode}
         onVerified={handleOtpVerified}
       />
     </div>

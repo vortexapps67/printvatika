@@ -18,7 +18,6 @@ interface OtpModalProps {
   target: string;
   type: 'phone' | 'email';
   userName?: string;
-  demoCode?: string;
   onVerified: (user: any) => void;
 }
 
@@ -28,7 +27,6 @@ export function OtpModal({
   target,
   type,
   userName,
-  demoCode,
   onVerified,
 }: OtpModalProps) {
   const [digits, setDigits] = useState<string[]>(['', '', '', '', '', '']);
@@ -170,17 +168,6 @@ export function OtpModal({
     }
   };
 
-  const handleUseDemo = () => {
-    if (!demoCode) return;
-    const chars = demoCode.split('').slice(0, 6);
-    const newDigits = [...digits];
-    chars.forEach((c, i) => {
-      newDigits[i] = c;
-    });
-    setDigits(newDigits);
-    handleVerify(demoCode);
-  };
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/70 backdrop-blur-md p-4 animate-in fade-in duration-200"
@@ -224,23 +211,6 @@ export function OtpModal({
               Sent
             </span>
           </div>
-
-          {/* Quick Demo Helper for 1-Click Verification */}
-          {demoCode && (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-micro text-emerald-900 font-medium">
-                <Sparkles size={14} className="text-emerald-600 shrink-0" />
-                <span>Verification code: <strong className="font-mono text-label">{demoCode}</strong></span>
-              </div>
-              <button
-                type="button"
-                onClick={handleUseDemo}
-                className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-micro px-2.5 py-1 font-semibold transition-colors"
-              >
-                Auto-Fill
-              </button>
-            </div>
-          )}
 
           {error && (
             <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-body-s text-red-700 animate-in fade-in">

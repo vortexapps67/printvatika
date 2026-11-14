@@ -351,7 +351,6 @@ export default function LoginPage() {
         onClose={() => setOtpModalOpen(false)}
         target={otpTarget}
         type={otpType}
-        demoCode={otpDemoCode}
         onVerified={handleOtpVerified}
       />
     </div>
