@@ -52,7 +52,7 @@ export default function CartPage() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   // Customer auth (Supabase). Replaces the old localStorage scrape.
-  const { user: authUser } = useAuth();
+  const { user: authUser, signIn } = useAuth();
   const currentUser = authUser
     ? {
         id: authUser.id,
@@ -60,6 +60,31 @@ export default function CartPage() {
         name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || '',
       }
     : null;
+
+  // Auth gate modal state for login-before-ordering
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalEmail, setAuthModalEmail] = useState('');
+  const [authModalPassword, setAuthModalPassword] = useState('');
+  const [authModalLoading, setAuthModalLoading] = useState(false);
+  const [authModalError, setAuthModalError] = useState('');
+
+  const handleModalSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthModalError('');
+    setAuthModalLoading(true);
+    try {
+      const { error } = await signIn(authModalEmail, authModalPassword);
+      if (error) {
+        setAuthModalError(error);
+      } else {
+        setShowAuthModal(false);
+      }
+    } catch (err: any) {
+      setAuthModalError(err?.message || 'Failed to sign in. Please try again.');
+    } finally {
+      setAuthModalLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (authUser?.email && !checkoutDetails.customerEmail) {
@@ -230,6 +255,13 @@ export default function CartPage() {
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Enforce login before ordering
+    if (!currentUser) {
+      setShowAuthModal(true);
+      return;
+    }
+
     if (!validateForm()) return;
 
     /* Guest checkout. A signed-in session is used when one exists (pre-filling
@@ -840,19 +872,32 @@ export default function CartPage() {
                     <SpecRow label="Total payable" value={`₹${amountDue}`} strong className="pb-3 pt-3" />
                   </dl>
 
-                  <Button type="submit" size="lg" plate disabled={isLoading} className="w-full">
-                    {isLoading ? (
-                      <>
-                        <Loader2 size={16} className="animate-spin" aria-hidden="true" />
-                        Processing
-                      </>
-                    ) : (
-                      <>
-                        <CreditCard size={16} aria-hidden="true" />
-                        Place order & pay
-                      </>
-                    )}
-                  </Button>
+                  {!currentUser ? (
+                    <Button
+                      type="button"
+                      size="lg"
+                      plate
+                      onClick={() => setShowAuthModal(true)}
+                      className="w-full bg-gradient-to-r from-primary-600 via-primary-500 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white shadow-lg transition-all"
+                    >
+                      <Lock size={16} aria-hidden="true" />
+                      Sign in to place order
+                    </Button>
+                  ) : (
+                    <Button type="submit" size="lg" plate disabled={isLoading} className="w-full">
+                      {isLoading ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+                          Processing
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard size={16} aria-hidden="true" />
+                          Place order & pay
+                        </>
+                      )}
+                    </Button>
+                  )}
 
                   <p className="flex items-center justify-center gap-2 text-center font-mono text-micro uppercase tracking-wider2 text-ink-400">
                     <ShieldCheck size={13} className="text-emerald-600" aria-hidden="true" />
@@ -1189,6 +1234,117 @@ export default function CartPage() {
                   <MessageCircle size={13} />
                   Help on WhatsApp
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ---- Sleek Login-Before-Ordering Modal ---- */}
+      {showAuthModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/70 backdrop-blur-md p-4 animate-in fade-in duration-200"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-md overflow-hidden rounded-3xl border border-white/20 bg-white shadow-2xl animate-in zoom-in-95 duration-200">
+            <ColourStrip />
+            <div className="p-6 sm:p-8 space-y-5">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-50 text-primary-600">
+                    <Lock size={20} />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-title font-bold text-ink-950">
+                      Sign in to order
+                    </h3>
+                    <p className="text-body-s text-ink-500">
+                      Link this order to your account
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAuthModal(false)}
+                  className="rounded-full p-1.5 text-ink-400 hover:bg-ink-100 hover:text-ink-700 transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <p className="text-body-s text-ink-600 leading-relaxed">
+                An account protects your print artwork, lets you inspect live 300 DPI press proofs, and enables automatic WhatsApp order tracking.
+              </p>
+
+              {authModalError && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-body-s text-red-700">
+                  {authModalError}
+                </div>
+              )}
+
+              <form onSubmit={handleModalSignIn} className="space-y-4">
+                <Field label="Email address" htmlFor="auth-email">
+                  <input
+                    id="auth-email"
+                    type="email"
+                    value={authModalEmail}
+                    onChange={e => setAuthModalEmail(e.target.value)}
+                    placeholder="you@company.com"
+                    required
+                  />
+                </Field>
+                <Field label="Password" htmlFor="auth-password">
+                  <input
+                    id="auth-password"
+                    type="password"
+                    value={authModalPassword}
+                    onChange={e => setAuthModalPassword(e.target.value)}
+                    placeholder="Your password"
+                    required
+                  />
+                </Field>
+
+                <Button
+                  type="submit"
+                  size="lg"
+                  plate
+                  disabled={authModalLoading}
+                  className="w-full"
+                >
+                  {authModalLoading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    'Sign In & Continue Order'
+                  )}
+                </Button>
+              </form>
+
+              <div className="relative my-4 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-ink-200" />
+                </div>
+                <span className="relative bg-white px-3 font-mono text-micro uppercase text-ink-400">
+                  or
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <Link
+                  href="/login?next=/cart"
+                  className="flex items-center justify-center rounded-xl border border-ink-200 bg-ink-50 px-3 py-2.5 text-center font-mono text-micro font-semibold uppercase tracking-wider text-ink-700 hover:bg-ink-100 transition-colors"
+                >
+                  Full Sign In
+                </Link>
+                <Link
+                  href="/signup?next=/cart"
+                  className="flex items-center justify-center rounded-xl border border-primary-200 bg-primary-50 px-3 py-2.5 text-center font-mono text-micro font-semibold uppercase tracking-wider text-primary-700 hover:bg-primary-100 transition-colors"
+                >
+                  Create Account
+                </Link>
               </div>
             </div>
           </div>

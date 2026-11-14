@@ -316,6 +316,12 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
 }
 
 /* Respect the OS setting. The register animation and the gradient

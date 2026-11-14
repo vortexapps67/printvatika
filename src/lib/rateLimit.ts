@@ -1,29 +1,31 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 interface RateLimitRecord {
   count: number;
   resetTime: number;
 }
 
-// In-memory store for rate limiting by key (IP or custom identifier)
+// In-memory sliding window store
 const rateLimitStore = new Map<string, RateLimitRecord>();
 
-// Cleanup stale entries every 5 minutes to prevent memory leaks
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now();
-    rateLimitStore.forEach((record, key) => {
-      if (now > record.resetTime) {
-        rateLimitStore.delete(key);
-      }
-    });
-  }, 5 * 60 * 1000);
+// Periodic garbage collection for expired entries (safe for serverless lambdas)
+let lastCleanup = Date.now();
+function cleanupExpired() {
+  const now = Date.now();
+  if (now - lastCleanup < 60_000) return;
+  lastCleanup = now;
+
+  rateLimitStore.forEach((record, key) => {
+    if (record.resetTime <= now) {
+      rateLimitStore.delete(key);
+    }
+  });
 }
 
 export interface RateLimitOptions {
-  limit: number;       // Maximum allowed requests within window
-  windowMs: number;    // Window duration in milliseconds
-  prefix?: string;     // Unique namespace prefix for the endpoint
+  limit: number;
+  windowMs: number;
+  prefix?: string;
 }
 
 export interface RateLimitResult {
@@ -34,32 +36,37 @@ export interface RateLimitResult {
 }
 
 /**
- * Extracts the client's IP address from standard request headers.
+ * Extracts the real client IP address from proxy and CDN headers.
  */
-export function getClientIp(req: NextRequest): string {
+export function getClientIp(req: Request | NextRequest): string {
   const forwardedFor = req.headers.get('x-forwarded-for');
   if (forwardedFor) {
-    return forwardedFor.split(',')[0].trim();
+    const firstIp = forwardedFor.split(',')[0].trim();
+    if (firstIp) return firstIp;
   }
-  const realIp = req.headers.get('x-real-ip');
-  if (realIp) {
-    return realIp.trim();
-  }
+
+  const realIp = req.headers.get('x-real-ip') || req.headers.get('cf-connecting-ip');
+  if (realIp) return realIp.trim();
+
   return '127.0.0.1';
 }
 
 /**
  * Checks and increments rate limit for a given request.
  */
-export function checkRateLimit(req: NextRequest, options: RateLimitOptions): RateLimitResult {
+export function checkRateLimit(
+  req: Request | NextRequest,
+  options: RateLimitOptions
+): RateLimitResult {
+  cleanupExpired();
+
   const ip = getClientIp(req);
   const key = `${options.prefix || 'rl'}:${ip}`;
   const now = Date.now();
 
-  const record = rateLimitStore.get(key);
+  let record = rateLimitStore.get(key);
 
-  if (!record || now > record.resetTime) {
-    // New window
+  if (!record || now >= record.resetTime) {
     rateLimitStore.set(key, {
       count: 1,
       resetTime: now + options.windowMs,
@@ -67,13 +74,15 @@ export function checkRateLimit(req: NextRequest, options: RateLimitOptions): Rat
     return {
       success: true,
       limit: options.limit,
-      remaining: options.limit - 1,
+      remaining: Math.max(0, options.limit - 1),
       resetInSeconds: Math.ceil(options.windowMs / 1000),
     };
   }
 
-  if (record.count >= options.limit) {
-    const resetInSeconds = Math.max(1, Math.ceil((record.resetTime - now) / 1000));
+  record.count += 1;
+  const resetInSeconds = Math.max(1, Math.ceil((record.resetTime - now) / 1000));
+
+  if (record.count > options.limit) {
     return {
       success: false,
       limit: options.limit,
@@ -82,12 +91,38 @@ export function checkRateLimit(req: NextRequest, options: RateLimitOptions): Rat
     };
   }
 
-  record.count += 1;
-  const resetInSeconds = Math.max(1, Math.ceil((record.resetTime - now) / 1000));
   return {
     success: true,
     limit: options.limit,
-    remaining: options.limit - record.count,
+    remaining: Math.max(0, options.limit - record.count),
     resetInSeconds,
   };
+}
+
+/**
+ * Expressive helper to return an immediate 429 response if limited
+ */
+export function enforceRateLimit(
+  req: Request | NextRequest,
+  options: RateLimitOptions
+): NextResponse | null {
+  const result = checkRateLimit(req, options);
+  if (!result.success) {
+    return NextResponse.json(
+      {
+        error: `Rate limit exceeded. Please wait ${result.resetInSeconds} seconds before trying again.`,
+        retryAfter: result.resetInSeconds,
+      },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(result.resetInSeconds),
+          'X-RateLimit-Limit': String(result.limit),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': String(Math.ceil((Date.now() + result.resetInSeconds * 1000) / 1000)),
+        },
+      }
+    );
+  }
+  return null;
 }

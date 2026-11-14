@@ -70,6 +70,14 @@ export async function POST(req: NextRequest) {
       }
     }
     if (!resolvedUserId && typeof body.userId === 'string') resolvedUserId = body.userId;
+
+    // Enforce login before ordering
+    if (!resolvedUserId && !token && !body.userId) {
+      return NextResponse.json(
+        { error: 'Please sign in or create an account to place your order.' },
+        { status: 401 }
+      );
+    }
     const {
       customerName,
       customerEmail,

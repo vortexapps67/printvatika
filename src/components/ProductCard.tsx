@@ -56,11 +56,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     >
       <Link href={href} className="flex h-full flex-col focus-visible:outline-none">
         {/* Image: square, uncropped-feeling, fills the card top */}
-        <div className="relative aspect-square overflow-hidden bg-ink-50">
+        <div className="relative aspect-square overflow-hidden bg-ink-100">
+          {/* Subtle Shimmer Skeleton while image loads */}
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.8s_infinite] bg-gradient-to-r from-transparent via-white/35 to-transparent pointer-events-none" />
           <img
             src={product.image_url}
             alt={product.name}
-            className="h-full w-full object-cover transition-transform duration-500 ease-press group-hover:scale-105"
+            className="relative z-10 h-full w-full object-cover transition-transform duration-500 ease-press group-hover:scale-105"
             loading="lazy"
             decoding="async"
           />

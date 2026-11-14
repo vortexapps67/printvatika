@@ -152,7 +152,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CartProvider>
             <AnnouncementBar />
             <Navbar />
-            <main id="main" className="flex-grow pb-16 md:pb-0">
+            <main id="main" className="flex-grow pb-24 md:pb-8">
               {children}
             </main>
             <Footer />
