@@ -1,21 +1,35 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { Coupon, Product, ProductOption, PricingRule, Order, OrderItem, OrderStatus, PaymentStatus, OrderStatusHistory } from '../types';
 import { supabaseConfigured, supabaseStore } from './supabaseStore';
 
-// Path for local file fallback database
-const DATA_DIR = path.join(process.cwd(), '.data');
+// Path for local file fallback database (use /tmp on serverless environments like Vercel)
+const isServerless = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === 'production');
+const DATA_DIR = isServerless
+  ? path.join(os.tmpdir(), 'printvatika-data')
+  : path.join(process.cwd(), '.data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
+
+// In-Memory cache fallback in case file system is completely read-only
+let memoryDb: any = null;
 
 // Ensure data directory exists
 function initLocalDbFile() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
 
-  if (!fs.existsSync(DB_FILE)) {
-    const seedData = getSeedData();
-    fs.writeFileSync(DB_FILE, JSON.stringify(seedData, null, 2), 'utf-8');
+    if (!fs.existsSync(DB_FILE)) {
+      const seedData = getSeedData();
+      fs.writeFileSync(DB_FILE, JSON.stringify(seedData, null, 2), 'utf-8');
+      memoryDb = seedData;
+    }
+  } catch (error) {
+    if (!memoryDb) {
+      memoryDb = getSeedData();
+    }
   }
 }
 
@@ -30,21 +44,32 @@ function readLocalDb(): {
   admin_users: { email: string; passwordHash: string }[];
   settings?: Record<string, string>;
 } {
-  initLocalDbFile();
   try {
-    const content = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(content);
+    initLocalDbFile();
+    if (fs.existsSync(DB_FILE)) {
+      const content = fs.readFileSync(DB_FILE, 'utf-8');
+      const parsed = JSON.parse(content);
+      memoryDb = parsed;
+      return parsed;
+    }
   } catch (error) {
-    console.error('Error reading fallback database, resetting with seed data:', error);
-    const seed = getSeedData();
-    fs.writeFileSync(DB_FILE, JSON.stringify(seed, null, 2), 'utf-8');
-    return seed;
+    console.warn('Fallback DB read error, using in-memory store:', error);
   }
+
+  if (!memoryDb) {
+    memoryDb = getSeedData();
+  }
+  return memoryDb;
 }
 
 function writeLocalDb(data: any) {
-  initLocalDbFile();
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  memoryDb = data;
+  try {
+    initLocalDbFile();
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (error) {
+    console.warn('Fallback DB write error, updated in-memory store only:', error);
+  }
 }
 
 // Seed data definition
