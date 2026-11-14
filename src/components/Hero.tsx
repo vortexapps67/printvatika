@@ -213,16 +213,18 @@ export function Hero({
                     {s.body}
                   </p>
 
-                  <div className="mt-6 flex flex-wrap items-center gap-3">
-                    <span className="flex items-baseline gap-2 rounded-2xl border border-ink-200 bg-white/90 px-3.5 py-2 backdrop-blur-sm shadow-card">
-                      <span className="font-mono text-micro uppercase tracking-wider2 text-ink-500">
-                        {s.chip.label}
+                  {s.chip && (
+                    <div className="mt-6 flex flex-wrap items-center gap-3">
+                      <span className="flex items-baseline gap-2 rounded-2xl border border-ink-200 bg-white/90 px-3.5 py-2 backdrop-blur-sm shadow-card">
+                        <span className="font-mono text-micro uppercase tracking-wider2 text-ink-500">
+                          {s.chip.label}
+                        </span>
+                        <span className="tnum font-display text-title font-bold leading-none text-ink-900">
+                          {s.chip.value}
+                        </span>
                       </span>
-                      <span className="tnum font-display text-title font-bold leading-none text-ink-900">
-                        {s.chip.value}
-                      </span>
-                    </span>
-                  </div>
+                    </div>
+                  )}
 
                   <div className="mt-6 flex flex-wrap gap-3">
                     <Link

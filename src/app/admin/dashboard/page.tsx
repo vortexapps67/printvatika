@@ -982,7 +982,7 @@ export default function AdminDashboardPage() {
                           {/* Action Buttons */}
                           <div className="mt-3 flex items-center gap-2">
                             <Button
-                              variant="primary"
+                              variant="solid"
                               size="sm"
                               onClick={() => setEditingProduct(p)}
                               className="flex-1"
@@ -1042,7 +1042,7 @@ export default function AdminDashboardPage() {
                           <Plus size={14} /> Add Slide
                         </Button>
                         <Button
-                          variant="primary"
+                          variant="solid"
                           size="sm"
                           onClick={handleSaveHeroBanners}
                           disabled={isSavingBanners}
@@ -1304,7 +1304,7 @@ export default function AdminDashboardPage() {
 
                     <div className="pt-2">
                       <Button
-                        variant="primary"
+                        variant="solid"
                         size="lg"
                         onClick={handleSaveHeroBanners}
                         disabled={isSavingBanners}
@@ -1424,7 +1424,7 @@ export default function AdminDashboardPage() {
                     hint="Highlight departments, specialty custom printing, or counter visits."
                     action={
                       <Button
-                        variant="primary"
+                        variant="solid"
                         size="sm"
                         onClick={handleSavePromosAndOffers}
                         disabled={isSavingPromos}
@@ -1684,7 +1684,7 @@ export default function AdminDashboardPage() {
 
                   <div className="border-t border-ink-100 p-5">
                     <Button
-                      variant="primary"
+                      variant="solid"
                       size="lg"
                       onClick={handleSavePromosAndOffers}
                       disabled={isSavingPromos}
@@ -1852,7 +1852,7 @@ export default function AdminDashboardPage() {
                       </div>
 
                       <Button
-                        variant="primary"
+                        variant="solid"
                         size="md"
                         onClick={handleSaveMasterPassword}
                         disabled={isSavingPassword}
@@ -1960,7 +1960,7 @@ export default function AdminDashboardPage() {
 
                     <div className="pt-2">
                       <Button
-                        variant="primary"
+                        variant="solid"
                         size="lg"
                         onClick={handleSaveSiteSettings}
                         disabled={isSavingSettings}
@@ -2130,7 +2130,7 @@ export default function AdminDashboardPage() {
                     Cancel
                   </Button>
                   <Button
-                    variant="primary"
+                    variant="solid"
                     size="sm"
                     onClick={handleSaveProductModal}
                     disabled={isSavingProduct}
